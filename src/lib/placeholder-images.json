@@ -1,3 +1,38 @@
 {
-  "placeholderImages": []
+  "projects": [
+    {
+      "id": "project-1",
+      "title": "Aura Branding",
+      "description": "A branding project for a modern tech company, focusing on a clean and futuristic aesthetic.",
+      "imageUrl": "https://picsum.photos/seed/101/800/600",
+      "imageHint": "abstract tech"
+    },
+    {
+      "id": "project-2",
+      "title": "Flow E-commerce",
+      "description": "E-commerce platform with a clean user interface designed for a seamless shopping experience.",
+      "imageUrl": "https://picsum.photos/seed/102/800/600",
+      "imageHint": "minimalist website"
+    },
+    {
+      "id": "project-3",
+      "title": "Connect Mobile App",
+      "description": "Mobile app design for a creative startup aimed at connecting artists and collaborators.",
+      "imageUrl": "https://picsum.photos/seed/103/800/600",
+      "imageHint": "mobile app"
+    },
+    {
+      "id": "project-4",
+      "title": "Luxe Digital Strategy",
+      "description": "A comprehensive digital strategy for a luxury brand to enhance its online presence.",
+      "imageUrl": "https://picsum.photos/seed/104/800/600",
+      "imageHint": "luxury product"
+    }
+  ],
+  "about": {
+    "id": "about-us",
+    "description": "A modern office space reflecting collaboration and creativity.",
+    "imageUrl": "https://picsum.photos/seed/about-us/800/600",
+    "imageHint": "team collaboration"
+  }
 }
