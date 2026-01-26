@@ -17,21 +17,17 @@ const services = [
     svg: (
       <>
         <defs>
-          <clipPath id="eye-clip-path">
-            <path d="M150 100 C 200 25, 400 25, 450 100 C 400 175, 200 175, 150 100" />
+          <clipPath id="eyelid-clip">
+            <path className="eyelid-path" d="M150 100 C 200 175, 400 175, 450 100" />
           </clipPath>
         </defs>
         <path
           className="eye-outline"
-          d="M150 100 C 200 25, 400 25, 450 100 C 400 175, 200 175, 150 100"
+          d="M150 100 C 200 25, 400 25, 450 100 C 400 175, 200 175, 150 100 Z"
         />
-        <g clipPath="url(#eye-clip-path)">
+        <g clipPath="url(#eyelid-clip)">
           <circle className="pupil" cx="300" cy="100" r="30" />
         </g>
-        <path className="eyelid top" d="M150 100 C 200 25, 400 25, 450 100" />
-        <path className="eyelid bottom" d="M150 100 C 200 175, 400 175, 450 100" />
-        
-        {/* Eyelashes */}
         <g className="eyelashes">
           <path d="M200,28 C195,18 190,10" />
           <path d="M250,15 C248,5 246,0" />
@@ -82,13 +78,16 @@ const services = [
             stroke="none"
           />
         </g>
-        <path
-          className="arrow"
-          d="M0 -10 L10 0 L0 10 L2 0 Z"
-          fill="hsl(var(--primary))"
-          transform="translate(500 100) rotate(180)"
-          opacity="0"
-        />
+        <g className="arrow" opacity="0">
+            <path d="M0 0 H 1" className="arrow-shaft" transform="translate(450 100) scale(80 1)"/>
+            <path d="M530 95 L 540 100 L 530 105" className="arrow-head"/>
+            <g transform="translate(450 100)">
+              <path d="M0 0 L 5 -5"/>
+              <path d="M0 0 L 5 5"/>
+              <path d="M5 0 L 10 -5"/>
+              <path d="M5 0 L 10 5"/>
+            </g>
+        </g>
       </>
     ),
   },
@@ -100,14 +99,15 @@ const services = [
     svg: (
       <g className="cart-group">
         <g className="cart-items" opacity="0">
-          {/* Box */}
-          <path d="M-15 0 L-5 -5 L15 0 L5 5 Z M-15 0 v15 l20 -10 V-5 Z M15 0 v15 l-20-10 V-5" transform="translate(260 40) scale(0.8)" />
-          {/* Credit Card */}
-          <rect x="-15" y="-8" width="30" height="18" rx="2" transform="translate(305 45) scale(0.9)" />
-          <rect x="-10" y="2" width="15" height="3" transform="translate(305 45) scale(0.9)" />
-          {/* Tag */}
-          <path d="M0 0 L15 -15 L30 0 L15 15 Z" transform="translate(350 40) scale(0.7)" />
-          <circle cx="15" cy="-5" r="2" fill="hsl(var(--background))" transform="translate(350 40) scale(0.7)" />
+          <path d="M-15 0 L-5 -5 L15 0 L5 5 Z M-15 0 v15 l20 -10 V-5 Z M15 0 v15 l-20-10 V-5" transform="translate(280 40) scale(0.6)" className="fill-primary" stroke="none" />
+          <g transform="translate(325 45) scale(0.8)">
+            <rect x="-15" y="-8" width="30" height="18" rx="2" className="fill-primary" stroke="none"/>
+            <rect x="-10" y="2" width="15" height="3" fill="hsl(var(--background))" stroke="none" />
+          </g>
+          <g transform="translate(370 40) scale(0.6)">
+            <path d="M0 0 L15 -15 L30 0 L15 15 Z" className="fill-primary" stroke="none" />
+            <circle cx="15" cy="-5" r="3" fill="hsl(var(--background))" stroke="none" />
+          </g>
         </g>
         <g className="cart-container">
           <path className="cart-body" d="M160 150 L140 70 H 460 L 440 150 Z" />
@@ -124,12 +124,19 @@ const AUTOPLAY_DURATION = 5; // seconds
 export function Services() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   const sectionRef = useRef<HTMLElement>(null);
   const progressTl = useRef<gsap.core.Timeline>();
   const secondaryAnimation = useRef<gsap.core.Timeline | null>(null);
 
+  useEffect(() => {
+    setIsTouchDevice(window.matchMedia('(pointer: coarse)').matches);
+  }, []);
+
   const runAutoplay = useCallback((index: number) => {
+    if (isTouchDevice) return; 
+
     progressTl.current?.kill();
     const progressBars = gsap.utils.toArray<HTMLDivElement>(
       '.progress-bar-fill',
@@ -147,12 +154,12 @@ export function Services() {
       duration: AUTOPLAY_DURATION,
       ease: 'linear',
     });
-  }, []);
+  }, [isTouchDevice]);
 
   useEffect(() => {
     secondaryAnimation.current?.kill();
 
-    if (!isHovering) {
+    if (!isHovering && !isTouchDevice) {
       runAutoplay(activeIndex);
     }
 
@@ -182,29 +189,33 @@ export function Services() {
             const currentService = services[activeIndex];
 
             if (currentService.id === 'design') {
-              const topLid = activeSvg.querySelector('.eyelid.top');
-              const bottomLid = activeSvg.querySelector('.eyelid.bottom');
-              const pupil = activeSvg.querySelector('.pupil');
-              const eyelashes = activeSvg.querySelector('.eyelashes');
-              
-              const blinkTl = gsap.timeline({ repeat: 1, repeatDelay: 0.2 });
-              blinkTl.to([topLid, bottomLid, eyelashes], { scaleY: 0.05, transformOrigin: 'center', duration: 0.12 })
-                     .to(pupil, { scaleY: 0, transformOrigin: 'center', duration: 0.12 }, '<')
-                     .to([topLid, bottomLid, eyelashes], { scaleY: 1, transformOrigin: 'center', duration: 0.12 })
-                     .to(pupil, { scaleY: 1, transformOrigin: 'center', duration: 0.12 }, '<');
-
-              secondaryAnimation.current.add(blinkTl, '+=0.5');
+                const eyelid = activeSvg.querySelector('.eyelid-path');
+                const blinkTl = gsap.timeline({ repeat: 2, repeatDelay: 0.3 });
+                blinkTl.to(eyelid, { 
+                  attr: { d: "M150 100 C 200 95, 400 95, 450 100" }, 
+                  duration: 0.12, 
+                  ease: 'power2.inOut'
+                }).to(eyelid, { 
+                  attr: { d: "M150 100 C 200 175, 400 175, 450 100" }, 
+                  duration: 0.15,
+                  ease: 'power2.inOut'
+                });
+                secondaryAnimation.current.add(blinkTl, '+=0.5');
             }
 
             if (currentService.id === 'development') {
               const textEl = activeSvg.querySelector('.code-tag-text');
               if (textEl) {
-                const tags = ['<a>', '<p>', '<h1>', '<div>'];
+                const tags = ['a', 'p', 'h1', 'div'];
                 let index = 0;
+                gsap.set(textEl, { textContent: tags[0] });
                 secondaryAnimation.current.to(textEl, {
                   duration: 1.5,
                   text: {
-                    value: () => tags[index++ % tags.length],
+                    value: () => {
+                      index = (index + 1) % tags.length;
+                      return tags[index];
+                    },
                   },
                   repeat: -1,
                   repeatDelay: 0.5,
@@ -216,25 +227,22 @@ export function Services() {
             if (currentService.id === 'branding') {
               const arrow = activeSvg.querySelector('.arrow');
               const bullseye = activeSvg.querySelector('.pupil');
-              secondaryAnimation.current.set(arrow, { transform: 'translate(500px, 100px) rotate(180deg)', opacity: 1 });
-              secondaryAnimation.current.to(arrow, {
-                  x: 320,
-                  duration: 0.5,
-                  ease: 'power2.in',
-                  delay: 0.5
-              })
-              .to(bullseye, { scale: 1.5, duration: 0.1, yoyo: true, repeat: 1, transformOrigin: 'center' }, '>-=0.05')
-              .to(arrow, { opacity: 0, duration: 0.2 }, '>-=0.1');
+              secondaryAnimation.current
+                .set(arrow, { opacity: 1, x: -200 })
+                .to(arrow, { x: 0, duration: 0.5, ease: 'power2.in', delay: 0.5 })
+                .to(bullseye, { scale: 1.5, duration: 0.1, yoyo: true, repeat: 1, transformOrigin: 'center' }, '>-=0.05')
+                .to(arrow, { opacity: 0, duration: 0.2 }, '>-=0.1');
             }
 
             if (currentService.id === 'ecommerce') {
               const items = activeSvg.querySelector('.cart-items');
-              secondaryAnimation.current.set(items, { opacity: 1, y: -80 });
+              secondaryAnimation.current.set(items, { opacity: 1, y: -120 });
               secondaryAnimation.current.to(items, {
                 y: 0,
                 duration: 1.2,
                 ease: 'bounce.out',
                 delay: 0.5,
+                stagger: 0.1,
               });
             }
           },
@@ -245,8 +253,9 @@ export function Services() {
           { autoAlpha: 0 },
           { autoAlpha: 1, duration: 0.4 }
         );
+        
         const paths = gsap.utils.toArray<SVGPathElement>(
-          '.bracket, .eye-outline, .cart-body, .eyelashes path',
+          '.bracket, .eye-outline, .cart-body, .eyelashes path, .arrow-shaft, .arrow-head',
           activeSvg
         );
         if (paths.length > 0) {
@@ -284,9 +293,16 @@ export function Services() {
       }
     }, sectionRef);
     return () => ctx.revert();
-  }, [activeIndex, isHovering, runAutoplay]);
+  }, [activeIndex, isHovering, runAutoplay, isTouchDevice]);
+  
+  const handleClick = (index: number) => {
+    if (index !== activeIndex) {
+      setActiveIndex(index);
+    }
+  };
 
   const handleMouseEnter = (index: number) => {
+    if (isTouchDevice) return;
     setIsHovering(true);
     progressTl.current?.pause();
     if (index !== activeIndex) {
@@ -295,6 +311,7 @@ export function Services() {
   };
 
   const handleMouseLeave = () => {
+    if (isTouchDevice) return;
     setIsHovering(false);
     progressTl.current?.play();
   };
@@ -322,10 +339,13 @@ export function Services() {
                   key={service.id}
                   className="relative border-b border-border"
                   onMouseEnter={() => handleMouseEnter(index)}
+                  onClick={() => handleClick(index)}
                 >
-                  <div className="absolute left-0 top-0 h-full w-px bg-border/30">
-                    <div className="progress-bar-fill h-full w-full bg-primary" />
-                  </div>
+                  {!isTouchDevice && (
+                    <div className="absolute left-0 top-0 h-full w-px bg-border/30">
+                        <div className="progress-bar-fill h-full w-full bg-primary" />
+                    </div>
+                  )}
                   <div
                     className={cn(
                       'group flex w-full cursor-pointer items-center justify-between py-8 pl-6 text-left transition-colors duration-300'
