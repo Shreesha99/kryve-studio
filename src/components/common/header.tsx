@@ -32,13 +32,15 @@ export function Header() {
 
       if (pathname !== '/') return; // Only run scroll-spy on the homepage
 
+      const scrollSpyOffset = window.innerHeight / 2;
+
       // Identify the current section based on scroll position
       let currentSectionId = '';
       for (const link of navLinks.slice().reverse()) {
         if (link.href.startsWith('#')) {
           const section = document.getElementById(link.href.substring(1));
           if (section) {
-            if (window.scrollY >= section.offsetTop - 150) {
+            if (window.scrollY >= section.offsetTop - scrollSpyOffset) {
               currentSectionId = link.href.substring(1);
               break;
             }
@@ -131,17 +133,17 @@ export function Header() {
   return (
     <header
       ref={headerRef}
-      className="fixed top-0 z-50 w-full px-4 pt-4 transition-all"
+      className="fixed top-0 z-50 w-full p-4 transition-all"
     >
       <div
         className={cn(
-          'mx-auto grid h-16 grid-cols-2 items-center rounded-full border px-6 shadow-sm md:grid-cols-3',
+          'mx-auto grid h-16 max-w-7xl grid-cols-2 items-center rounded-full border px-6 shadow-sm md:grid-cols-3',
           isScrolled
             ? 'border-border bg-background/80 backdrop-blur-sm'
             : 'border-transparent bg-background/30'
         )}
       >
-        <div className="flex items-center justify-start">
+        <div className="flex items-center justify-start md:flex-1">
           <Logo />
         </div>
 
@@ -153,7 +155,7 @@ export function Header() {
           </div>
         </nav>
 
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-end md:flex-1">
           <ThemeToggle />
           <div className="md:hidden">
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
