@@ -29,7 +29,7 @@ export function Footer() {
                     placeholder="Email"
                     className="w-full bg-transparent text-lg placeholder:text-background/50 focus:outline-none"
                   />
-                  <button type="submit" aria-label="Submit email" className="transition-transform hover:translate-x-1">
+                  <button type="submit" aria-label="Submit email for newsletter" className="transition-transform hover:translate-x-1">
                     <span className="material-symbols-outlined text-2xl">arrow_forward</span>
                   </button>
                 </form>
@@ -52,12 +52,12 @@ export function Footer() {
             <h4 className="mb-6 text-sm text-background/70">Social</h4>
             <ul className="space-y-3 text-lg">
               <li>
-                <a href="#" className="group inline-flex items-center gap-2 transition-colors hover:text-background/80">
+                <a href="#" className="group inline-flex items-center gap-2 transition-colors hover:text-background/80" aria-label="Visit our Instagram page">
                   Instagram <span className="text-xl transition-transform group-hover:translate-x-1">↗</span>
                 </a>
               </li>
               <li>
-                <a href="#" className="group inline-flex items-center gap-2 transition-colors hover:text-background/80">
+                <a href="#" className="group inline-flex items-center gap-2 transition-colors hover:text-background/80" aria-label="Visit our LinkedIn page">
                   LinkedIn <span className="text-xl transition-transform group-hover:translate-x-1">↗</span>
                 </a>
               </li>

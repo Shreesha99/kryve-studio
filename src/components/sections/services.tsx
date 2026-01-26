@@ -64,13 +64,12 @@ export function Services() {
   const [isHovering, setIsHovering] = useState(false);
 
   const sectionRef = useRef<HTMLElement>(null);
-  const svgContainerRef = useRef<HTMLDivElement>(null);
   const progressTl = useRef<gsap.core.Timeline>();
 
   const runAutoplay = useCallback((index: number) => {
     progressTl.current?.kill();
-    const progressBars = gsap.utils.toArray<HTMLDivElement>('.progress-bar', sectionRef.current);
-    gsap.set(progressBars, { scaleX: 0, transformOrigin: 'left' });
+    const progressBars = gsap.utils.toArray<HTMLDivElement>('.progress-bar-fill', sectionRef.current);
+    gsap.set(progressBars, { scaleY: 0, transformOrigin: 'bottom' });
 
     progressTl.current = gsap.timeline({
       onComplete: () => {
@@ -78,7 +77,7 @@ export function Services() {
         setActiveIndex(nextIndex);
       },
     }).to(progressBars[index], {
-      scaleX: 1,
+      scaleY: 1,
       duration: AUTOPLAY_DURATION,
       ease: 'linear',
     });
@@ -157,9 +156,12 @@ export function Services() {
                   className="relative border-b border-border"
                   onMouseEnter={() => handleMouseEnter(index)}
                 >
+                   <div className="absolute left-0 top-0 h-full w-px bg-border/30">
+                    <div className="progress-bar-fill h-full w-full bg-primary" />
+                  </div>
                   <div
                     className={cn(
-                      'group flex w-full cursor-pointer items-center justify-between py-8 text-left transition-colors duration-300'
+                      'group flex w-full cursor-pointer items-center justify-between py-8 pl-6 text-left transition-colors duration-300'
                     )}
                   >
                     <h3
@@ -183,15 +185,13 @@ export function Services() {
                       arrow_right_alt
                     </span>
                   </div>
-                   <div className="progress-bar absolute bottom-0 left-0 h-px bg-primary"></div>
                 </li>
               ))}
             </ul>
           </div>
-          <div className="relative flex min-h-[300px] w-full flex-col items-center justify-center rounded-lg lg:h-96">
+          <div className="relative flex min-h-[450px] w-full flex-col items-center justify-center rounded-lg lg:min-h-[30rem]">
             <div
-              ref={svgContainerRef}
-              className="absolute inset-0 flex items-center justify-center p-8"
+              className="absolute inset-x-0 top-0 flex h-1/2 w-full items-center justify-center p-8"
             >
               {services.map(service => (
                 <svg
@@ -210,9 +210,11 @@ export function Services() {
                 </svg>
               ))}
             </div>
-            <p className="service-description relative z-10 max-w-md text-center text-lg text-muted-foreground">
-              {services[activeIndex].description}
-            </p>
+            <div className="absolute inset-x-0 bottom-0 flex h-1/2 w-full items-center justify-center p-4">
+              <p className="service-description relative z-10 max-w-md text-center text-lg text-muted-foreground">
+                {services[activeIndex].description}
+              </p>
+            </div>
           </div>
         </div>
       </div>

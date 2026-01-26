@@ -29,6 +29,8 @@ export function InteractiveOrbs() {
     };
     
     gsap.set(orbs, { 
+        xPercent: -50,
+        yPercent: -50,
         x: window.innerWidth / 2, 
         y: window.innerHeight / 2,
         scale: () => Math.random() * 0.5 + 0.5,
@@ -62,8 +64,6 @@ export function InteractiveOrbs() {
           className="orb absolute h-24 w-24 rounded-full"
           style={{ 
             backgroundColor: orbColor,
-            top: '-12rem',
-            left: '-12rem',
             willChange: 'transform'
           }}
         />

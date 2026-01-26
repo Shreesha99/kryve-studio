@@ -65,4 +65,17 @@
     'GRAD' 0,
     'opsz' 24
   }
+  /* Hide default cursor */
+  body, button, a, input, select, textarea {
+    @apply cursor-none;
+  }
+}
+
+@layer components {
+  .custom-cursor-dot {
+    @apply pointer-events-none fixed top-0 left-0 z-[9999] h-2 w-2 rounded-full bg-primary;
+  }
+  .custom-cursor-follower {
+    @apply pointer-events-none fixed top-0 left-0 z-[9999] h-8 w-8 rounded-full border border-primary/50;
+  }
 }
