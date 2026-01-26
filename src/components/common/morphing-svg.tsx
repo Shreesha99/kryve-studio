@@ -54,7 +54,6 @@ export function MorphingSvg() {
 
     // --- INITIAL SETUP ---
     gsap.set([...codeElements.map(r=>r.current), ...uiElements.map(r=>r.current), cursorRef.current], { autoAlpha: 0 });
-    gsap.set(codeElements.map(r => r.current), { x: 20 });
     gsap.set(cursorRef.current, { x: 250, y: -50 });
     gsap.set(uiDropdownMenuRef.current, { autoAlpha: 0, scaleY: 0, transformOrigin: 'top center' });
     
@@ -66,75 +65,64 @@ export function MorphingSvg() {
     });
 
     const masterTl = gsap.timeline({ repeat: -1, repeatDelay: 1 });
-
-    const codeXEnd = 180;
-    const stageY = 250;
     
     // --- ANIMATION CREATION HELPER ---
     const createComponentAnimation = (
         codeRef: React.RefObject<SVGTextElement>,
         uiRef: React.RefObject<SVGGElement>,
         uiSetup: () => void,
-        interaction: (tl: gsap.core.Timeline) => void
+        interaction: (tl: gsap.core.Timeline, uiX: number, uiY: number) => void
     ) => {
         const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
 
-        // 1. Show code at stage center
-        const codeBBox = (codeRef.current as SVGTextElement).getBBox();
+        // 1. Position and show code at top center
+        const codeBBox = codeRef.current!.getBBox();
+        const codeX = 250 - codeBBox.width / 2;
+        const codeY = 150 - codeBBox.height / 2;
+
         tl.fromTo(codeRef.current, 
-          { autoAlpha: 0, y: stageY - codeBBox.height / 2 },
+          { autoAlpha: 0, x: codeX - codeBBox.x, y: codeY - codeBBox.y },
           { autoAlpha: 1, duration: 0.5 }
         );
         
-        // 2. Build UI
-        tl.to(codeRef.current, { x: codeXEnd, autoAlpha: 0, duration: 0.8, ease: 'power2.in' }, "+=1");
+        // 2. Build UI below it ("Fade Down")
+        tl.add(uiSetup, "+=1");
         
-        const uiBBox = (uiRef.current as SVGGElement).getBBox();
-        const uiX = 280 + (220 - uiBBox.width) / 2;
-        const uiY = stageY - uiBBox.height / 2;
+        const uiBBox = uiRef.current!.getBBox();
+        const uiX = 250 - uiBBox.width / 2;
+        const uiY = 300 - uiBBox.height / 2;
 
         tl.fromTo(uiRef.current, 
-            { autoAlpha: 0, scale: 0.8, x: uiX - uiBBox.x, y: uiY - uiBBox.y }, 
-            { autoAlpha: 1, scale: 1, duration: 0.8 }, 
-            ">-0.5");
+            { autoAlpha: 0, scale: 0.8, x: uiX - uiBBox.x, y: (codeY - uiBBox.y) + 30 }, 
+            { autoAlpha: 1, scale: 1, y: uiY - uiBBox.y, duration: 0.8 }, 
+            ">-0.2");
         
-        tl.add(uiSetup);
-
         // 3. Interaction
-        interaction(tl);
+        interaction(tl, uiX, uiY);
 
         // 4. Fade out
-        tl.to([uiRef.current, cursorRef.current], { autoAlpha: 0, duration: 0.5 }, "+=1.5");
-        
-        // 5. Reset code for next loop
-        tl.set(codeRef.current, { x: 20 });
+        tl.to([codeRef.current, uiRef.current, cursorRef.current], { autoAlpha: 0, duration: 0.5 }, "+=1.5");
         
         return tl;
     }
 
     // --- INTERACTION DEFINITIONS ---
-    const buttonInteraction = (tl: gsap.core.Timeline) => {
+    const buttonInteraction = (tl: gsap.core.Timeline, uiX: number, uiY: number) => {
       const uiBBox = uiButtonRef.current!.getBBox();
-      const uiX = 280 + (220 - uiBBox.width) / 2;
-      const uiY = stageY - uiBBox.height / 2;
       tl.to(cursorRef.current, { autoAlpha: 1, x: uiX + uiBBox.width / 2, y: uiY + uiBBox.height / 2, duration: 0.5 });
-      tl.to(uiButtonRef.current, { scale: 0.95, duration: 0.1, yoyo: true, repeat: 1, transformOrigin: 'center' });
+      tl.to(uiButtonRef.current, { scale: 0.95, duration: 0.1, yoyo: true, repeat: 1, transformOrigin: 'center center' });
     };
     
-    const inputInteraction = (tl: gsap.core.Timeline) => {
+    const inputInteraction = (tl: gsap.core.Timeline, uiX: number, uiY: number) => {
       const uiBBox = uiInputRef.current!.getBBox();
-      const uiX = 280 + (220 - uiBBox.width) / 2;
-      const uiY = stageY - uiBBox.height / 2;
       tl.to(cursorRef.current, { autoAlpha: 1, x: uiX + uiBBox.width - 10, y: uiY + uiBBox.height / 2, duration: 0.5 });
       tl.set(uiInputCaretRef.current, { autoAlpha: 1 });
       tl.to(uiInputCaretRef.current, { autoAlpha: 0, repeat: 3, yoyo: true, duration: 0.3, ease: 'steps(1)' });
       tl.set(uiInputCaretRef.current, { autoAlpha: 0 });
     };
 
-    const toggleInteraction = (tl: gsap.core.Timeline) => {
+    const toggleInteraction = (tl: gsap.core.Timeline, uiX: number, uiY: number) => {
         const uiBBox = uiToggleRef.current!.getBBox();
-        const uiX = 280 + (220 - uiBBox.width) / 2;
-        const uiY = stageY - uiBBox.height / 2;
         tl.to(cursorRef.current, { autoAlpha: 1, x: uiX + uiBBox.width / 2, y: uiY + uiBBox.height / 2, duration: 0.5 });
         tl.to(uiToggleKnobRef.current, { attr: {x: 28}, duration: 0.4, ease: 'power2.inOut' });
         tl.to(uiToggleKnobRef.current, { attr: {x: 4}, duration: 0.4, ease: 'power2.inOut' }, "+=0.5");
@@ -146,31 +134,26 @@ export function MorphingSvg() {
         tl.to(uiImageMountain2Ref.current, { strokeDashoffset: 0, duration: 1 }, '-=0.7');
     };
     
-    const dropdownInteraction = (tl: gsap.core.Timeline) => {
+    const dropdownInteraction = (tl: gsap.core.Timeline, uiX: number, uiY: number) => {
         const uiBBox = uiDropdownRef.current!.getBBox();
-        const uiX = 280 + (220 - uiBBox.width) / 2;
-        const uiY = stageY - uiBBox.height / 2;
         tl.to(cursorRef.current, { autoAlpha: 1, x: uiX + uiBBox.width / 2, y: uiY + uiBBox.height / 2, duration: 0.5 });
-        tl.to(uiDropdownRef.current, { scale: 0.98, duration: 0.1, yoyo: true, repeat: 1, transformOrigin: 'center' });
+        tl.to(uiDropdownRef.current, { scale: 0.98, duration: 0.1, yoyo: true, repeat: 1, transformOrigin: 'center center' });
         tl.to(uiDropdownMenuRef.current, { autoAlpha: 1, scaleY: 1, duration: 0.4 }, "-=0.1");
         tl.to(uiDropdownMenuRef.current, { autoAlpha: 0, scaleY: 0, duration: 0.4 }, "+=1");
     };
 
-    const sliderInteraction = (tl: gsap.core.Timeline) => {
+    const sliderInteraction = (tl: gsap.core.Timeline, uiX: number, uiY: number) => {
         const uiBBox = uiSliderRef.current!.getBBox();
-        const uiX = 280 + (220 - uiBBox.width) / 2;
-        const uiY = stageY - uiBBox.height / 2;
-        tl.to(cursorRef.current, { autoAlpha: 1, x: uiX + 40, y: uiY + 5, duration: 0.5 });
-        tl.to(uiSliderHandleRef.current, { attr: {cx: 140}, duration: 1, ease: 'power1.inOut' });
+        const uiSliderHandleBBox = uiSliderHandleRef.current!.getBBox();
+        tl.to(cursorRef.current, { autoAlpha: 1, x: uiX + 40, y: uiY + uiSliderHandleBBox.height / 2, duration: 0.5 });
+        tl.to(uiSliderHandleRef.current, { attr: {cx: 100}, duration: 1, ease: 'power1.inOut' });
         tl.to(uiSliderHandleRef.current, { attr: {cx: 40}, duration: 1, ease: 'power1.inOut' }, "+=0.2");
     };
 
-    const checkboxInteraction = (tl: gsap.core.Timeline) => {
+    const checkboxInteraction = (tl: gsap.core.Timeline, uiX: number, uiY: number) => {
         const uiBBox = uiCheckboxRef.current!.getBBox();
-        const uiX = 280 + (220 - uiBBox.width) / 2;
-        const uiY = stageY - uiBBox.height / 2;
         tl.to(cursorRef.current, { autoAlpha: 1, x: uiX + uiBBox.width/2, y: uiY + uiBBox.height/2, duration: 0.5 });
-        tl.to(uiCheckboxRef.current, { scale: 0.9, duration: 0.1, yoyo: true, repeat: 1, transformOrigin: 'center' });
+        tl.to(uiCheckboxRef.current, { scale: 0.9, duration: 0.1, yoyo: true, repeat: 1, transformOrigin: 'center center' });
         tl.to(uiCheckboxCheckRef.current, { strokeDashoffset: 0, duration: 0.5 });
     };
 
@@ -220,29 +203,28 @@ export function MorphingSvg() {
             .code-text {
               font-family: 'Roboto Mono', monospace;
               font-weight: 500;
-              font-size: 18px;
+              font-size: 20px;
               fill: hsl(var(--muted-foreground));
+            }
+            .ui-text {
+                font-size: 12px;
+                font-weight: bold;
+                fill: hsl(var(--primary-foreground));
+                dominant-baseline: middle;
+                text-anchor: middle;
             }
           `}
         </style>
-        <linearGradient id="build-line-gradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0" />
-          <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity="1" />
-          <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
-        </linearGradient>
         <g id="cursor" ref={cursorRef}>
             <path fill="hsl(var(--foreground))" d="M11.22,9.45,3.95,2.18A1.07,1.07,0,0,0,2.44,2.18L2.18,2.44a1.07,1.07,0,0,0,0,1.51l7.27,7.27-2.3,6.89a1.06,1.06,0,0,0,1,1.33,1,1,0,0,0,.32-.06l7.15-2.4a1.07,1.07,0,0,0,.68-1Z"/>
         </g>
       </defs>
 
-      {/* The "Build" Line */}
-      <line x1="250" y1="20" x2="250" y2="480" stroke="url(#build-line-gradient)" strokeWidth="2" />
-
       {/* Code Components */}
       <g>
         <text ref={codeButtonRef} className="code-text">&lt;Button /&gt;</text>
         <text ref={codeInputRef} className="code-text">&lt;Input /&gt;</text>
-        <text ref={codeToggleRef} className="code-text">&lt;Toggle /&gt;</text>
+        <text ref={codeToggleRef} className="code-text">&lt;Switch /&gt;</text>
         <text ref={codeImageRef} className="code-text">&lt;Image /&gt;</text>
         <text ref={codeDropdownRef} className="code-text">&lt;Dropdown /&gt;</text>
         <text ref={codeSliderRef} className="code-text">&lt;Slider /&gt;</text>
@@ -254,7 +236,7 @@ export function MorphingSvg() {
       <g>
         <g ref={uiButtonRef}>
             <rect width="100" height="35" rx="6" fill="hsl(var(--primary))" />
-            <text x="50" y="22" textAnchor="middle" fontSize="12" fontWeight="bold" fill="hsl(var(--primary-foreground))" dominantBaseline="middle">SUBMIT</text>
+            <text x="50" y="17.5" className="ui-text">SUBMIT</text>
         </g>
         
         <g ref={uiInputRef}>
@@ -270,13 +252,13 @@ export function MorphingSvg() {
         <g ref={uiImageRef}>
           <rect width="190" height="120" rx="8" fill="hsl(var(--secondary))" />
           <circle ref={uiImageSunRef} cx="150" cy="110" r="12" fill="hsl(var(--primary) / 0.5)" />
-          <path ref={uiImageMountain1Ref} d="M 20 120 L 60 60 L 100 100" stroke="hsl(var(--primary) / 0.4)" strokeWidth="4" fill="none" />
-          <path ref={uiImageMountain2Ref} d="M 80 120 L 120 30 L 170 120" stroke="hsl(var(--primary) / 0.4)" strokeWidth="4" fill="none" />
+          <path ref={uiImageMountain1Ref} d="M 20 120 L 60 60 L 100 100" stroke="hsl(var(--primary) / 0.4)" strokeWidth="4" fill="none" strokeLinecap="round" />
+          <path ref={uiImageMountain2Ref} d="M 80 120 L 120 30 L 170 120" stroke="hsl(var(--primary) / 0.4)" strokeWidth="4" fill="none" strokeLinecap="round" />
         </g>
 
         <g ref={uiDropdownRef}>
             <rect width="140" height="35" rx="6" fill="hsl(var(--secondary))" stroke="hsl(var(--border))" />
-            <path d="M 120 12 l 5 5 l 5 -5" stroke="hsl(var(--muted-foreground))" strokeWidth="2" fill="none" strokeLinecap="round"/>
+            <path d="M 120 15 l 5 5 l 5 -5" stroke="hsl(var(--muted-foreground))" strokeWidth="2" fill="none" strokeLinecap="round"/>
             <g ref={uiDropdownMenuRef} transform="translate(0, 40)">
                 <rect width="140" height="90" rx="6" fill="hsl(var(--background))" stroke="hsl(var(--border))"/>
                 <rect x="5" y="5" width="130" height="25" rx="4" fill="hsl(var(--accent))"/>
@@ -298,7 +280,7 @@ export function MorphingSvg() {
         
         <g ref={uiChartRef}>
           <rect width="190" height="120" rx="8" fill="hsl(var(--secondary))" />
-          <path d="M 10 110 L 10 10 M 10 110 L 180 110" stroke="hsl(var(--muted-foreground)/0.5)" strokeWidth="2" />
+          <path d="M 10 110 L 10 10 M 10 110 L 180 110" stroke="hsl(var(--border))" strokeWidth="2" />
           <path ref={uiChartLineRef} d="M 10 90 Q 50 20, 90 60 T 170 30" stroke="hsl(var(--primary))" strokeWidth="3" fill="none" />
         </g>
 
