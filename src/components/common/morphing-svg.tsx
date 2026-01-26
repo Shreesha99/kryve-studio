@@ -3,120 +3,115 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 
-const NUM_NODES_PER_AXIS = 10;
-const SPACING = 500 / NUM_NODES_PER_AXIS;
-const NUM_CONNECTIONS = 15;
-
 export function MorphingSvg() {
   const svgRef = useRef<SVGSVGElement>(null);
-  const nodesRef = useRef<SVGCircleElement[]>([]);
-  const linesRef = useRef<SVGPathElement[]>([]);
-  
-  const allNodes = [];
-  const totalNodes = NUM_NODES_PER_AXIS * NUM_NODES_PER_AXIS;
-  for (let i = 0; i < NUM_NODES_PER_AXIS; i++) {
-    for (let j = 0; j < NUM_NODES_PER_AXIS; j++) {
-      allNodes.push({
-        cx: SPACING / 2 + i * SPACING,
-        cy: SPACING / 2 + j * SPACING,
-      });
-    }
-  }
+
+  const codeImageRef = useRef<SVGTextElement>(null);
+  const codeTitleRef = useRef<SVGTextElement>(null);
+  const codeTextRef = useRef<SVGTextElement>(null);
+  const codeButtonRef = useRef<SVGTextElement>(null);
+
+  const uiImageRef = useRef<SVGGElement>(null);
+  const uiTitleRef = useRef<SVGRectElement>(null);
+  const uiTextRef = useRef<SVGGElement>(null);
+  const uiButtonRef = useRef<SVGRectElement>(null);
 
   useEffect(() => {
     if (!svgRef.current) return;
-    
-    const nodes = nodesRef.current;
-    const lines = linesRef.current;
-    
-    // Initial setup for lines
-    gsap.set(lines, { opacity: 0 });
 
-    const animateConnections = () => {
-        for (let i = 0; i < NUM_CONNECTIONS; i++) {
-            const node1 = nodes[Math.floor(Math.random() * totalNodes)];
-            const node2 = nodes[Math.floor(Math.random() * totalNodes)];
-            const line = lines[i];
+    const codeElements = [codeImageRef.current, codeTitleRef.current, codeTextRef.current, codeButtonRef.current];
+    const uiElements = [uiImageRef.current, uiTitleRef.current, uiTextRef.current, uiButtonRef.current];
 
-            if (node1 && node2 && line) {
-                const x1 = node1.getAttribute('cx');
-                const y1 = node1.getAttribute('cy');
-                const x2 = node2.getAttribute('cx');
-                const y2 = node2.getAttribute('cy');
-                
-                // Set path and prepare for draw animation
-                line.setAttribute('d', `M${x1},${y1} L${x2},${y2}`);
-                const pathLength = line.getTotalLength();
-                gsap.set(line, {
-                  strokeDasharray: pathLength,
-                  strokeDashoffset: pathLength,
-                  opacity: 1
-                });
-                
-                // Animate
-                gsap.to(line, {
-                    strokeDashoffset: 0,
-                    duration: 1.0,
-                    ease: 'power2.in',
-                    delay: Math.random() * 2, // Stagger start time
-                    onComplete: () => {
-                       // Fade out after drawing
-                       gsap.to(line, {
-                           opacity: 0,
-                           duration: 0.5,
-                           delay: 0.5
-                       });
-                    }
-                });
-            }
-        }
-    }
-    
-    // Run the animation loop
-    animateConnections();
-    const animationInterval = setInterval(animateConnections, 3500); // Repeat every 3.5 seconds
+    gsap.set([...codeElements, ...uiElements], { autoAlpha: 0 });
 
-    return () => clearInterval(animationInterval);
-    
-  }, [totalNodes]);
+    const tl = gsap.timeline({
+      repeat: -1,
+      repeatDelay: 1.5,
+      defaults: { ease: 'power2.out', duration: 0.8 }
+    });
 
+    const codeXStart = 20;
+    const codeXEnd = 180;
+
+    tl.addLabel("start")
+      // Animate in code components
+      .to(codeElements, { autoAlpha: 1, x: codeXStart, stagger: 0.5 })
+      .addLabel("build", "+=0.5")
+
+      // Animate code across and build UI
+      .to(codeImageRef.current, { x: codeXEnd, autoAlpha: 0 }, "build")
+      .fromTo(uiImageRef.current, { autoAlpha: 0, scale: 0.8, transformOrigin: 'center' }, { autoAlpha: 1, scale: 1 }, "build+=0.4")
+
+      .to(codeTitleRef.current, { x: codeXEnd, autoAlpha: 0 }, "build+=0.5")
+      .fromTo(uiTitleRef.current, { autoAlpha: 0, scale: 0.8, transformOrigin: 'center' }, { autoAlpha: 1, scale: 1 }, "build+=0.9")
+
+      .to(codeTextRef.current, { x: codeXEnd, autoAlpha: 0 }, "build+=1.0")
+      .fromTo(uiTextRef.current, { autoAlpha: 0, scale: 0.8, transformOrigin: 'center' }, { autoAlpha: 1, scale: 1 }, "build+=1.4")
+
+      .to(codeButtonRef.current, { x: codeXEnd, autoAlpha: 0 }, "build+=1.5")
+      .fromTo(uiButtonRef.current, { autoAlpha: 0, scale: 0.8, transformOrigin: 'center' }, { autoAlpha: 1, scale: 1 }, "build+=1.9")
+      
+      .addLabel("end", "+=2")
+
+      // Disappear
+      .to(uiElements, { autoAlpha: 0, stagger: 0.3, ease: 'power2.in' }, "end");
+
+    return () => tl.kill();
+  }, []);
 
   return (
-    <svg
-      ref={svgRef}
-      viewBox="0 0 500 500"
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-full w-full object-contain"
-    >
+    <svg ref={svgRef} viewBox="0 0 500 500" className="h-full w-full object-contain">
       <defs>
-        <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style={{ stopColor: 'hsl(var(--primary))', stopOpacity: 1 }} />
-          <stop offset="100%" style={{ stopColor: 'hsl(var(--primary))', stopOpacity: 0.3 }} />
+        <style>
+          {`
+            @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500&display=swap');
+            .code-text {
+              font-family: 'Roboto Mono', monospace;
+              font-weight: 500;
+              font-size: 22px;
+              fill: hsl(var(--muted-foreground));
+            }
+          `}
+        </style>
+        <linearGradient id="build-line-gradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0" />
+          <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity="1" />
+          <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
         </linearGradient>
       </defs>
+
+      {/* The "Build" Line */}
+      <line x1="250" y1="50" x2="250" y2="450" stroke="url(#build-line-gradient)" strokeWidth="2" />
+
+      {/* Code Components */}
       <g>
-         {/* Node grid */}
-        {allNodes.map((node, i) => (
-          <circle
-            key={`node-${i}`}
-            ref={el => { if (el) nodesRef.current[i] = el; }}
-            cx={node.cx}
-            cy={node.cy}
-            r="1.5"
-            fill="hsl(var(--primary))"
-            opacity="0.3"
-          />
-        ))}
-        {/* Animated connections */}
-        {Array.from({ length: NUM_CONNECTIONS }).map((_, i) => (
-            <path
-                key={`line-${i}`}
-                ref={el => { if (el) linesRef.current[i] = el; }}
-                stroke="url(#gradient1)"
-                strokeWidth="0.5"
-                fill="none"
-            />
-        ))}
+        <text ref={codeImageRef} y="130" className="code-text">&lt;Image /&gt;</text>
+        <text ref={codeTitleRef} y="200" className="code-text">&lt;Title /&gt;</text>
+        <text ref={codeTextRef} y="280" className="code-text">&lt;Text /&gt;</text>
+        <text ref={codeButtonRef} y="395" className="code-text">&lt;Button /&gt;</text>
+      </g>
+      
+      {/* UI Wireframe */}
+      <g transform="translate(280, 0)">
+        {/* Image placeholder */}
+        <g ref={uiImageRef}>
+          <rect y="80" width="190" height="100" rx="8" fill="hsl(var(--secondary))" />
+          <circle cx="40" cy="130" r="15" fill="hsl(var(--primary) / 0.2)" />
+          <path d="M 65 150 L 95 120 L 125 140 L 150 110 L 190 135" stroke="hsl(var(--primary) / 0.3)" strokeWidth="4" fill="none" />
+        </g>
+        
+        {/* Title placeholder */}
+        <rect ref={uiTitleRef} y="195" width="120" height="14" rx="4" fill="hsl(var(--foreground) / 0.8)"/>
+        
+        {/* Text placeholders */}
+        <g ref={uiTextRef}>
+          <rect y="240" width="190" height="10" rx="3" fill="hsl(var(--muted-foreground) / 0.7)"/>
+          <rect y="260" width="190" height="10" rx="3" fill="hsl(var(--muted-foreground) / 0.7)"/>
+          <rect y="280" width="140" height="10" rx="3" fill="hsl(var(--muted-foreground) / 0.7)"/>
+        </g>
+
+        {/* Button placeholder */}
+        <rect ref={uiButtonRef} y="370" width="100" height="35" rx="6" fill="hsl(var(--primary))" />
       </g>
     </svg>
   );
