@@ -70,7 +70,7 @@ export function Hero() {
               ))}
             </h1>
             <p ref={paragraphRef} className="mt-6 max-w-xl text-lg text-muted-foreground md:text-xl">
-              We are a digital studio that blends visionary design with precision engineering to create web experiences that are not only beautiful, but brilliant.
+              We are a digital studio that blends visionary design with precision engineering to create web experiences that are not only beautiful, but brilliant. We partner with ambitious brands to transform complex challenges into elegant, impactful solutions that captivate users and drive results.
             </p>
             <div ref={buttonRef} className="mt-8">
               <Button size="lg" asChild>

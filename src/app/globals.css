@@ -50,7 +50,7 @@
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border transition-colors duration-300;
   }
   html {
     @apply scroll-smooth;

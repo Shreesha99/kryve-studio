@@ -78,7 +78,7 @@ export function Footer() {
       </div>
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute bottom-0 left-0 right-0 z-0 text-center font-headline font-extrabold text-white/5"
+        className="pointer-events-none absolute bottom-0 left-0 right-0 z-0 text-center font-headline font-extrabold text-white/5 dark:text-black/5"
         style={{ fontSize: 'clamp(8rem, 25vw, 20rem)', lineHeight: '0.8' }}
       >
         KRYVE
