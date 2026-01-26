@@ -8,14 +8,18 @@ export function MorphingSvg() {
 
   // General Refs
   const cursorRef = useRef<SVGGElement>(null);
-  const buildLineRef = useRef<SVGLineElement>(null);
 
-  // Batch 1 Refs
+  // Code Refs
   const codeButtonRef = useRef<SVGTextElement>(null);
   const codeInputRef = useRef<SVGTextElement>(null);
   const codeToggleRef = useRef<SVGTextElement>(null);
   const codeImageRef = useRef<SVGTextElement>(null);
+  const codeDropdownRef = useRef<SVGTextElement>(null);
+  const codeSliderRef = useRef<SVGTextElement>(null);
+  const codeCheckboxRef = useRef<SVGTextElement>(null);
+  const codeChartRef = useRef<SVGTextElement>(null);
 
+  // UI Refs
   const uiButtonRef = useRef<SVGGElement>(null);
   const uiInputRef = useRef<SVGGElement>(null);
   const uiInputCaretRef = useRef<SVGLineElement>(null);
@@ -25,13 +29,6 @@ export function MorphingSvg() {
   const uiImageSunRef = useRef<SVGCircleElement>(null);
   const uiImageMountain1Ref = useRef<SVGPathElement>(null);
   const uiImageMountain2Ref = useRef<SVGPathElement>(null);
-
-  // Batch 2 Refs
-  const codeDropdownRef = useRef<SVGTextElement>(null);
-  const codeSliderRef = useRef<SVGTextElement>(null);
-  const codeCheckboxRef = useRef<SVGTextElement>(null);
-  const codeChartRef = useRef<SVGTextElement>(null);
-
   const uiDropdownRef = useRef<SVGGElement>(null);
   const uiDropdownMenuRef = useRef<SVGGElement>(null);
   const uiSliderRef = useRef<SVGGElement>(null);
@@ -44,133 +41,171 @@ export function MorphingSvg() {
 
   useEffect(() => {
     if (!svgRef.current) return;
-    const { current: svg } = svgRef;
-
+    
     const codeElements = [
-        codeButtonRef.current, codeInputRef.current, codeToggleRef.current, codeImageRef.current,
-        codeDropdownRef.current, codeSliderRef.current, codeCheckboxRef.current, codeChartRef.current
+        codeButtonRef, codeInputRef, codeToggleRef, codeImageRef,
+        codeDropdownRef, codeSliderRef, codeCheckboxRef, codeChartRef
     ];
     const uiElements = [
-        uiButtonRef.current, uiInputRef.current, uiToggleRef.current, uiImageRef.current,
-        uiDropdownRef.current, uiSliderRef.current, uiCheckboxRef.current, uiChartRef.current,
-        cursorRef.current
+        uiButtonRef, uiInputRef, uiToggleRef, uiImageRef,
+        uiDropdownRef, uiSliderRef, uiCheckboxRef, uiChartRef,
     ];
+    const drawableElements = [uiCheckboxCheckRef, uiChartLineRef, uiImageMountain1Ref, uiImageMountain2Ref];
 
-    gsap.set(codeElements, { autoAlpha: 0, x: 20 });
-    gsap.set(uiElements, { autoAlpha: 0 });
-    gsap.set(cursorRef.current, { x: 250, y: -50, autoAlpha: 1 });
+    // --- INITIAL SETUP ---
+    gsap.set([...codeElements.map(r=>r.current), ...uiElements.map(r=>r.current), cursorRef.current], { autoAlpha: 0 });
+    gsap.set(codeElements.map(r => r.current), { x: 20 });
+    gsap.set(cursorRef.current, { x: 250, y: -50 });
     gsap.set(uiDropdownMenuRef.current, { autoAlpha: 0, scaleY: 0, transformOrigin: 'top center' });
     
-    // Prepare "draw" animations
-    [uiCheckboxCheckRef, uiChartLineRef, uiImageMountain1Ref, uiImageMountain2Ref].forEach(ref => {
+    drawableElements.forEach(ref => {
         if(ref.current) {
             const length = ref.current.getTotalLength();
             gsap.set(ref.current, { strokeDasharray: length, strokeDashoffset: length });
         }
     });
 
-    const masterTl = gsap.timeline({ repeat: -1, repeatDelay: 2 });
+    const masterTl = gsap.timeline({ repeat: -1, repeatDelay: 1 });
 
     const codeXEnd = 180;
-    const uiXStart = 280;
-
-    const createBatchAnimation = (
-        codeRefs: (React.RefObject<SVGTextElement>)[],
-        uiRefs: (React.RefObject<SVGGElement>)[],
-        interactionCallback: (tl: gsap.core.Timeline) => void
+    const stageY = 250;
+    
+    // --- ANIMATION CREATION HELPER ---
+    const createComponentAnimation = (
+        codeRef: React.RefObject<SVGTextElement>,
+        uiRef: React.RefObject<SVGGElement>,
+        uiSetup: () => void,
+        interaction: (tl: gsap.core.Timeline) => void
     ) => {
-        const tl = gsap.timeline({ defaults: { ease: 'power2.out', duration: 0.6 }});
+        const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
 
-        // 1. Animate code in
-        tl.to(codeRefs.map(r => r.current), { autoAlpha: 1, stagger: 0.3 });
-
-        // 2. Animate code across and build UI
-        tl.add(() => {
-            codeRefs.forEach((codeRef, i) => {
-                const uiRef = uiRefs[i];
-                if (!codeRef.current || !uiRef.current) return;
-                
-                const buildTl = gsap.timeline();
-                buildTl.to(codeRef.current, { x: codeXEnd, autoAlpha: 0, duration: 0.5, ease: 'power2.in' })
-                         .fromTo(uiRef.current, 
-                            { autoAlpha: 0, scale: 0.8, transformOrigin: 'center' }, 
-                            { autoAlpha: 1, scale: 1, duration: 0.5 }, 
-                            ">-0.2");
-            });
-        }, "+=1");
-
-        // 3. Play micro-interactions
-        tl.add(() => interactionCallback(tl), "+=1.5");
+        // 1. Show code at stage center
+        const codeBBox = (codeRef.current as SVGTextElement).getBBox();
+        tl.fromTo(codeRef.current, 
+          { autoAlpha: 0, y: stageY - codeBBox.height / 2 },
+          { autoAlpha: 1, duration: 0.5 }
+        );
         
-        // 4. Fade out
-        tl.to([...uiRefs.map(r => r.current), cursorRef.current], { autoAlpha: 0, duration: 0.8, ease: 'power2.in' }, "+=2");
-        tl.set(cursorRef.current, { x: 250, y: -50, autoAlpha: 1}); // Reset cursor
-        tl.set(codeRefs.map(r => r.current), { x: 20 }); // Reset code positions
+        // 2. Build UI
+        tl.to(codeRef.current, { x: codeXEnd, autoAlpha: 0, duration: 0.8, ease: 'power2.in' }, "+=1");
+        
+        const uiBBox = (uiRef.current as SVGGElement).getBBox();
+        const uiX = 280 + (220 - uiBBox.width) / 2;
+        const uiY = stageY - uiBBox.height / 2;
 
+        tl.fromTo(uiRef.current, 
+            { autoAlpha: 0, scale: 0.8, x: uiX - uiBBox.x, y: uiY - uiBBox.y }, 
+            { autoAlpha: 1, scale: 1, duration: 0.8 }, 
+            ">-0.5");
+        
+        tl.add(uiSetup);
+
+        // 3. Interaction
+        interaction(tl);
+
+        // 4. Fade out
+        tl.to([uiRef.current, cursorRef.current], { autoAlpha: 0, duration: 0.5 }, "+=1.5");
+        
+        // 5. Reset code for next loop
+        tl.set(codeRef.current, { x: 20 });
+        
         return tl;
     }
 
-    const batch1Interactions = (tl: gsap.core.Timeline) => {
-        if (!cursorRef.current) return;
-        const cursor = cursorRef.current;
-        
-        // Button Click
-        tl.to(cursor, { x: uiXStart + 50, y: 72, duration: 0.5 });
-        tl.to(uiButtonRef.current, { scale: 0.95, duration: 0.1, yoyo: true, repeat: 1, transformOrigin: 'center' });
-
-        // Input typing
-        tl.to(cursor, { x: uiXStart + 130, y: 142, duration: 0.5 }, "+=0.3");
-        tl.set(uiInputCaretRef.current, { autoAlpha: 1 });
-        tl.to(uiInputCaretRef.current, { autoAlpha: 0, repeat: 3, yoyo: true, duration: 0.3, ease: 'steps(1)' });
-        tl.set(uiInputCaretRef.current, { autoAlpha: 0 });
-
-        // Toggle Switch
-        tl.to(cursor, { x: uiXStart + 22, y: 212, duration: 0.5 }, "+=0.3");
-        tl.to(uiToggleKnobRef.current, { x: '+=24', duration: 0.4, ease: 'power2.inOut' });
-        
-        // Image Draw
-        tl.to(cursor, { x: uiXStart + 95, y: 350, duration: 0.5 }, "+=0.3");
-        tl.to(uiImageSunRef.current, { attr: { cy: 290 }, duration: 0.5, ease: 'power1.out'});
-        tl.to(uiImageMountain1Ref.current, { strokeDashoffset: 0, duration: 0.7 }, '-=0.3');
-        tl.to(uiImageMountain2Ref.current, { strokeDashoffset: 0, duration: 0.7 }, '-=0.5');
+    // --- INTERACTION DEFINITIONS ---
+    const buttonInteraction = (tl: gsap.core.Timeline) => {
+      const uiBBox = uiButtonRef.current!.getBBox();
+      const uiX = 280 + (220 - uiBBox.width) / 2;
+      const uiY = stageY - uiBBox.height / 2;
+      tl.to(cursorRef.current, { autoAlpha: 1, x: uiX + uiBBox.width / 2, y: uiY + uiBBox.height / 2, duration: 0.5 });
+      tl.to(uiButtonRef.current, { scale: 0.95, duration: 0.1, yoyo: true, repeat: 1, transformOrigin: 'center' });
+    };
+    
+    const inputInteraction = (tl: gsap.core.Timeline) => {
+      const uiBBox = uiInputRef.current!.getBBox();
+      const uiX = 280 + (220 - uiBBox.width) / 2;
+      const uiY = stageY - uiBBox.height / 2;
+      tl.to(cursorRef.current, { autoAlpha: 1, x: uiX + uiBBox.width - 10, y: uiY + uiBBox.height / 2, duration: 0.5 });
+      tl.set(uiInputCaretRef.current, { autoAlpha: 1 });
+      tl.to(uiInputCaretRef.current, { autoAlpha: 0, repeat: 3, yoyo: true, duration: 0.3, ease: 'steps(1)' });
+      tl.set(uiInputCaretRef.current, { autoAlpha: 0 });
     };
 
-    const batch2Interactions = (tl: gsap.core.Timeline) => {
-        if (!cursorRef.current) return;
-        const cursor = cursorRef.current;
-        
-        // Dropdown
-        tl.to(cursor, { x: uiXStart + 130, y: 72, duration: 0.5 });
+    const toggleInteraction = (tl: gsap.core.Timeline) => {
+        const uiBBox = uiToggleRef.current!.getBBox();
+        const uiX = 280 + (220 - uiBBox.width) / 2;
+        const uiY = stageY - uiBBox.height / 2;
+        tl.to(cursorRef.current, { autoAlpha: 1, x: uiX + uiBBox.width / 2, y: uiY + uiBBox.height / 2, duration: 0.5 });
+        tl.to(uiToggleKnobRef.current, { attr: {x: 28}, duration: 0.4, ease: 'power2.inOut' });
+        tl.to(uiToggleKnobRef.current, { attr: {x: 4}, duration: 0.4, ease: 'power2.inOut' }, "+=0.5");
+    };
+
+    const imageInteraction = (tl: gsap.core.Timeline) => {
+        tl.to(uiImageSunRef.current, { attr: { cy: 30 }, duration: 0.8, ease: 'power1.out'});
+        tl.to(uiImageMountain1Ref.current, { strokeDashoffset: 0, duration: 1 }, '-=0.3');
+        tl.to(uiImageMountain2Ref.current, { strokeDashoffset: 0, duration: 1 }, '-=0.7');
+    };
+    
+    const dropdownInteraction = (tl: gsap.core.Timeline) => {
+        const uiBBox = uiDropdownRef.current!.getBBox();
+        const uiX = 280 + (220 - uiBBox.width) / 2;
+        const uiY = stageY - uiBBox.height / 2;
+        tl.to(cursorRef.current, { autoAlpha: 1, x: uiX + uiBBox.width / 2, y: uiY + uiBBox.height / 2, duration: 0.5 });
         tl.to(uiDropdownRef.current, { scale: 0.98, duration: 0.1, yoyo: true, repeat: 1, transformOrigin: 'center' });
         tl.to(uiDropdownMenuRef.current, { autoAlpha: 1, scaleY: 1, duration: 0.4 }, "-=0.1");
         tl.to(uiDropdownMenuRef.current, { autoAlpha: 0, scaleY: 0, duration: 0.4 }, "+=1");
+    };
 
-        // Slider
-        tl.to(cursor, { x: uiXStart + 35, y: 142, duration: 0.5 }, "+=0.3");
-        tl.to(uiSliderHandleRef.current, { x: '+=100', duration: 1, ease: 'power1.inOut' });
-        tl.to(uiSliderHandleRef.current, { x: '-=100', duration: 1, ease: 'power1.inOut' }, "+=0.2");
-        
-        // Checkbox
-        tl.to(cursor, { x: uiXStart + 15, y: 212, duration: 0.5 }, "+=0.3");
+    const sliderInteraction = (tl: gsap.core.Timeline) => {
+        const uiBBox = uiSliderRef.current!.getBBox();
+        const uiX = 280 + (220 - uiBBox.width) / 2;
+        const uiY = stageY - uiBBox.height / 2;
+        tl.to(cursorRef.current, { autoAlpha: 1, x: uiX + 40, y: uiY + 5, duration: 0.5 });
+        tl.to(uiSliderHandleRef.current, { attr: {cx: 140}, duration: 1, ease: 'power1.inOut' });
+        tl.to(uiSliderHandleRef.current, { attr: {cx: 40}, duration: 1, ease: 'power1.inOut' }, "+=0.2");
+    };
+
+    const checkboxInteraction = (tl: gsap.core.Timeline) => {
+        const uiBBox = uiCheckboxRef.current!.getBBox();
+        const uiX = 280 + (220 - uiBBox.width) / 2;
+        const uiY = stageY - uiBBox.height / 2;
+        tl.to(cursorRef.current, { autoAlpha: 1, x: uiX + uiBBox.width/2, y: uiY + uiBBox.height/2, duration: 0.5 });
         tl.to(uiCheckboxRef.current, { scale: 0.9, duration: 0.1, yoyo: true, repeat: 1, transformOrigin: 'center' });
         tl.to(uiCheckboxCheckRef.current, { strokeDashoffset: 0, duration: 0.5 });
-        
-        // Chart
-        tl.to(cursor, { x: uiXStart + 95, y: 350, duration: 0.5 }, "+=0.3");
+    };
+
+    const chartInteraction = (tl: gsap.core.Timeline) => {
         tl.to(uiChartLineRef.current, { strokeDashoffset: 0, duration: 1.5, ease: 'power1.inOut' });
     };
 
+    // --- BUILD MASTER TIMELINE ---
     masterTl
-      .add(createBatchAnimation(
-        [codeButtonRef, codeInputRef, codeToggleRef, codeImageRef],
-        [uiButtonRef, uiInputRef, uiToggleRef, uiImageRef],
-        batch1Interactions
-      ))
-      .add(createBatchAnimation(
-        [codeDropdownRef, codeSliderRef, codeCheckboxRef, codeChartRef],
-        [uiDropdownRef, uiSliderRef, uiCheckboxRef, uiChartRef],
-        batch2Interactions
-      ), '+=1');
+        .add(createComponentAnimation(codeButtonRef, uiButtonRef, () => {}, buttonInteraction))
+        .add(createComponentAnimation(codeInputRef, uiInputRef, () => {}, inputInteraction))
+        .add(createComponentAnimation(codeToggleRef, uiToggleRef, () => {gsap.set(uiToggleKnobRef.current, {attr: {x:4}})}, toggleInteraction))
+        .add(createComponentAnimation(codeImageRef, uiImageRef, () => {
+            gsap.set(uiImageSunRef.current, { attr: { cy: 110 } });
+            [uiImageMountain1Ref, uiImageMountain2Ref].forEach(ref => {
+                if (ref.current) {
+                    const length = ref.current.getTotalLength();
+                    gsap.set(ref.current, { strokeDasharray: length, strokeDashoffset: length });
+                }
+            });
+        }, imageInteraction))
+        .add(createComponentAnimation(codeDropdownRef, uiDropdownRef, () => {}, dropdownInteraction))
+        .add(createComponentAnimation(codeSliderRef, uiSliderRef, () => {gsap.set(uiSliderHandleRef.current, {attr: {cx:40}})}, sliderInteraction))
+        .add(createComponentAnimation(codeCheckboxRef, uiCheckboxRef, () => {
+             if(uiCheckboxCheckRef.current) {
+                const length = uiCheckboxCheckRef.current.getTotalLength();
+                gsap.set(uiCheckboxCheckRef.current, { strokeDasharray: length, strokeDashoffset: length });
+            }
+        }, checkboxInteraction))
+        .add(createComponentAnimation(codeChartRef, uiChartRef, () => {
+            if(uiChartLineRef.current) {
+                const length = uiChartLineRef.current.getTotalLength();
+                gsap.set(uiChartLineRef.current, { strokeDasharray: length, strokeDashoffset: length });
+            }
+        }, chartInteraction));
 
     return () => {
         masterTl.kill();
@@ -201,57 +236,48 @@ export function MorphingSvg() {
       </defs>
 
       {/* The "Build" Line */}
-      <line ref={buildLineRef} x1="250" y1="20" x2="250" y2="480" stroke="url(#build-line-gradient)" strokeWidth="2" />
+      <line x1="250" y1="20" x2="250" y2="480" stroke="url(#build-line-gradient)" strokeWidth="2" />
 
       {/* Code Components */}
       <g>
-        {/* Batch 1 */}
-        <text ref={codeButtonRef} y="75" className="code-text">&lt;Button /&gt;</text>
-        <text ref={codeInputRef} y="145" className="code-text">&lt;Input /&gt;</text>
-        <text ref={codeToggleRef} y="215" className="code-text">&lt;Toggle /&gt;</text>
-        <text ref={codeImageRef} y="330" className="code-text">&lt;Image /&gt;</text>
-        {/* Batch 2 */}
-        <text ref={codeDropdownRef} y="75" className="code-text">&lt;Dropdown /&gt;</text>
-        <text ref={codeSliderRef} y="145" className="code-text">&lt;Slider /&gt;</text>
-        <text ref={codeCheckboxRef} y="215" className="code-text">&lt;Checkbox /&gt;</text>
-        <text ref={codeChartRef} y="330" className="code-text">&lt;Chart /&gt;</text>
+        <text ref={codeButtonRef} className="code-text">&lt;Button /&gt;</text>
+        <text ref={codeInputRef} className="code-text">&lt;Input /&gt;</text>
+        <text ref={codeToggleRef} className="code-text">&lt;Toggle /&gt;</text>
+        <text ref={codeImageRef} className="code-text">&lt;Image /&gt;</text>
+        <text ref={codeDropdownRef} className="code-text">&lt;Dropdown /&gt;</text>
+        <text ref={codeSliderRef} className="code-text">&lt;Slider /&gt;</text>
+        <text ref={codeCheckboxRef} className="code-text">&lt;Checkbox /&gt;</text>
+        <text ref={codeChartRef} className="code-text">&lt;Chart /&gt;</text>
       </g>
       
-      {/* UI Wireframe */}
-      <g transform="translate(280, 0)">
-        {/* === BATCH 1 === */}
-        {/* Button */}
+      {/* UI Elements (will be positioned by GSAP) */}
+      <g>
         <g ref={uiButtonRef}>
-            <rect y="50" width="100" height="35" rx="6" fill="hsl(var(--primary))" />
-            <text x="50" y="73" textAnchor="middle" fontSize="12" fontWeight="bold" fill="hsl(var(--primary-foreground))">SUBMIT</text>
+            <rect width="100" height="35" rx="6" fill="hsl(var(--primary))" />
+            <text x="50" y="22" textAnchor="middle" fontSize="12" fontWeight="bold" fill="hsl(var(--primary-foreground))" dominantBaseline="middle">SUBMIT</text>
         </g>
         
-        {/* Input */}
         <g ref={uiInputRef}>
-            <rect y="120" width="140" height="35" rx="6" fill="hsl(var(--secondary))" stroke="hsl(var(--border))" />
-            <line ref={uiInputCaretRef} x1="12" y1="128" x2="12" y2="147" stroke="hsl(var(--foreground))" strokeWidth="2" opacity="0" />
+            <rect width="140" height="35" rx="6" fill="hsl(var(--secondary))" stroke="hsl(var(--border))" />
+            <line ref={uiInputCaretRef} x1="8" y1="8" x2="8" y2="27" stroke="hsl(var(--foreground))" strokeWidth="2" opacity="0" />
         </g>
         
-        {/* Toggle */}
         <g ref={uiToggleRef}>
-            <rect y="198" width="50" height="26" rx="13" fill="hsl(var(--secondary))" />
-            <rect ref={uiToggleKnobRef} x="4" y="201" width="20" height="20" rx="10" fill="hsl(var(--background))" stroke="hsl(var(--border))" strokeWidth="1"/>
+            <rect width="50" height="26" rx="13" fill="hsl(var(--secondary))" />
+            <rect ref={uiToggleKnobRef} x="4" y="3" width="20" height="20" rx="10" fill="hsl(var(--background))" stroke="hsl(var(--border))" strokeWidth="1"/>
         </g>
 
-        {/* Image */}
         <g ref={uiImageRef}>
-          <rect y="260" width="190" height="120" rx="8" fill="hsl(var(--secondary))" />
-          <circle ref={uiImageSunRef} cx="150" cy="370" r="12" fill="hsl(var(--primary) / 0.5)" />
-          <path ref={uiImageMountain1Ref} d="M 20 380 L 60 320 L 100 360" stroke="hsl(var(--primary) / 0.4)" strokeWidth="4" fill="none" />
-          <path ref={uiImageMountain2Ref} d="M 80 380 L 120 290 L 170 380" stroke="hsl(var(--primary) / 0.4)" strokeWidth="4" fill="none" />
+          <rect width="190" height="120" rx="8" fill="hsl(var(--secondary))" />
+          <circle ref={uiImageSunRef} cx="150" cy="110" r="12" fill="hsl(var(--primary) / 0.5)" />
+          <path ref={uiImageMountain1Ref} d="M 20 120 L 60 60 L 100 100" stroke="hsl(var(--primary) / 0.4)" strokeWidth="4" fill="none" />
+          <path ref={uiImageMountain2Ref} d="M 80 120 L 120 30 L 170 120" stroke="hsl(var(--primary) / 0.4)" strokeWidth="4" fill="none" />
         </g>
 
-        {/* === BATCH 2 === */}
-        {/* Dropdown */}
         <g ref={uiDropdownRef}>
-            <rect y="50" width="140" height="35" rx="6" fill="hsl(var(--secondary))" stroke="hsl(var(--border))" />
-            <path d="M 120 62 l 5 5 l 5 -5" stroke="hsl(var(--muted-foreground))" strokeWidth="2" fill="none" strokeLinecap="round"/>
-            <g ref={uiDropdownMenuRef} transform="translate(0, 90)">
+            <rect width="140" height="35" rx="6" fill="hsl(var(--secondary))" stroke="hsl(var(--border))" />
+            <path d="M 120 12 l 5 5 l 5 -5" stroke="hsl(var(--muted-foreground))" strokeWidth="2" fill="none" strokeLinecap="round"/>
+            <g ref={uiDropdownMenuRef} transform="translate(0, 40)">
                 <rect width="140" height="90" rx="6" fill="hsl(var(--background))" stroke="hsl(var(--border))"/>
                 <rect x="5" y="5" width="130" height="25" rx="4" fill="hsl(var(--accent))"/>
                 <rect x="5" y="35" width="130" height="25" rx="4" fill="hsl(var(--secondary))"/>
@@ -259,24 +285,21 @@ export function MorphingSvg() {
             </g>
         </g>
         
-        {/* Slider */}
         <g ref={uiSliderRef}>
-            <rect y="137" width="140" height="10" rx="5" fill="hsl(var(--secondary))"/>
-            <rect y="137" width="40" height="10" rx="5" fill="hsl(var(--primary))"/>
-            <circle ref={uiSliderHandleRef} cx="40" cy="142" r="8" fill="hsl(var(--background))" stroke="hsl(var(--primary))" strokeWidth="2" />
+            <rect y="2.5" width="140" height="10" rx="5" fill="hsl(var(--secondary))"/>
+            <rect y="2.5" width="40" height="10" rx="5" fill="hsl(var(--primary))"/>
+            <circle ref={uiSliderHandleRef} cx="40" cy="7.5" r="8" fill="hsl(var(--background))" stroke="hsl(var(--primary))" strokeWidth="2" />
         </g>
         
-        {/* Checkbox */}
         <g ref={uiCheckboxRef}>
-            <rect y="198" width="26" height="26" rx="6" fill="hsl(var(--secondary))" stroke="hsl(var(--border))"/>
-            <path ref={uiCheckboxCheckRef} d="M 7 210 l 5 5 l 10 -10" stroke="hsl(var(--primary))" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+            <rect width="26" height="26" rx="6" fill="hsl(var(--secondary))" stroke="hsl(var(--border))"/>
+            <path ref={uiCheckboxCheckRef} d="M 7 13 l 5 5 l 10 -10" stroke="hsl(var(--primary))" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
         </g>
         
-        {/* Chart */}
         <g ref={uiChartRef}>
-          <rect y="260" width="190" height="120" rx="8" fill="hsl(var(--secondary))" />
-          <path d="M 10 370 L 10 270 M 10 370 L 190 370" stroke="hsl(var(--muted-foreground)/0.5)" strokeWidth="2" />
-          <path ref={uiChartLineRef} d="M 10 350 Q 50 280, 90 320 T 170 290" stroke="hsl(var(--primary))" strokeWidth="3" fill="none" />
+          <rect width="190" height="120" rx="8" fill="hsl(var(--secondary))" />
+          <path d="M 10 110 L 10 10 M 10 110 L 180 110" stroke="hsl(var(--muted-foreground)/0.5)" strokeWidth="2" />
+          <path ref={uiChartLineRef} d="M 10 90 Q 50 20, 90 60 T 170 30" stroke="hsl(var(--primary))" strokeWidth="3" fill="none" />
         </g>
 
       </g>
