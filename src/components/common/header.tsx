@@ -94,22 +94,19 @@ export function Header() {
   };
 
   return (
-    <header ref={headerRef} className="fixed top-0 z-50 w-full">
+    <header ref={headerRef} className="fixed top-0 z-50 w-full px-4 pt-4 transition-all">
       <div
         className={cn(
-          // Base styles for mobile-first full-width bar
-          'h-16 w-full items-center justify-between px-4 transition-all',
-
-          // Desktop "pill" styles
-          'md:mx-auto md:mt-4 md:max-w-7xl md:rounded-full md:border md:px-6 md:shadow-sm',
-
-          // Scroll-based styles
-          isScrolled
-            ? 'border-b border-border bg-background/80 backdrop-blur-sm md:border'
-            : 'border-b border-transparent md:border-transparent md:bg-background/30',
+          // Universal pill styles
+          'mx-auto h-16 max-w-7xl items-center rounded-full border px-6 shadow-sm',
           
-          // Layout: flex for mobile, grid for desktop to ensure perfect centering
-          'flex md:grid md:grid-cols-3'
+          // Layout: 2 columns on mobile, 3 on desktop
+          'grid grid-cols-2 md:grid-cols-3',
+
+          // Scroll-based background styles
+          isScrolled
+            ? 'border-border bg-background/80 backdrop-blur-sm'
+            : 'border-transparent bg-background/30'
         )}
       >
         {/* Left: Logo */}
