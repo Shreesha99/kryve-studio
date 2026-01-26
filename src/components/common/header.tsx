@@ -30,12 +30,12 @@ export function Header() {
     };
     window.addEventListener('scroll', handleScroll);
     
+    // Animate the header in when the component mounts
     gsap.from(headerRef.current, {
       y: -100,
       opacity: 0,
       duration: 1,
       ease: 'power3.out',
-      delay: 2.8 // Align with preloader
     });
 
     return () => window.removeEventListener('scroll', handleScroll);
@@ -92,7 +92,7 @@ export function Header() {
   };
   
   return (
-    <header ref={headerRef} className="fixed top-0 z-50 w-full p-2 md:p-4 opacity-0">
+    <header ref={headerRef} className="fixed top-0 z-50 w-full p-2 md:p-4">
       <div
         className={cn(
           'container mx-auto flex h-16 items-center justify-between rounded-full border px-4 md:px-6 shadow-sm transition-all',
