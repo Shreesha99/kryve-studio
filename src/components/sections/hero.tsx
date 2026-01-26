@@ -18,13 +18,13 @@ export function Hero() {
   useEffect(() => {
     const tl = gsap.timeline({ defaults: { ease: 'power4.out', duration: 1.2 } });
 
-    // Split text for animation
+    // Animate each line of the headline from a masked container
     const headlineSpans = gsap.utils.toArray('span', headlineRef.current);
     
     tl.fromTo(
       headlineSpans,
-      { y: 100, opacity: 0 },
-      { y: 0, opacity: 1, stagger: 0.03 }
+      { yPercent: 120 },
+      { yPercent: 0, stagger: 0.1, duration: 1.2, ease: 'power3.out' }
     )
     .fromTo(
       paragraphRef.current,
@@ -55,19 +55,18 @@ export function Hero() {
     );
   }, []);
 
-  const headlineText = "Engineering Elegance. Designing Impact.".split('');
-
   return (
     <section id="home" className="relative flex min-h-screen w-full items-center overflow-hidden bg-secondary py-24 md:py-32 lg:py-0">
       <div className="container relative z-10 mx-auto px-4 md:px-6">
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-24">
           <div className="text-left">
             <h1 ref={headlineRef} className="font-headline text-5xl font-semibold tracking-tighter sm:text-6xl md:text-7xl">
-              {headlineText.map((char, index) => (
-                <span key={index} className="inline-block" style={{ whiteSpace: char === ' ' ? 'pre' : 'normal' }}>
-                  {char}
-                </span>
-              ))}
+              <div className="overflow-hidden py-1">
+                <span className="inline-block">Engineering Elegance.</span>
+              </div>
+              <div className="overflow-hidden py-1">
+                <span className="inline-block">Designing Impact.</span>
+              </div>
             </h1>
             <p ref={paragraphRef} className="mt-6 max-w-xl text-lg text-muted-foreground md:text-xl">
               We are a digital studio that blends visionary design with precision engineering to create web experiences that are not only beautiful, but brilliant. We partner with ambitious brands to transform complex challenges into elegant, impactful solutions that captivate users and drive results.
