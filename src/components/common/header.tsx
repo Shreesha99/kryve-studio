@@ -97,26 +97,35 @@ export function Header() {
     <header ref={headerRef} className="fixed top-0 z-50 w-full">
       <div
         className={cn(
-          'relative flex h-16 items-center justify-between px-4 transition-all md:mx-auto md:mt-4 md:max-w-7xl md:rounded-full md:border md:px-6 md:shadow-sm',
+          // Base styles for mobile-first full-width bar
+          'h-16 w-full items-center justify-between px-4 transition-all',
+
+          // Desktop "pill" styles
+          'md:mx-auto md:mt-4 md:max-w-7xl md:rounded-full md:border md:px-6 md:shadow-sm',
+
+          // Scroll-based styles
           isScrolled
             ? 'border-b border-border bg-background/80 backdrop-blur-sm md:border'
-            : 'border-b border-transparent md:border-transparent md:bg-background/30'
+            : 'border-b border-transparent md:border-transparent md:bg-background/30',
+          
+          // Layout: flex for mobile, grid for desktop to ensure perfect centering
+          'flex md:grid md:grid-cols-3'
         )}
       >
-        {/* Logo on the left */}
-        <div className="flex-shrink-0">
+        {/* Left: Logo */}
+        <div className="flex items-center justify-start">
           <Logo />
         </div>
 
-        {/* Centered Navigation for Desktop */}
-        <nav className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center justify-center gap-8 md:flex">
+        {/* Center: Desktop Navigation */}
+        <nav className="hidden items-center justify-center gap-8 md:flex">
           {navLinks.map((link) => (
             <NavLink key={link.href} {...link} />
           ))}
         </nav>
 
-        {/* Controls on the right */}
-        <div className="flex items-center">
+        {/* Right: Controls */}
+        <div className="flex items-center justify-end">
           <ThemeToggle />
           <div className="md:hidden">
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
