@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTheme } from 'next-themes';
 import { gsap } from 'gsap';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ export function Hero() {
   const buttonRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<HTMLDivElement>(null);
   const { resolvedTheme } = useTheme();
+  const [isSvgReady, setIsSvgReady] = useState(false);
 
   useEffect(() => {
     const tl = gsap.timeline({ defaults: { ease: 'power4.out', duration: 1.2 } });
@@ -40,7 +41,16 @@ export function Hero() {
     .fromTo(
       svgRef.current,
       { opacity: 0, scale: 0.98, y: 10 },
-      { opacity: 1, scale: 1, y: 0, duration: 0.8, ease: 'power3.out' },
+      { 
+        opacity: 1, 
+        scale: 1, 
+        y: 0, 
+        duration: 0.8, 
+        ease: 'power3.out',
+        onComplete: () => {
+          setIsSvgReady(true);
+        }
+      },
       '-=1.0'
     );
   }, []);
@@ -68,8 +78,8 @@ export function Hero() {
               </Button>
             </div>
           </div>
-          <div ref={svgRef} className="relative aspect-[600/400] w-full max-w-2xl justify-self-center overflow-hidden rounded-lg lg:max-w-none">
-             <MorphingSvg theme={resolvedTheme} />
+          <div ref={svgRef} className="relative aspect-[2/1] w-full max-w-2xl justify-self-center overflow-hidden rounded-lg lg:max-w-none">
+             <MorphingSvg theme={resolvedTheme} isReadyToAnimate={isSvgReady} />
           </div>
         </div>
       </div>
