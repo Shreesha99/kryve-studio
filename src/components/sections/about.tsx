@@ -11,21 +11,21 @@ gsap.registerPlugin(ScrollTrigger);
 const principles = [
   {
     icon: PenTool,
-    title: 'Purposeful Design',
+    title: 'Visionary Design',
     description:
-      'Beyond aesthetics, we craft intuitive experiences that tell a compelling story and guide users with purpose.',
+      "We don't follow trends; we set them. Our design philosophy is about creating immersive visual narratives that are not just seen, but felt, turning casual visitors into devoted brand advocates.",
   },
   {
     icon: CodeXml,
-    title: 'Precision Engineering',
+    title: 'Flawless Engineering',
     description:
-      'Our code is as clean as our designs. We build robust, scalable, and performant applications for a seamless experience.',
+      'Our code is our craft. We build with surgical precision, creating robust, scalable, and lightning-fast digital platforms that deliver a seamless experience on any device, every time.',
   },
   {
     icon: Users,
-    title: 'Creative Partnership',
+    title: 'Enduring Partnership',
     description:
-      'We are your creative partner, collaborating closely to transform your vision into a digital reality.',
+      'Your vision is our blueprint. We function as a true extension of your team, fostering a deep collaborative relationship to build not just a project, but a long-term digital legacy.',
   },
 ];
 
@@ -80,10 +80,13 @@ function PrincipleCard({ principle, index }: { principle: typeof principles[0], 
 
 export function About() {
   const bgSvgRef = useRef<SVGSVGElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const paragraphRef = useRef<HTMLParagraphElement>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const paths = gsap.utils.toArray<SVGPathElement>('path', bgSvgRef.current);
-    const tl = gsap.timeline({
+    const bgTl = gsap.timeline({
       scrollTrigger: {
         trigger: bgSvgRef.current,
         start: 'top 80%',
@@ -95,11 +98,37 @@ export function About() {
     paths.forEach(path => {
       const length = path.getTotalLength();
       gsap.set(path, { strokeDasharray: length, strokeDashoffset: length });
-      tl.to(path, { strokeDashoffset: 0, duration: 3, ease: 'power1.inOut' }, 0);
+      bgTl.to(path, { strokeDashoffset: 0, duration: 3, ease: 'power1.inOut' }, 0);
     });
+    
+    const contentTl = gsap.timeline({
+        scrollTrigger: {
+            trigger: sectionRef.current,
+            start: 'top 70%',
+            toggleActions: 'play none none none',
+        }
+    });
+    
+    if (titleRef.current) {
+        const titleSpans = gsap.utils.toArray('span', titleRef.current);
+        contentTl.fromTo(
+            titleSpans,
+            { yPercent: 120 },
+            { yPercent: 0, stagger: 0.1, duration: 1.2, ease: 'power3.out' }
+        );
+    }
+    if (paragraphRef.current) {
+        contentTl.fromTo(
+            paragraphRef.current,
+            { y: 20, opacity: 0 },
+            { y: 0, opacity: 1, duration: 1 },
+            '-=0.8'
+        );
+    }
 
     return () => {
-      tl.kill();
+      bgTl.kill();
+      contentTl.kill();
       ScrollTrigger.getAll().forEach(t => t.kill());
     };
   }, []);
@@ -107,6 +136,7 @@ export function About() {
   return (
     <section
       id="about"
+      ref={sectionRef}
       className="relative flex min-h-screen w-full items-center overflow-hidden bg-background py-24 md:py-32"
     >
       <div className="pointer-events-none absolute inset-0 z-0 opacity-10 dark:opacity-5">
@@ -124,16 +154,19 @@ export function About() {
       </div>
 
       <div className="container relative z-10 mx-auto px-4 md:px-6">
-        <AnimateOnScroll className="mx-auto max-w-3xl text-center">
-          <h2 className="font-headline text-4xl font-semibold tracking-tight sm:text-5xl">
-            Where Artistry Meets Architecture
-          </h2>
-          <p className="mx-auto mt-6 text-lg text-muted-foreground">
-            We're a studio founded on a single belief: that the most powerful
-            digital experiences are born at the intersection of beautiful
-            design and flawless engineering.
+        <div className="mx-auto max-w-4xl text-center">
+            <h2 ref={titleRef} className="font-headline text-4xl font-semibold tracking-tight sm:text-5xl">
+                <div className="overflow-hidden py-1">
+                    <span className="inline-block">We Don't Just Build Websites.</span>
+                </div>
+                <div className="overflow-hidden py-1">
+                    <span className="inline-block">We Build Digital Landmarks.</span>
+                </div>
+            </h2>
+          <p ref={paragraphRef} className="mx-auto mt-6 text-lg text-muted-foreground opacity-0">
+            At Zenith, we believe a digital presence should be more than a URL. It should be a destination. We merge bold design with flawless engineering to create unforgettable online experiences that stand the test of time.
           </p>
-        </AnimateOnScroll>
+        </div>
         
         <div className="mx-auto mt-20 grid max-w-7xl grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
           {principles.map((p, i) => (
