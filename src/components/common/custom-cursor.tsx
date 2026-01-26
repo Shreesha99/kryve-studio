@@ -84,7 +84,7 @@ export function CustomCursor() {
         style={{ transform: 'rotate(-15deg)' }}
       >
         <path
-          d="M14.6,2.88,8.1,30.94l8.3-5.26,6.3,9.55,3-2-6.3-9.55L34,18.2Z"
+          d="M 5 2 L 22 22 L 16 18 L 10 22 Z"
           className="custom-cursor-path"
         />
       </svg>
