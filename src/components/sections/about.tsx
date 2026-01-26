@@ -1,42 +1,46 @@
-import Image from 'next/image';
-import { Founders } from '@/lib/placeholder-images';
 import { AnimateOnScroll } from '../common/animate-on-scroll';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+
+const principles = [
+  {
+    icon: "draw",
+    title: "Design with Intent",
+    description: "We believe design is more than aesthetics; it's a strategic tool. Every pixel, transition, and layout is crafted with purpose to guide users and tell a compelling story."
+  },
+  {
+    icon: "integration_instructions",
+    title: "Engineer with Precision",
+    description: "Our code is as clean as our designs. We build robust, scalable, and performant applications using modern technologies, ensuring a seamless experience on any device."
+  },
+  {
+    icon: "groups",
+    title: "Partner in Creation",
+    description: "We're not just a service provider; we're your creative partner. We collaborate closely with you at every step, transforming your vision into a digital reality together."
+  }
+]
 
 export function About() {
   return (
-    <section id="about" className="w-full bg-secondary py-24 md:py-32 lg:py-40">
+    <section id="about" className="w-full bg-background py-24 md:py-32 lg:py-40">
       <div className="container mx-auto px-4 md:px-6">
-        <AnimateOnScroll className="mb-16 text-center">
+        <AnimateOnScroll className="mb-20 text-center">
             <h2 className="font-headline text-4xl font-semibold tracking-tight sm:text-5xl">
-                Meet The Minds Behind Kryve
+                Where Artistry Meets Architecture
             </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-                We are a duo of passionate creators who believe in the power of collaboration to build extraordinary things.
+            <p className="mx-auto mt-4 max-w-3xl text-lg text-muted-foreground">
+                We're a studio founded on a single belief: that the most powerful digital experiences are born at the intersection of beautiful design and flawless engineering.
             </p>
         </AnimateOnScroll>
 
-        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-12 lg:grid-cols-2">
-            {Founders.map((founder, index) => (
-                <AnimateOnScroll key={founder.id} delay={`${index * 150}ms`}>
-                    <Card className="flex h-full flex-col text-center transition-all hover:shadow-xl hover:-translate-y-1">
-                        <CardHeader className="flex items-center justify-center pt-8">
-                             <div className="relative h-40 w-40">
-                                <Image
-                                    src={founder.imageUrl}
-                                    alt={founder.name}
-                                    fill
-                                    className="rounded-full object-cover shadow-lg"
-                                    data-ai-hint={founder.imageHint}
-                                />
-                            </div>
-                        </CardHeader>
-                        <CardContent className="flex flex-grow flex-col p-6">
-                            <h3 className="font-headline text-2xl font-bold">{founder.name}</h3>
-                            <p className="text-md font-medium text-primary">{founder.title}</p>
-                            <p className="mt-4 text-muted-foreground">{founder.bio}</p>
-                        </CardContent>
-                    </Card>
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-16 md:grid-cols-3">
+            {principles.map((item, index) => (
+                <AnimateOnScroll key={item.title} delay={`${index * 150}ms`} className="text-center">
+                    <div className="mb-6 flex justify-center">
+                      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-primary">
+                        <span className="material-symbols-outlined text-4xl">{item.icon}</span>
+                      </div>
+                    </div>
+                    <h3 className="font-headline text-2xl font-bold">{item.title}</h3>
+                    <p className="mt-2 text-muted-foreground">{item.description}</p>
                 </AnimateOnScroll>
             ))}
         </div>
