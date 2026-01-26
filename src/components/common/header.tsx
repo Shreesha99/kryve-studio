@@ -7,7 +7,6 @@ import { Logo } from './logo';
 import { ThemeToggle } from './theme-toggle';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navLinks = [
@@ -102,7 +101,7 @@ export function Header() {
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild className="md:hidden">
               <Button variant="ghost" size="icon">
-                <Menu className="h-6 w-6" />
+                <span className="material-symbols-outlined text-2xl">menu</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] sm:w-[400px]">
@@ -110,7 +109,7 @@ export function Header() {
                 <div className="mb-8 flex items-center justify-between">
                    <Logo />
                    <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)}>
-                     <X className="h-6 w-6" />
+                     <span className="material-symbols-outlined text-2xl">close</span>
                    </Button>
                 </div>
                 <nav className="flex flex-col items-start gap-6">

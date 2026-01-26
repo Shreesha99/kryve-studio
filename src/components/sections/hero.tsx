@@ -8,7 +8,7 @@ export function Hero() {
       <div className="container mx-auto px-4 md:px-6">
         <div className="mx-auto max-w-4xl text-center">
           <AnimateOnScroll>
-            <h1 className="font-headline text-5xl font-extrabold tracking-tighter sm:text-6xl md:text-7xl lg:text-8xl">
+            <h1 className="font-headline text-5xl font-extrabold tracking-tighter sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl">
               Design, Develop, Delight.
             </h1>
           </AnimateOnScroll>

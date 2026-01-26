@@ -1,25 +1,24 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Code, Palette, Rocket, Store } from 'lucide-react';
 import { AnimateOnScroll } from '../common/animate-on-scroll';
 
 const services = [
   {
-    icon: <Palette className="h-10 w-10 text-primary" />,
+    icon: <span className="material-symbols-outlined text-5xl text-primary">palette</span>,
     title: 'Web Design',
     description: 'Creating visually stunning and user-friendly interfaces that tell your story.',
   },
   {
-    icon: <Code className="h-10 w-10 text-primary" />,
+    icon: <span className="material-symbols-outlined text-5xl text-primary">code_blocks</span>,
     title: 'Web Development',
     description: 'Building robust, scalable, and high-performance websites and applications.',
   },
   {
-    icon: <Rocket className="h-10 w-10 text-primary" />,
+    icon: <span className="material-symbols-outlined text-5xl text-primary">rocket_launch</span>,
     title: 'Brand Identity',
     description: 'Crafting unique brand identities that resonate with your target audience.',
   },
   {
-    icon: <Store className="h-10 w-10 text-primary" />,
+    icon: <span className="material-symbols-outlined text-5xl text-primary">storefront</span>,
     title: 'E-commerce Solutions',
     description: 'Developing powerful e-commerce platforms that drive sales and growth.',
   },
