@@ -163,14 +163,13 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
         const image = aboutUiRef.current.querySelector('.about-image');
         const textLines = aboutUiRef.current.querySelectorAll('.about-text-line');
         
-        aboutTl.to(aboutTagGroupRef.current, { autoAlpha: 0, duration: 0.3 });
-        aboutTl.to(aboutUiRef.current, { autoAlpha: 1, duration: 0.01 }, '<0.1');
+        aboutTl.add(animateSection(aboutTagGroupRef, aboutUiRef));
         
         if (image && textLines) {
             aboutTl.fromTo(image, 
                 { autoAlpha: 0, scale: 0.9 },
                 { autoAlpha: 1, scale: 1, duration: 0.4, ease: 'power2.out' }, 
-                '>'
+                '>-0.5'
             );
             aboutTl.fromTo(textLines, 
                 { autoAlpha: 0, x: -15 },
@@ -185,15 +184,14 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
     const servicesTl = gsap.timeline();
     if (servicesTagGroupRef.current && servicesUiRef.current) {
         const cards = servicesUiRef.current.querySelectorAll('.service-card');
-
-        servicesTl.to(servicesTagGroupRef.current, { autoAlpha: 0, duration: 0.3 });
-        servicesTl.to(servicesUiRef.current, { autoAlpha: 1, duration: 0.01 }, '<0.1');
+        
+        servicesTl.add(animateSection(servicesTagGroupRef, servicesUiRef));
 
         if (cards.length > 0) {
             servicesTl.fromTo(cards, 
                 { autoAlpha: 0, y: 20 },
                 { autoAlpha: 1, y: 0, stagger: 0.15, duration: 0.4, ease: 'power2.out' }, 
-                '>'
+                '>-0.5'
             );
         }
     }
@@ -212,8 +210,8 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
         const themeToggleBBox = themeToggleRef.current.getBBox();
         masterTl.to(cursorRef.current, { 
           autoAlpha: 1, 
-          x: themeToggleBBox.x + themeToggleBBox.width / 2, 
-          y: themeToggleBBox.y + themeToggleBBox.height / 2,
+          x: themeToggleBBox.x + themeToggleBBox.width / 2 + 235, 
+          y: themeToggleBBox.y + themeToggleBBox.height / 2 + 42,
           duration: 0.7
         }, 'interact');
     }
@@ -238,8 +236,11 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
             .to(svg.querySelectorAll('.ui-fill-primary'), { fill: toColors.uiFillPrimary, duration: 0.5 }, '<')
             .to(svg.querySelectorAll('.ui-text-muted'), { fill: toColors.uiTextMuted, duration: 0.5 }, '<')
             .to(svg.querySelectorAll('.tag-text'), { fill: toColors.tagText, duration: 0.5 }, '<')
-            .to(svg.querySelectorAll('.ui-primary-stroke'), { stroke: toColors.uiFillPrimary, duration: 0.5 }, '<')
-            .to(logoTextRef.current, { fill: toColors.primary, duration: 0.5}, '<');
+            .to(svg.querySelectorAll('.ui-primary-stroke'), { stroke: toColors.uiFillPrimary, duration: 0.5 }, '<');
+
+    if (logoTextRef.current) {
+      toggleTl.to(logoTextRef.current, { fill: toColors.primary, duration: 0.5}, '<');
+    }
     if (cursorRef.current) {
         toggleTl.to(cursorRef.current, { color: toColors.primary, duration: 0.5 }, '<');
     }
@@ -250,8 +251,8 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
     if (cursorRef.current && servicesLinkRef.current) {
         const servicesLinkBBox = servicesLinkRef.current.getBBox();
         masterTl.to(cursorRef.current, {
-          x: servicesLinkBBox.x + servicesLinkBBox.width / 2,
-          y: servicesLinkBBox.y + servicesLinkBBox.height / 2,
+          x: servicesLinkBBox.x + servicesLinkBBox.width / 2 + 20,
+          y: servicesLinkBBox.y + servicesLinkBBox.height / 2 + 42,
           duration: 0.7
         }, '+=0.5');
         masterTl.to(servicesLinkRef.current, { scale: 0.9, yoyo: true, repeat: 1, duration: 0.15, transformOrigin: 'center' });
@@ -261,7 +262,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
     if (scrollGroupRef.current && servicesUiRef.current) {
         const serviceDescGroups = svg.querySelectorAll('.service-desc-group');
         
-        masterTl.to(scrollGroupRef.current, { y: -400, duration: 1.5, ease: 'power3.inOut' }, '+=0.3');
+        masterTl.to(scrollGroupRef.current, { y: -350, duration: 1.5, ease: 'power3.inOut' }, '+=0.3');
         
         if (serviceDescGroups.length > 0) {
             masterTl.fromTo(serviceDescGroups,
@@ -290,7 +291,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
   }, [theme]);
 
   return (
-    <svg ref={svgRef} viewBox="0 0 600 1050" className="h-full w-full object-contain">
+    <svg ref={svgRef} viewBox="0 0 600 800" className="h-full w-full object-contain">
       <defs>
         <style>
           {`
@@ -318,37 +319,38 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
           `}
         </style>
         <clipPath id="mainClip">
-          <rect x="20" y="20" width="560" height="1010" rx="10" />
+          <rect x="20" y="20" width="560" height="760" rx="10" />
         </clipPath>
       </defs>
 
-      <rect x="20" y="20" width="560" height="1010" rx="10" class="main-bg ui-stroke" stroke-width="2"/>
+      <rect x="20" y="20" width="560" height="760" rx="10" class="main-bg ui-stroke" stroke-width="2"/>
       <g clipPath="url(#mainClip)">
+        {/* --- FIXED Navbar --- */}
+        <g transform="translate(300, 50)">
+          <g ref={navTagGroupRef}>
+            <text className="tag-text" text-anchor="middle">&lt;Navbar /&gt;</text>
+          </g>
+          <g ref={navUiRef}>
+              <rect x="-280" y="-15" width="560" height="30" class="ui-bg" />
+              <text ref={logoTextRef} x="-270" y="6" className="logo-text">KRYVE</text>
+              <text x="-50" y="5.5" className="nav-link ui-text-muted">About</text>
+              <text ref={servicesLinkRef} x="20" y="5.5" className="nav-link ui-text-muted">Services</text>
+              <text x="90" y="5.5" className="nav-link ui-text-muted">Work</text>
+              <g ref={themeToggleRef} transform="translate(235, -7)" style={{ cursor: 'pointer' }}>
+                <g ref={sunIconRef}>
+                    <circle cx="7" cy="7" r="2.5" fill="none" className="ui-primary-stroke" stroke-width="1.2"/>
+                    <path d="M7 1V3 M7 11V13 M2.64 2.64L3.35 3.35 M10.65 10.65L11.36 11.36 M1 7H3 M11 7H13 M2.64 11.36L3.35 10.65 M10.65 3.35L11.36 2.64"
+                          className="ui-primary-stroke" stroke-width="1.2" stroke-linecap="round" />
+                </g>
+                <g ref={moonIconRef}>
+                    <path d="M10 2.5 A5.5 5.5 0 0 1 2.5 10 A4 4 0 0 0 10 2.5z" className="ui-fill-primary"/>
+                </g>
+              </g>
+          </g>
+        </g>
+        
+        {/* --- SCROLLING CONTENT --- */}
         <g ref={scrollGroupRef}>
-            {/* --- Navbar --- */}
-            <g transform="translate(300, 50)">
-              <g ref={navTagGroupRef}>
-                <text className="tag-text" text-anchor="middle">&lt;Navbar /&gt;</text>
-              </g>
-              <g ref={navUiRef}>
-                  <rect x="-260" y="0" width="520" height="30" class="ui-bg" />
-                  <text ref={logoTextRef} x="-250" y="19" className="logo-text">KRYVE</text>
-                  <text x="-50" y="17.5" className="nav-link ui-text-muted">About</text>
-                  <text ref={servicesLinkRef} x="20" y="17.5" className="nav-link ui-text-muted">Services</text>
-                  <text x="90" y="17.5" className="nav-link ui-text-muted">Work</text>
-                  <g ref={themeToggleRef} transform="translate(235, 8)" style={{ cursor: 'pointer' }}>
-                    <g ref={sunIconRef}>
-                        <circle cx="7" cy="7" r="2.5" fill="none" className="ui-primary-stroke" stroke-width="1.2"/>
-                        <path d="M7 1V3 M7 11V13 M2.64 2.64L3.35 3.35 M10.65 10.65L11.36 11.36 M1 7H3 M11 7H13 M2.64 11.36L3.35 10.65 M10.65 3.35L11.36 2.64"
-                              className="ui-primary-stroke" stroke-width="1.2" stroke-linecap="round" />
-                    </g>
-                    <g ref={moonIconRef}>
-                        <path d="M10 2.5 A5.5 5.5 0 0 1 2.5 10 A4 4 0 0 0 10 2.5z" className="ui-fill-primary"/>
-                    </g>
-                  </g>
-              </g>
-            </g>
-
             {/* --- Hero --- */}
             <g transform="translate(300, 150)">
               <g ref={heroTagGroupRef}>
@@ -459,21 +461,21 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
                 <rect x="-100" y="25" width="200" height="30" rx="5" class="ui-fill-primary" />
               </g>
             </g>
-            
-            {/* --- Footer --- */}
-            <g transform="translate(300, 1000)">
-              <g ref={footerTagGroupRef}>
-                  <text className="tag-text" text-anchor="middle">&lt;Footer /&gt;</text>
-              </g>
-              <g ref={footerUiRef}>
-                  <rect x="-280" y="-15" width="560" height="30" class="ui-bg" />
-                  <text x="-270" y="6" class="logo-text ui-fill-primary">KRYVE</text>
-                  <text x="0" y="5" font-size="8" text-anchor="middle" class="ui-text-muted">&copy; 2024. All rights reserved.</text>
-                  <circle cx="240" cy="5" r="6" class="ui-fill-muted" />
-                  <circle cx="258" cy="5" r="6" class="ui-fill-muted" />
-                  <circle cx="276" cy="5" r="6" class="ui-fill-muted" />
-              </g>
-            </g>
+        </g>
+        
+        {/* --- FIXED Footer --- */}
+        <g transform="translate(300, 750)">
+          <g ref={footerTagGroupRef}>
+              <text className="tag-text" text-anchor="middle">&lt;Footer /&gt;</text>
+          </g>
+          <g ref={footerUiRef}>
+              <rect x="-280" y="-15" width="560" height="30" class="ui-bg" />
+              <text x="-270" y="6" class="logo-text ui-fill-primary">KRYVE</text>
+              <text x="0" y="5" font-size="8" text-anchor="middle" class="ui-text-muted">&copy; 2024. All rights reserved.</text>
+              <circle cx="240" cy="5" r="6" class="ui-fill-muted" />
+              <circle cx="258" cy="5" r="6" class="ui-fill-muted" />
+              <circle cx="276" cy="5" r="6" class="ui-fill-muted" />
+          </g>
         </g>
       </g>
       
