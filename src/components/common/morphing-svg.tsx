@@ -41,20 +41,22 @@ export function MorphingSvg() {
     
     const colors = {
         light: {
-            uiBg: 'hsl(240, 4.8%, 95.9%)',
-            uiStroke: 'hsl(240, 5.9%, 90%)',
-            uiFillMuted: 'hsl(240, 3.8%, 46.1%)',
-            uiFillPrimary: 'hsl(240, 5.9%, 10%)',
-            uiTextMuted: 'hsl(240, 3.8%, 46.1%)',
-            tagText: 'hsl(240, 3.8%, 46.1%)',
+            bg: 'hsl(0 0% 100%)',
+            uiBg: 'hsl(240 4.8% 95.9%)',
+            uiStroke: 'hsl(240 5.9% 90%)',
+            uiFillMuted: 'hsl(240 3.8% 46.1%)',
+            uiFillPrimary: 'hsl(240 10% 3.9%)',
+            uiTextMuted: 'hsl(240 3.8% 46.1%)',
+            tagText: 'hsl(240 3.8% 46.1%)',
         },
         dark: {
-            uiBg: 'hsl(240, 3.7%, 15.9%)',
-            uiStroke: 'hsl(240, 3.7%, 15.9%)',
-            uiFillMuted: 'hsl(240, 5%, 64.9%)',
-            uiFillPrimary: 'hsl(0, 0%, 98%)',
-            uiTextMuted: 'hsl(240, 5%, 64.9%)',
-            tagText: 'hsl(240, 5%, 64.9%)',
+            bg: 'hsl(240 10% 3.9%)',
+            uiBg: 'hsl(240 3.7% 15.9%)',
+            uiStroke: 'hsl(240 3.7% 15.9%)',
+            uiFillMuted: 'hsl(240 5% 64.9%)',
+            uiFillPrimary: 'hsl(0 0% 98%)',
+            uiTextMuted: 'hsl(240 5% 64.9%)',
+            tagText: 'hsl(240 5% 64.9%)',
         }
     };
 
@@ -90,7 +92,7 @@ export function MorphingSvg() {
         gsap.set(svg.querySelectorAll('.tag-text'), { fill: colors.light.tagText });
         gsap.set(svg.querySelectorAll('.ui-primary-stroke'), { stroke: colors.light.uiFillPrimary });
         if (logoTextRef.current) {
-            gsap.set(logoTextRef.current, { fill: 'hsl(var(--primary))' });
+            gsap.set(logoTextRef.current, { fill: colors.light.uiFillPrimary });
         }
     };
 
@@ -153,6 +155,7 @@ export function MorphingSvg() {
     if (svg && sunIconRef.current && moonIconRef.current && logoTextRef.current) {
         toggleTl.to(sunIconRef.current, { scale: 0, rotation: 90, autoAlpha: 0, duration: 0.4, ease: 'power2.in' })
                 .to(moonIconRef.current, { scale: 1, rotation: 0, autoAlpha: 1, duration: 0.4, ease: 'power2.out' }, '>-0.3')
+                .to(svg.querySelectorAll('.main-bg'), { fill: colors.dark.bg, duration: 0.5 }, '<')
                 .to(svg.querySelectorAll('.ui-bg'), { fill: colors.dark.uiBg, duration: 0.5 }, '<')
                 .to(svg.querySelectorAll('.ui-stroke'), { stroke: colors.dark.uiStroke, duration: 0.5 }, '<')
                 .to(svg.querySelectorAll('.ui-fill-muted'), { fill: colors.dark.uiFillMuted, duration: 0.5 }, '<')
@@ -208,12 +211,17 @@ export function MorphingSvg() {
               fill: hsl(var(--muted-foreground));
               text-anchor: middle;
             }
+            .main-bg { fill: hsl(var(--background)); }
             .ui-bg { fill: hsl(var(--secondary)); }
             .ui-stroke { stroke: hsl(var(--border)); stroke-width: 1.5; }
             .ui-fill-muted { fill: hsl(var(--muted-foreground)); }
             .ui-fill-primary { fill: hsl(var(--primary)); }
             .ui-primary-stroke { stroke: hsl(var(--primary)); }
             .ui-text-muted { fill: hsl(var(--muted-foreground)); font-family: sans-serif; }
+            .logo-text { font-family: Poppins, sans-serif; font-size: 12px; font-weight: bold; fill: hsl(var(--primary)); }
+            .hero-headline { font-family: Poppins, sans-serif; font-size: 14px; font-weight: 600; letter-spacing: -0.5px; text-anchor: middle; fill: hsl(var(--primary)); }
+            .hero-subtitle { font-size: 8px; text-anchor: middle; fill: hsl(var(--muted-foreground)); }
+            .nav-link { font-size: 9px; text-anchor: middle; fill: hsl(var(--muted-foreground)); cursor: pointer; }
           `}
         </style>
         <clipPath id="mainClip">
@@ -224,7 +232,7 @@ export function MorphingSvg() {
         </g>
       </defs>
 
-      <rect x="20" y="20" width="460" height="460" rx="10" class="ui-bg ui-stroke" stroke-width="2"/>
+      <rect x="20" y="20" width="460" height="460" rx="10" class="main-bg ui-stroke" stroke-width="2"/>
       <g clipPath="url(#mainClip)">
         <g ref={scrollGroupRef}>
             {/* --- Navbar --- */}
@@ -232,11 +240,11 @@ export function MorphingSvg() {
               <text ref={navTagRef} y="15" className="tag-text">&lt;Navbar /&gt;</text>
               <g ref={navUiRef}>
                   <rect x="-210" y="0" width="420" height="30" class="ui-bg" />
-                  <text ref={logoTextRef} x="-200" y="19" fontFamily="Poppins, sans-serif" fontSize="12" fontWeight="bold">KRYVE</text>
-                  <text x="-50" y="17.5" font-size="9" text-anchor="middle" class="ui-text-muted">About</text>
-                  <text ref={servicesLinkRef} x="0" y="17.5" font-size="9" text-anchor="middle" class="ui-text-muted">Services</text>
-                  <text x="50" y="17.5" font-size="9" text-anchor="middle" class="ui-text-muted">Work</text>
-                  <g ref={themeToggleRef} transform="translate(185, 8)">
+                  <text ref={logoTextRef} x="-200" y="19" className="logo-text">KRYVE</text>
+                  <text x="-50" y="17.5" className="nav-link">About</text>
+                  <text ref={servicesLinkRef} x="0" y="17.5" className="nav-link">Services</text>
+                  <text x="50" y="17.5" className="nav-link">Work</text>
+                  <g ref={themeToggleRef} transform="translate(185, 8)" style={{ cursor: 'pointer' }}>
                     <g ref={sunIconRef}>
                         <circle cx="7" cy="7" r="2.5" fill="none" className="ui-primary-stroke" stroke-width="1.2"/>
                         <path d="M7 1V3 M7 11V13 M2.64 2.64L3.35 3.35 M10.65 10.65L11.36 11.36 M1 7H3 M11 7H13 M2.64 11.36L3.35 10.65 M10.65 3.35L11.36 2.64"
@@ -253,8 +261,8 @@ export function MorphingSvg() {
             <g transform="translate(250, 130)">
               <text ref={heroTagRef} className="tag-text">&lt;Hero /&gt;</text>
               <g ref={heroUiRef}>
-                <text ref={heroHeadlineRef} y="0" text-anchor="middle" fontFamily="Poppins, sans-serif" font-size="14" font-weight="600" letter-spacing="-0.5" class="ui-fill-primary"></text>
-                <text ref={heroSubtitleRef} y="20" text-anchor="middle" font-size="8" class="ui-text-muted"></text>
+                <text ref={heroHeadlineRef} y="0" className="hero-headline"></text>
+                <text ref={heroSubtitleRef} y="20" className="hero-subtitle"></text>
               </g>
             </g>
 
