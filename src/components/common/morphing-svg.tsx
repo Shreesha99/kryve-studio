@@ -49,6 +49,7 @@ export function MorphingSvg() {
             uiFillPrimary: 'hsl(240 10% 3.9%)',
             uiTextMuted: 'hsl(240 3.8% 46.1%)',
             tagText: 'hsl(240 3.8% 46.1%)',
+            primary: 'hsl(240 10% 3.9%)',
         },
         dark: {
             bg: 'hsl(240 10% 3.9%)',
@@ -58,6 +59,7 @@ export function MorphingSvg() {
             uiFillPrimary: 'hsl(0 0% 98%)',
             uiTextMuted: 'hsl(240 5% 64.9%)',
             tagText: 'hsl(240 5% 64.9%)',
+            primary: 'hsl(0 0% 98%)',
         }
     };
 
@@ -82,7 +84,6 @@ export function MorphingSvg() {
         if (sunIconRef.current) gsap.set(sunIconRef.current, { autoAlpha: 1, scale: 1, rotation: 0 });
         if (moonIconRef.current) gsap.set(moonIconRef.current, { autoAlpha: 0, scale: 0, rotation: 90 });
         
-        // Reset colors to light theme state
         gsap.set(svg.querySelectorAll('.main-bg'), { fill: colors.light.bg });
         gsap.set(svg.querySelectorAll('.ui-bg'), { fill: colors.light.uiBg });
         gsap.set(svg.querySelectorAll('.ui-stroke'), { fill: 'none', stroke: colors.light.uiStroke });
@@ -92,14 +93,16 @@ export function MorphingSvg() {
         gsap.set(svg.querySelectorAll('.tag-text'), { fill: colors.light.tagText });
         gsap.set(svg.querySelectorAll('.ui-primary-stroke'), { stroke: colors.light.uiFillPrimary });
         if (logoTextRef.current) {
-            gsap.set(logoTextRef.current, { fill: colors.light.uiFillPrimary });
+            gsap.set(logoTextRef.current, { fill: colors.light.primary });
         }
     };
 
     const animateSection = (tagRef: React.RefObject<SVGTextElement>, uiRef: React.RefObject<SVGGElement>) => {
       const tl = gsap.timeline();
-      tl.to(tagRef.current, { autoAlpha: 0, duration: 0.3 })
-        .to(uiRef.current, { autoAlpha: 1, duration: 0.5 }, '<');
+      if (tagRef.current && uiRef.current) {
+        tl.to(tagRef.current, { autoAlpha: 0, duration: 0.3 })
+          .to(uiRef.current, { autoAlpha: 1, duration: 0.5 }, '<');
+      }
       return tl;
     };
     
@@ -134,17 +137,25 @@ export function MorphingSvg() {
     // --- About Section Custom Animation ---
     const aboutTl = gsap.timeline();
     if (aboutTagRef.current && aboutUiRef.current) {
-        aboutTl.to(aboutTagRef.current, { autoAlpha: 0, duration: 0.3 });
-        aboutTl.to(aboutUiRef.current, { autoAlpha: 1, duration: 0.1 }, '<');
-        
         const image = aboutUiRef.current.querySelector('.about-image');
         const textLines = aboutUiRef.current.querySelectorAll('.about-text-line');
 
+        aboutTl.to(aboutTagRef.current, { autoAlpha: 0, duration: 0.3 });
+        aboutTl.to(aboutUiRef.current, { autoAlpha: 1, duration: 0.1 }, '<');
+        
         if (image) {
-            aboutTl.from(image, { autoAlpha: 0, scale: 0.9, duration: 0.4, ease: 'power2.out' }, '>');
+            aboutTl.fromTo(image, 
+                { autoAlpha: 0, scale: 0.9 },
+                { autoAlpha: 1, scale: 1, duration: 0.4, ease: 'power2.out' }, 
+                '>'
+            );
         }
-        if (textLines) {
-            aboutTl.from(textLines, { autoAlpha: 0, x: -15, stagger: 0.1, duration: 0.4, ease: 'power2.out' }, '>-0.3');
+        if (textLines.length > 0) {
+            aboutTl.fromTo(textLines, 
+                { autoAlpha: 0, x: -15 },
+                { autoAlpha: 1, x: 0, stagger: 0.1, duration: 0.4, ease: 'power2.out' }, 
+                '>-0.3'
+            );
         }
     }
     masterTl.add(aboutTl, '+=0.5');
@@ -179,7 +190,7 @@ export function MorphingSvg() {
                 .to(svg.querySelectorAll('.ui-text-muted'), { fill: colors.dark.uiTextMuted, duration: 0.5 }, '<')
                 .to(svg.querySelectorAll('.tag-text'), { fill: colors.dark.tagText, duration: 0.5 }, '<')
                 .to(svg.querySelectorAll('.ui-primary-stroke'), { stroke: colors.dark.uiFillPrimary, duration: 0.5 }, '<')
-                .to(logoTextRef.current, { fill: colors.dark.uiFillPrimary, duration: 0.5}, '<');
+                .to(logoTextRef.current, { fill: colors.dark.primary, duration: 0.5}, '<');
     }
 
     masterTl.add(toggleTl, '+=0.2');
@@ -208,7 +219,13 @@ export function MorphingSvg() {
     }
 
     // Fade out for reset
-    masterTl.to([cursorRef.current, ...uis.map(r => r.current)].filter(Boolean), { autoAlpha: 0, duration: 0.8 }, '+=1');
+    const allUiElements = uis.map(r => r.current).filter(Boolean);
+    if(cursorRef.current) {
+      masterTl.to([cursorRef.current, ...allUiElements], { autoAlpha: 0, duration: 0.8 }, '+=1');
+    } else {
+      masterTl.to(allUiElements, { autoAlpha: 0, duration: 0.8 }, '+=1');
+    }
+
 
     return () => {
       masterTl.kill();
@@ -235,7 +252,7 @@ export function MorphingSvg() {
             .ui-primary-stroke { stroke: hsl(var(--primary)); }
             .ui-text-muted { fill: hsl(var(--muted-foreground)); font-family: sans-serif; }
             .logo-text { font-family: Poppins, sans-serif; font-size: 12px; font-weight: bold; }
-            .hero-headline { font-family: Poppins, sans-serif; font-size: 14px; font-weight: 600; letter-spacing: -0.5px; text-anchor: middle; fill: hsl(var(--primary)); }
+            .hero-headline { font-family: Poppins, sans-serif; font-size: 14px; font-weight: 600; letter-spacing: -0.5px; text-anchor: middle; }
             .hero-subtitle { font-size: 8px; text-anchor: middle; fill: hsl(var(--muted-foreground)); }
             .nav-link { font-size: 9px; text-anchor: middle; fill: hsl(var(--muted-foreground)); cursor: pointer; }
           `}
@@ -256,7 +273,7 @@ export function MorphingSvg() {
               <text ref={navTagRef} y="15" className="tag-text">&lt;Navbar /&gt;</text>
               <g ref={navUiRef}>
                   <rect x="-210" y="0" width="420" height="30" class="ui-bg" />
-                  <text ref={logoTextRef} x="-200" y="19" className="logo-text">KRYVE</text>
+                  <text ref={logoTextRef} x="-200" y="19" className="logo-text ui-fill-primary">KRYVE</text>
                   <text x="-50" y="17.5" className="nav-link">About</text>
                   <text ref={servicesLinkRef} x="0" y="17.5" className="nav-link">Services</text>
                   <text x="50" y="17.5" className="nav-link">Work</text>
@@ -277,7 +294,7 @@ export function MorphingSvg() {
             <g transform="translate(250, 130)">
               <text ref={heroTagRef} className="tag-text">&lt;Hero /&gt;</text>
               <g ref={heroUiRef}>
-                <text ref={heroHeadlineRef} y="0" className="hero-headline"></text>
+                <text ref={heroHeadlineRef} y="0" className="hero-headline ui-fill-primary"></text>
                 <text ref={heroSubtitleRef} y="20" className="hero-subtitle"></text>
               </g>
             </g>
@@ -291,12 +308,12 @@ export function MorphingSvg() {
                         <path d="M -140 45 l 20 -20 l 15 15 l 20 -25 l 25 30" fill="none" className="ui-primary-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                         <circle cx="-130" cy="-5" r="5" className="ui-fill-primary" opacity="0.5"/>
                     </g>
-                    <g>
-                        <rect x="-30" y="-20" width="180" height="12" rx="3" className="about-text-line ui-fill-muted" />
-                        <rect x="-30" y="5" width="180" height="6" rx="2" className="about-text-line ui-fill-muted" opacity="0.4"/>
-                        <rect x="-30" y="15" width="150" height="6" rx="2" className="about-text-line ui-fill-muted" opacity="0.4"/>
-                        <rect x="-30" y="25" width="180" height="6" rx="2" className="about-text-line ui-fill-muted" opacity="0.4"/>
-                        <rect x="-30" y="35" width="100" height="6" rx="2" className="about-text-line ui-fill-muted" opacity="0.4"/>
+                    <g className="about-text">
+                        <rect x="-30" y="-20" width="180" height="12" rx="3" className="about-text-line ui-fill-primary" />
+                        <rect x="-30" y="5" width="180" height="6" rx="2" className="about-text-line ui-fill-muted" opacity="0.6"/>
+                        <rect x="-30" y="15" width="150" height="6" rx="2" className="about-text-line ui-fill-muted" opacity="0.6"/>
+                        <rect x="-30" y="25" width="180" height="6" rx="2" className="about-text-line ui-fill-muted" opacity="0.6"/>
+                        <rect x="-30" y="35" width="100" height="6" rx="2" className="about-text-line ui-fill-muted" opacity="0.6"/>
                     </g>
                 </g>
             </g>
