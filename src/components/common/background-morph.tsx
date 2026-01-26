@@ -6,9 +6,16 @@ import { useTheme } from 'next-themes';
 
 export function BackgroundMorph() {
   const pathRef = useRef<SVGPathElement>(null);
+  const stop1Ref = useRef<SVGStopElement>(null);
+  const stop2Ref = useRef<SVGStopElement>(null);
   const { resolvedTheme } = useTheme();
 
   useEffect(() => {
+    // Wait until the theme is resolved and refs are attached to avoid race conditions
+    if (!resolvedTheme || !stop1Ref.current || !stop2Ref.current) {
+      return;
+    }
+
     const themeColors = {
       light: {
         stop1: 'hsl(var(--primary) / 0.08)',
@@ -21,8 +28,8 @@ export function BackgroundMorph() {
     };
 
     const colors = resolvedTheme === 'dark' ? themeColors.dark : themeColors.light;
-    const stop1 = document.getElementById('grad-stop-1');
-    const stop2 = document.getElementById('grad-stop-2');
+    const stop1 = stop1Ref.current;
+    const stop2 = stop2Ref.current;
     
     gsap.to(stop1, { attr: { 'stop-color': colors.stop1 }, duration: 0.5 });
     gsap.to(stop2, { attr: { 'stop-color': colors.stop2 }, duration: 0.5 });
@@ -91,8 +98,8 @@ export function BackgroundMorph() {
     >
       <defs>
         <radialGradient id="morph-gradient" cx="50%" cy="50%" r="50%">
-          <stop id="grad-stop-1" offset="0%" />
-          <stop id="grad-stop-2" offset="100%" />
+          <stop ref={stop1Ref} id="grad-stop-1" offset="0%" />
+          <stop ref={stop2Ref} id="grad-stop-2" offset="100%" />
         </radialGradient>
       </defs>
       <path ref={pathRef} fill="url(#morph-gradient)" />
