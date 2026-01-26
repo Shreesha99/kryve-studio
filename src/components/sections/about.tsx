@@ -38,13 +38,13 @@ export function About() {
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-16 md:grid-cols-3">
             {principles.map((item, index) => (
                 <AnimateOnScroll key={item.title} delay={`${index * 150}ms`} className="relative text-center">
-                    <div className="absolute inset-0 -z-10 flex items-center justify-center overflow-visible opacity-5 dark:opacity-10" aria-hidden="true">
-                        <svg viewBox="0 0 120 100" className="h-full w-full scale-150 transform">
+                    <div className="absolute inset-0 -z-10 flex items-center justify-center overflow-visible opacity-5" aria-hidden="true">
+                        <svg viewBox="0 0 120 100" className="h-full w-full scale-125 transform">
                             <path 
                                 d={item.svgPath}
                                 stroke="hsl(var(--primary))" 
                                 fill="none" 
-                                strokeWidth="2"
+                                strokeWidth="1.5"
                                 strokeLinecap="round"
                                 strokeDasharray="500"
                                 strokeDashoffset="500"
