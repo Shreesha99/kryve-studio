@@ -65,16 +65,19 @@ export function MorphingSvg() {
     });
 
     const setup = () => {
-        gsap.set(uis.map(r => r.current), { autoAlpha: 0 });
-        gsap.set(tags.map(r => r.current), { autoAlpha: 1 });
-        gsap.set(scrollGroupRef.current, { y: 0 });
-        gsap.set(cursorRef.current, { autoAlpha: 0, x: 250, y: 100 });
+        const validUis = uis.map(r => r.current).filter(Boolean);
+        const validTags = tags.map(r => r.current).filter(Boolean);
+        gsap.set(validUis, { autoAlpha: 0 });
+        gsap.set(validTags, { autoAlpha: 1 });
+
+        if (scrollGroupRef.current) gsap.set(scrollGroupRef.current, { y: 0 });
+        if (cursorRef.current) gsap.set(cursorRef.current, { autoAlpha: 0, x: 250, y: 100 });
         
         if (heroHeadlineRef.current) heroHeadlineRef.current.textContent = '';
         if (heroSubtitleRef.current) heroSubtitleRef.current.textContent = '';
 
-        gsap.set(sunIconRef.current, { autoAlpha: 1, scale: 1, rotation: 0 });
-        gsap.set(moonIconRef.current, { autoAlpha: 0, scale: 0, rotation: 90 });
+        if (sunIconRef.current) gsap.set(sunIconRef.current, { autoAlpha: 1, scale: 1, rotation: 0 });
+        if (moonIconRef.current) gsap.set(moonIconRef.current, { autoAlpha: 0, scale: 0, rotation: 90 });
         
         // Reset colors to light theme state
         const svg = svgRef.current;
@@ -97,12 +100,6 @@ export function MorphingSvg() {
         .to(uiRef.current, { autoAlpha: 1, duration: 0.5 }, '<');
       return tl;
     };
-
-    // --- ANIMATION SEQUENCE ---
-    masterTl.add(setup);
-
-    masterTl.add(animateSection(navTagRef, navUiRef), "+=1");
-    masterTl.add(animateSection(heroTagRef, heroUiRef), "+=0.2");
     
     const headlineText = "ARTISTRY MEETS ARCHITECTURE";
     const subtitleText = "Crafting unique digital experiences.";
@@ -123,6 +120,12 @@ export function MorphingSvg() {
         return tl;
     };
 
+    // --- ANIMATION SEQUENCE ---
+    masterTl.add(setup);
+
+    masterTl.add(animateSection(navTagRef, navUiRef), "+=1");
+    masterTl.add(animateSection(heroTagRef, heroUiRef), "+=0.2");
+    
     masterTl.add(typeText(heroHeadlineRef, headlineText, 1.2), "+=0.5");
     masterTl.add(typeText(heroSubtitleRef, subtitleText, 1.2), "+=0.2");
 
@@ -134,18 +137,20 @@ export function MorphingSvg() {
     masterTl.addLabel('interact', "+=1.5");
 
     // 1. Show cursor and move to theme toggle
-    const themeToggleBBox = themeToggleRef.current!.getBBox();
-    masterTl.to(cursorRef.current, { 
-      autoAlpha: 1, 
-      x: themeToggleBBox.x + themeToggleBBox.width / 2, 
-      y: themeToggleBBox.y + themeToggleBBox.height / 2,
-      duration: 0.7
-    }, 'interact');
+    if (cursorRef.current && themeToggleRef.current) {
+        const themeToggleBBox = themeToggleRef.current.getBBox();
+        masterTl.to(cursorRef.current, { 
+          autoAlpha: 1, 
+          x: themeToggleBBox.x + themeToggleBBox.width / 2, 
+          y: themeToggleBBox.y + themeToggleBBox.height / 2,
+          duration: 0.7
+        }, 'interact');
+    }
     
     // Animate the theme toggle
     const toggleTl = gsap.timeline();
     const svg = svgRef.current;
-    if (svg && logoTextRef.current) {
+    if (svg && sunIconRef.current && moonIconRef.current && logoTextRef.current) {
         toggleTl.to(sunIconRef.current, { scale: 0, rotation: 90, autoAlpha: 0, duration: 0.4, ease: 'power2.in' })
                 .to(moonIconRef.current, { scale: 1, rotation: 0, autoAlpha: 1, duration: 0.4, ease: 'power2.out' }, '>-0.3')
                 .to(svg.querySelectorAll('.ui-bg'), { fill: colors.dark.uiBg, duration: 0.5 }, '<')
@@ -161,24 +166,30 @@ export function MorphingSvg() {
     masterTl.add(toggleTl, '+=0.2');
 
     // 2. Click 'Services' nav link
-    const servicesLinkBBox = servicesLinkRef.current!.getBBox();
-    masterTl.to(cursorRef.current, {
-      x: servicesLinkBBox.x + servicesLinkBBox.width / 2,
-      y: servicesLinkBBox.y + servicesLinkBBox.height / 2,
-      duration: 0.7
-    }, '+=0.5');
-    masterTl.to(servicesLinkRef.current, { scale: 0.9, yoyo: true, repeat: 1, duration: 0.15, transformOrigin: 'center' });
+    if (cursorRef.current && servicesLinkRef.current) {
+        const servicesLinkBBox = servicesLinkRef.current.getBBox();
+        masterTl.to(cursorRef.current, {
+          x: servicesLinkBBox.x + servicesLinkBBox.width / 2,
+          y: servicesLinkBBox.y + servicesLinkBBox.height / 2,
+          duration: 0.7
+        }, '+=0.5');
+        masterTl.to(servicesLinkRef.current, { scale: 0.9, yoyo: true, repeat: 1, duration: 0.15, transformOrigin: 'center' });
+    }
     
     // 3. Scroll to services section
-    const servicesUiBBox = servicesUiRef.current!.getBBox();
-    const servicesY = servicesUiBBox.y;
-    masterTl.to(scrollGroupRef.current, { y: -servicesY + 60, duration: 1.5, ease: 'power3.inOut' }, '+=0.3');
+    if (scrollGroupRef.current && servicesUiRef.current) {
+        const servicesUiBBox = servicesUiRef.current.getBBox();
+        const servicesY = servicesUiBBox.y;
+        masterTl.to(scrollGroupRef.current, { y: -servicesY + 60, duration: 1.5, ease: 'power3.inOut' }, '+=0.3');
+    }
 
     // 4. Scroll back to top
-    masterTl.to(scrollGroupRef.current, { y: 0, duration: 1.5, ease: 'power3.inOut' }, '+=1.5');
+    if (scrollGroupRef.current) {
+        masterTl.to(scrollGroupRef.current, { y: 0, duration: 1.5, ease: 'power3.inOut' }, '+=1.5');
+    }
 
     // Fade out for reset
-    masterTl.to([cursorRef.current, ...uis.map(r => r.current)], { autoAlpha: 0, duration: 0.8 }, '+=1');
+    masterTl.to([cursorRef.current, ...uis.map(r => r.current)].filter(Boolean), { autoAlpha: 0, duration: 0.8 }, '+=1');
 
     return () => {
       masterTl.kill();
