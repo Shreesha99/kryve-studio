@@ -11,6 +11,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 
 const navLinks = [
+  { href: '#home', label: 'Home' },
   { href: '#about', label: 'About' },
   { href: '#services', label: 'Services' },
   { href: '#work', label: 'Work' },
@@ -23,12 +24,31 @@ export function Header() {
   const headerRef = useRef<HTMLDivElement>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState('home');
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
+
+      if (pathname !== '/') return; // Only run scroll-spy on the homepage
+
+      // Identify the current section based on scroll position
+      let currentSectionId = '';
+      for (const link of navLinks.slice().reverse()) {
+        if (link.href.startsWith('#')) {
+          const section = document.getElementById(link.href.substring(1));
+          if (section) {
+            if (window.scrollY >= section.offsetTop - 150) {
+              currentSectionId = link.href.substring(1);
+              break;
+            }
+          }
+        }
+      }
+      setActiveSection(currentSectionId);
     };
-    window.addEventListener('scroll', handleScroll);
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
 
     // Animate the header in when the component mounts
     gsap.fromTo(
@@ -36,14 +56,26 @@ export function Header() {
       { y: -100, opacity: 0 },
       { y: 0, opacity: 1, duration: 1, ease: 'power3.out', delay: 0.2 }
     );
+    
+    // Run on mount to set initial state
+    handleScroll();
 
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [pathname]);
 
   const NavLink = ({ href, label }: { href: string; label: string }) => {
     const isPageLink = href.startsWith('/');
     const isHomePage = pathname === '/';
-    const isActive = isPageLink ? pathname.startsWith(href) : false;
+    
+    let isActive = false;
+    if (isPageLink) {
+      // Handle /blog page link
+      isActive = pathname.startsWith(href);
+    } else if (isHomePage) {
+      // Handle anchor links on the homepage
+      const sectionId = href.substring(1);
+      isActive = activeSection === sectionId;
+    }
 
     // Handle anchor links
     if (!isPageLink) {
@@ -52,7 +84,10 @@ export function Header() {
         return (
           <a
             href={href}
-            className="text-lg font-medium text-muted-foreground transition-colors hover:text-primary md:text-sm"
+            className={cn(
+              'text-lg font-medium transition-colors hover:text-primary md:text-sm',
+              isActive ? 'text-primary' : 'text-muted-foreground'
+            )}
             onClick={(e) => {
               e.preventDefault();
               const targetElement = document.querySelector(href);
