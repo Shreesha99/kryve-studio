@@ -14,6 +14,12 @@ import {
 } from '@/components/ui/card';
 import { AnimateOnScroll } from '@/components/common/animate-on-scroll';
 import { Separator } from '@/components/ui/separator';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Blog',
+  description: 'News, insights, and stories from the team at Zenith Studio.',
+};
 
 function PostCard({ post, index }: { post: Post; index: number }) {
   return (

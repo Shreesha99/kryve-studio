@@ -11,7 +11,9 @@ type BlogPostPageProps = {
   };
 };
 
-export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: BlogPostPageProps): Promise<Metadata> {
   const post = getPostBySlug(params.slug);
 
   if (!post) {
@@ -20,9 +22,33 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
     };
   }
 
+  const url = `/blog/${post.slug}`;
+
   return {
-    title: `${post.title} | Zenith Studio`,
+    title: post.title,
     description: post.excerpt,
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      type: 'article',
+      url: url,
+      images: [
+        {
+          url: post.imageUrl,
+          width: 1200,
+          height: 800,
+          alt: post.title,
+        },
+      ],
+      publishedTime: post.date,
+      authors: [post.author],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: post.excerpt,
+      images: [post.imageUrl],
+    },
   };
 }
 
