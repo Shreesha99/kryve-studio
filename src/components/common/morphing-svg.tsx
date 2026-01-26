@@ -62,7 +62,7 @@ export function MorphingSvg() {
     gsap.set(uiDropdownMenuRef.current, { autoAlpha: 0, scaleY: 0, transformOrigin: 'top center' });
     
     // Prepare "draw" animations
-    [uiCheckboxCheckRef, uiChartLineRef, uiImageMountain1Ref, uiImageMountain2_ref].forEach(ref => {
+    [uiCheckboxCheckRef, uiChartLineRef, uiImageMountain1Ref, uiImageMountain2Ref].forEach(ref => {
         if(ref.current) {
             const length = ref.current.getTotalLength();
             gsap.set(ref.current, { strokeDasharray: length, strokeDashoffset: length });
