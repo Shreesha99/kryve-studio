@@ -4,30 +4,25 @@ import * as React from 'react';
 import { useTheme } from 'next-themes';
 
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 export function ThemeToggle() {
-  const { setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
+
+  // Avoid hydration mismatch by waiting for the component to be mounted.
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => setMounted(true), []);
+
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+  };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <span className="material-symbols-outlined rotate-0 scale-100 text-xl transition-all dark:-rotate-90 dark:scale-0">light_mode</span>
-          <span className="material-symbols-outlined absolute rotate-90 scale-0 text-xl transition-all dark:rotate-0 dark:scale-100">dark_mode</span>
-          <span className="sr-only">Toggle theme</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme('light')}>Light</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('dark')}>Dark</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('system')}>System</DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
+      {mounted && resolvedTheme === 'dark' ? (
+         <span className="material-symbols-outlined text-xl transition-all">light_mode</span>
+      ) : (
+         <span className="material-symbols-outlined text-xl transition-all">dark_mode</span>
+      )}
+    </Button>
   );
 }

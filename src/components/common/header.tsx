@@ -24,7 +24,7 @@ export function Header() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -42,7 +42,7 @@ export function Header() {
         return (
           <a
             href={href}
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+            className="text-lg font-medium text-muted-foreground transition-colors hover:text-primary md:text-sm"
             onClick={(e) => {
               e.preventDefault();
               document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' });
@@ -57,7 +57,7 @@ export function Header() {
       return (
         <Link
           href={`/${href}`}
-          className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+          className="text-lg font-medium text-muted-foreground transition-colors hover:text-primary md:text-sm"
           onClick={() => setIsMobileMenuOpen(false)}
         >
           {label}
@@ -70,7 +70,7 @@ export function Header() {
       <Link
         href={href}
         className={cn(
-          'text-sm font-medium transition-colors hover:text-primary',
+          'text-lg font-medium transition-colors hover:text-primary md:text-sm',
           isActive ? 'text-primary' : 'text-muted-foreground'
         )}
         onClick={() => setIsMobileMenuOpen(false)}
@@ -81,45 +81,42 @@ export function Header() {
   };
   
   return (
-    <header
-      className={cn(
-        'sticky top-0 z-50 w-full border-b transition-all',
-        isScrolled
-          ? 'border-border bg-background/95 backdrop-blur-sm'
-          : 'border-transparent bg-background'
-      )}
-    >
-      <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
+    <header className="fixed top-0 z-50 w-full p-2 md:p-4">
+      <div
+        className={cn(
+          'container mx-auto flex h-16 max-w-screen-lg items-center justify-between rounded-full border px-6 shadow-sm transition-all',
+          isScrolled
+            ? 'border-border bg-background/80 backdrop-blur-sm'
+            : 'border-transparent bg-background/30 backdrop-blur-sm'
+        )}
+      >
         <Logo />
-        <nav className="hidden items-center gap-6 md:flex">
+        <nav className="hidden items-center gap-8 md:flex">
           {navLinks.map((link) => (
             <NavLink key={link.href} {...link} />
           ))}
         </nav>
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-            <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="icon">
-                <span className="material-symbols-outlined text-2xl">menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-              <div className="p-4">
-                <div className="mb-8 flex items-center justify-between">
-                   <Logo />
-                   <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)}>
-                     <span className="material-symbols-outlined text-2xl">close</span>
-                   </Button>
+          <div className="md:hidden">
+            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <span className="material-symbols-outlined text-2xl">menu</span>
+                  <span className="sr-only">Open menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="top" className="w-full border-b bg-background/95 p-0 backdrop-blur-sm">
+                <div className="p-8">
+                  <nav className="mt-8 flex flex-col items-center gap-8">
+                    {navLinks.map((link) => (
+                      <NavLink key={link.href} {...link} />
+                    ))}
+                  </nav>
                 </div>
-                <nav className="flex flex-col items-start gap-6">
-                  {navLinks.map((link) => (
-                    <NavLink key={link.href} {...link} />
-                  ))}
-                </nav>
-              </div>
-            </SheetContent>
-          </Sheet>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       </div>
     </header>

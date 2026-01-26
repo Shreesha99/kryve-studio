@@ -55,7 +55,7 @@ export function Hero() {
     );
   }, []);
 
-  const headlineText = "Where Artistry Meets Architecture.".split('');
+  const headlineText = "Engineering Elegance. Designing Impact.".split('');
 
   return (
     <section id="home" className="flex min-h-screen w-full items-center bg-secondary py-24 md:py-32 lg:py-0">
@@ -70,7 +70,7 @@ export function Hero() {
               ))}
             </h1>
             <p ref={paragraphRef} className="mt-6 max-w-xl text-lg text-muted-foreground md:text-xl">
-              We don't just build websites; we craft digital spaces where artistry and engineering converge. We believe the best experiences are born from a partnership that values both pixels and performance.
+              We are a digital studio that blends visionary design with precision engineering to create web experiences that are not only beautiful, but brilliant.
             </p>
             <div ref={buttonRef} className="mt-8">
               <Button size="lg" asChild>
@@ -78,7 +78,7 @@ export function Hero() {
               </Button>
             </div>
           </div>
-          <div ref={svgRef} className="relative aspect-[4/3] w-full max-w-2xl justify-self-center overflow-hidden rounded-lg lg:max-w-none">
+          <div ref={svgRef} className="relative aspect-[4/2.5] w-full max-w-2xl justify-self-center overflow-hidden rounded-lg lg:max-w-none">
              <MorphingSvg theme={resolvedTheme} isReadyToAnimate={isSvgReady} />
           </div>
         </div>
