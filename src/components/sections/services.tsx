@@ -21,14 +21,6 @@ const services = [
           d="M150 100 C 200 25, 400 25, 450 100 C 400 175, 200 175, 150 100 Z"
         />
         <circle className="pupil" cx="300" cy="100" r="30" fill="hsl(var(--primary))" stroke="none" />
-        <path
-          className="eyelid"
-          d="M150 100 C 200 25, 400 25, 450 100"
-          fill="hsl(var(--background))"
-          stroke="hsl(var(--primary))"
-          strokeWidth="8"
-          strokeLinecap="round"
-        />
       </>
     ),
   },
@@ -39,14 +31,14 @@ const services = [
       'Our code is clean, efficient, and built to last. We use cutting-edge technologies to engineer robust, scalable, and lightning-fast web experiences that perform flawlessly under pressure.',
     svg: (
       <>
-        <path className="bracket" d="M220 50 L120 100 L220 150" />
-        <path className="bracket" d="M380 50 L480 100 L380 150" />
+        <path className="bracket" d="M220 50 L180 100 L220 150" />
+        <path className="bracket" d="M380 50 L420 100 L380 150" />
         <text
           className="code-tag-text"
           x="300"
-          y="118"
+          y="110"
           textAnchor="middle"
-          fontSize="60"
+          fontSize="36"
           fontFamily="monospace"
           stroke="none"
           fill="hsl(var(--primary))"
@@ -60,7 +52,7 @@ const services = [
     description:
       'A brand is a story, a feeling, a promise. We help you define and articulate your unique identity, creating a cohesive brand world that resonates with your audience and stands the test of time.',
     svg: (
-      <>
+       <>
         <g className="target-group">
           <circle className="strategy-circle" cx="300" cy="100" r="80" />
           <circle className="strategy-circle" cx="300" cy="100" r="50" />
@@ -73,7 +65,7 @@ const services = [
           />
         </g>
         <g className="arrow-group" opacity="0" transform="translate(0, 0) scale(1)">
-          <path d="M-40 0 L0 0" className="arrow-shaft" strokeWidth="6" />
+          <path d="M-40 0 L0 0" className="arrow-shaft" strokeWidth="6" transform="translate(0, 2)" />
           <path d="M-5 -8 L0 0 L-5 8" className="arrow-head" strokeWidth="6" />
         </g>
       </>
@@ -92,7 +84,7 @@ const services = [
         
         <g className="cart-container">
           <g className="cart-body-group">
-            <path className="cart-body" d="M180 150 L160 70 H 420 L 400 150 Z" />
+            <path className="cart-body" d="M180 150 L160 70 H 400 L 380 150 Z" />
           </g>
           <circle className="cart-wheel" cx="220" cy="170" r="15" />
           <circle className="cart-wheel" cx="380" cy="170" r="15" />
@@ -175,32 +167,29 @@ export function Services() {
             const currentService = services[activeIndex];
 
             if (currentService.id === 'design') {
-                const eyelid = activeSvg.querySelector('.eyelid');
-                const blinkTl = gsap.timeline({ repeat: 1, yoyo: true, repeatDelay: 2 });
-                blinkTl.to(eyelid, { 
-                  attr: { d: "M150 100 C 200 100, 400 100, 450 100" }, 
-                  duration: 0.15, 
-                  ease: 'power2.inOut'
+                const blinkTl = gsap.timeline({ repeat: 1, repeatDelay: 0.4 });
+                blinkTl.to([activeSvg.querySelector('.eye-outline'), activeSvg.querySelector('.pupil')], {
+                    scaleY: 0,
+                    duration: 0.07,
+                    transformOrigin: 'center',
+                    ease: 'power2.inOut'
+                }).to([activeSvg.querySelector('.eye-outline'), activeSvg.querySelector('.pupil')], {
+                    scaleY: 1,
+                    duration: 0.07,
+                    ease: 'power2.out'
                 });
-                secondaryAnimation.current.add(blinkTl);
+                secondaryAnimation.current.add(blinkTl, "+=1.5");
             }
 
             if (currentService.id === 'development') {
               const textEl = activeSvg.querySelector('.code-tag-text');
               if (textEl) {
+                const textTl = gsap.timeline({ repeat: -1 });
                 const tags = ['a', 'p', 'h1', 'div'];
-                let index = 0;
-                secondaryAnimation.current.to(textEl, {
-                  duration: 1.5,
-                  text: {
-                    value: () => {
-                      index = (index + 1) % tags.length;
-                      return tags[index];
-                    },
-                    delimiter: "",
-                  },
-                  ease: 'none',
+                tags.forEach(tag => {
+                    textTl.set(textEl, { text: tag }, "+=1.5");
                 });
+                secondaryAnimation.current.add(textTl);
               }
             }
 
@@ -210,34 +199,35 @@ export function Services() {
               const arrowTl = gsap.timeline();
               arrowTl
                 .fromTo(arrowGroup, 
-                    {opacity: 1, x: 500, y: 50, scale: 1.8}, 
-                    { x: 305, y: 100, scale: 1, duration: 0.4, ease: 'power2.in', delay: 0.5 }
+                    {opacity: 1, x: 100, y: 150, scale: 2.5}, 
+                    { opacity: 1, x: 295, y: 100, scale: 1, duration: 0.4, ease: 'power2.in' }
                 )
                 .to(bullseye, { scale: 1.5, duration: 0.1, yoyo: true, repeat: 1, transformOrigin: 'center' }, '>-=0.05')
                 .to(arrowGroup, { opacity: 0, duration: 0.2 }, '+=0.2');
-              secondaryAnimation.current.add(arrowTl);
+              secondaryAnimation.current.add(arrowTl, "+=0.5");
             }
 
             if (currentService.id === 'ecommerce') {
-              const wheels = activeSvg.querySelectorAll('.cart-wheel');
-              const speedLines = activeSvg.querySelectorAll('.speed-line');
               const cartBody = activeSvg.querySelector('.cart-body-group');
+              const speedLines = activeSvg.querySelectorAll('.speed-line');
               
-              const cartMovementTl = gsap.timeline();
-              cartMovementTl.to(wheels, {
-                  rotation: 360,
-                  transformOrigin: 'center',
-                  duration: 1,
-                  ease: 'none'
-              })
-              .fromTo(speedLines, 
-                  { x: 0, opacity: 1 }, 
-                  { x: -30, opacity: 0, duration: 0.8, ease: 'power2.out', stagger: 0.1},
-                  "<"
-              )
-              .to(cartBody, {y: -5, repeat: 1, yoyo: true, duration: 0.25, ease: 'power1.inOut'}, "<0.1");
+              const cartMovementTl = gsap.timeline({ repeat: -1 });
+              cartMovementTl
+                .to(cartBody, { y: -3, duration: 0.15, ease: 'power1.inOut' })
+                .to(cartBody, { y: 0, duration: 0.15, ease: 'power1.inOut' });
 
-              secondaryAnimation.current.add(cartMovementTl);
+              const speedLinesTl = gsap.timeline({ repeat: -1, repeatDelay: 0.1 });
+               speedLinesTl.fromTo(speedLines, 
+                  { x: 0, opacity: 1 }, 
+                  { 
+                    x: -30, 
+                    opacity: 0, 
+                    duration: 0.6, 
+                    ease: 'power2.out',
+                    stagger: 0.15,
+                  }
+              );
+              secondaryAnimation.current.add(cartMovementTl).add(speedLinesTl, 0);
             }
           },
         });
@@ -249,7 +239,7 @@ export function Services() {
         );
         
         const paths = gsap.utils.toArray<SVGPathElement>(
-          '.bracket, .eye-outline, .cart-body, .eyelid, .arrow-shaft, .arrow-head',
+          '.bracket, .eye-outline, .cart-body',
           activeSvg
         );
         if (paths.length > 0) {
