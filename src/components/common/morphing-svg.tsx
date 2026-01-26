@@ -26,7 +26,8 @@ export function MorphingSvg() {
 
   // Interactive element refs
   const themeToggleRef = useRef<SVGGElement>(null);
-  const themeToggleIconRef = useRef<SVGPathElement>(null);
+  const sunIconRef = useRef<SVGGElement>(null);
+  const moonIconRef = useRef<SVGGElement>(null);
   const heroHeadlineRef = useRef<SVGRectElement>(null);
   const heroSubtitleRef = useRef<SVGRectElement>(null);
   const servicesLinkRef = useRef<SVGTextElement>(null);
@@ -49,7 +50,8 @@ export function MorphingSvg() {
         gsap.set(scrollGroupRef.current, { y: 0 });
         gsap.set(cursorRef.current, { autoAlpha: 0, x: 250, y: 100 });
         gsap.set([heroHeadlineRef.current, heroSubtitleRef.current], { scaleX: 0, transformOrigin: 'left' });
-        gsap.set(themeToggleIconRef.current, { rotation: 0, transformOrigin: 'center' });
+        gsap.set(sunIconRef.current, { autoAlpha: 1, scale: 1, rotation: 0 });
+        gsap.set(moonIconRef.current, { autoAlpha: 0, scale: 0, rotation: 90 });
     };
 
     const animateSection = (tagRef: React.RefObject<SVGTextElement>, uiRef: React.RefObject<SVGGElement>) => {
@@ -84,7 +86,11 @@ export function MorphingSvg() {
       y: themeToggleBBox.y + themeToggleBBox.height / 2,
       duration: 0.7
     }, 'interact');
-    masterTl.to(themeToggleIconRef.current, { rotation: 180, duration: 0.5, ease: 'back.inOut(1.7)' }, '+=0.2');
+    
+    const toggleTl = gsap.timeline();
+    toggleTl.to(sunIconRef.current, { scale: 0, rotation: 90, autoAlpha: 0, duration: 0.4, ease: 'power2.in' })
+            .to(moonIconRef.current, { scale: 1, rotation: 0, autoAlpha: 1, duration: 0.4, ease: 'power2.out' }, '>-0.3');
+    masterTl.add(toggleTl, '+=0.2');
 
     // 2. Click 'Services' nav link
     const servicesLinkBBox = servicesLinkRef.current!.getBBox();
@@ -146,13 +152,19 @@ export function MorphingSvg() {
               <text ref={navTagRef} y="15" className="tag-text">&lt;Navbar /&gt;</text>
               <g ref={navUiRef}>
                   <rect x="-210" y="0" width="420" height="30" class="ui-bg" />
-                  <rect x="-200" y="8" width="50" height="14" rx="3" class="ui-fill-primary"/>
+                  <text x="-200" y="19" fontFamily="Poppins, sans-serif" fontSize="12" fontWeight="bold" className="ui-fill-primary">KRYVE</text>
                   <text x="-50" y="17.5" font-size="9" text-anchor="middle" class="ui-text-muted">About</text>
                   <text ref={servicesLinkRef} x="0" y="17.5" font-size="9" text-anchor="middle" class="ui-text-muted">Services</text>
                   <text x="50" y="17.5" font-size="9" text-anchor="middle" class="ui-text-muted">Work</text>
                   <g ref={themeToggleRef} transform="translate(185, 8)">
-                    <circle cx="7" cy="7" r="7" class="ui-fill-muted" />
-                    <path ref={themeToggleIconRef} d="M 7 2 L 7 12 M 2 7 L 12 7" stroke="hsl(var(--secondary))" stroke-width="1.5" stroke-linecap="round"/>
+                    <g ref={sunIconRef}>
+                        <circle cx="7" cy="7" r="2.5" fill="none" stroke="hsl(var(--primary))" stroke-width="1.2"/>
+                        <path d="M7 1V3 M7 11V13 M2.64 2.64L3.35 3.35 M10.65 10.65L11.36 11.36 M1 7H3 M11 7H13 M2.64 11.36L3.35 10.65 M10.65 3.35L11.36 2.64"
+                              stroke="hsl(var(--primary))" stroke-width="1.2" stroke-linecap="round" />
+                    </g>
+                    <g ref={moonIconRef}>
+                        <path d="M10 2.5 A5.5 5.5 0 0 1 2.5 10 A4 4 0 0 0 10 2.5z" fill="hsl(var(--primary))"/>
+                    </g>
                   </g>
               </g>
             </g>
