@@ -69,25 +69,25 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
 
     const masterTl = gsap.timeline({
       repeat: -1,
-      repeatDelay: 3,
+      repeatDelay: 1.5,
       defaults: { ease: 'power2.out', duration: 0.6 }
     });
 
     const setup = () => {
-        const validUis = uis.map(r => r.current).filter(Boolean);
+        const allUiElements = uis.map(r => r.current).filter(Boolean);
+        const allTagElements = tagGroups.map(r => r.current).filter(Boolean);
 
-        gsap.set(validUis, { autoAlpha: 0 });
-        gsap.set(tagGroups.map(r => r.current).filter(Boolean), { autoAlpha: 1 });
+        gsap.set([...allUiElements, cursorRef.current], { autoAlpha: 0 });
+        gsap.set(allTagElements, { autoAlpha: 1 });
         
         if (scrollGroupRef.current) gsap.set(scrollGroupRef.current, { y: 0 });
-        if (cursorRef.current) gsap.set(cursorRef.current, { autoAlpha: 0, x: 250, y: 100 });
+        if (cursorRef.current) gsap.set(cursorRef.current, { x: 250, y: 100 });
         
         if (heroHeadlineRef.current) heroHeadlineRef.current.textContent = '';
         if (heroSubtitleRef.current) heroSubtitleRef.current.textContent = '';
         
         const serviceDescGroups = svg.querySelectorAll('.service-desc-group');
         gsap.set(serviceDescGroups, { autoAlpha: 0 });
-
 
         if (sunIconRef.current && moonIconRef.current) {
           gsap.set(sunIconRef.current, { autoAlpha: 1, scale: 1, rotation: 0 });
@@ -155,21 +155,17 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
         
         aboutTl.to(aboutTagGroupRef.current, { autoAlpha: 0, duration: 0.3 });
         aboutTl.to(aboutUiRef.current, { autoAlpha: 1, duration: 0.01 }, '<0.1');
-
-        if (image) {
-            aboutTl.fromTo(image, 
-                { autoAlpha: 0, scale: 0.9 },
-                { autoAlpha: 1, scale: 1, duration: 0.4, ease: 'power2.out' }, 
-                '>'
-            );
-        }
-        if (textLines.length > 0) {
-            aboutTl.fromTo(textLines, 
-                { autoAlpha: 0, x: -15 },
-                { autoAlpha: 1, x: 0, stagger: 0.1, duration: 0.4, ease: 'power2.out' }, 
-                '>-0.3'
-            );
-        }
+        
+        aboutTl.fromTo(image, 
+            { autoAlpha: 0, scale: 0.9 },
+            { autoAlpha: 1, scale: 1, duration: 0.4, ease: 'power2.out' }, 
+            '>'
+        );
+        aboutTl.fromTo(textLines, 
+            { autoAlpha: 0, x: -15 },
+            { autoAlpha: 1, x: 0, stagger: 0.1, duration: 0.4, ease: 'power2.out' }, 
+            '>-0.3'
+        );
     }
     masterTl.add(aboutTl, '+=0.5');
 
@@ -209,50 +205,27 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
     
     // Animate the theme toggle
     const toggleTl = gsap.timeline();
-    const allAnimatedElements = {
-        mainBg: svg.querySelectorAll('.main-bg'),
-        uiBg: svg.querySelectorAll('.ui-bg'),
-        uiStroke: svg.querySelectorAll('.ui-stroke'),
-        uiFillMuted: svg.querySelectorAll('.ui-fill-muted'),
-        uiFillPrimary: svg.querySelectorAll('.ui-fill-primary'),
-        uiTextMuted: svg.querySelectorAll('.ui-text-muted'),
-        tagText: svg.querySelectorAll('.tag-text'),
-        uiPrimaryStroke: svg.querySelectorAll('.ui-primary-stroke'),
-        logo: logoTextRef.current,
-    };
+    
+    const currentTheme = theme === 'dark' ? 'dark' : 'light';
+    const targetTheme = currentTheme === 'dark' ? 'light' : 'dark';
 
-    const fromTheme = theme === 'dark' ? colors.dark : colors.light;
-    const toTheme = theme === 'dark' ? colors.light : colors.dark;
+    const fromColors = colors[currentTheme];
+    const toColors = colors[targetTheme];
     
     if (sunIconRef.current && moonIconRef.current) {
-      toggleTl.to(sunIconRef.current, { scale: theme === 'dark' ? 1 : 0, rotation: theme === 'dark' ? 0 : 90, autoAlpha: theme === 'dark' ? 1: 0, duration: 0.4, ease: 'power2.in' })
-              .to(moonIconRef.current, { scale: theme === 'dark' ? 0 : 1, rotation: theme === 'dark' ? -90 : 0, autoAlpha: theme === 'dark' ? 0 : 1, duration: 0.4, ease: 'power2.out' }, '>-0.3')
+        toggleTl.to(sunIconRef.current, { scale: targetTheme === 'light' ? 1 : 0, rotation: targetTheme === 'light' ? 0 : 90, autoAlpha: targetTheme === 'light' ? 1 : 0, duration: 0.4, ease: 'power2.in' })
+                .to(moonIconRef.current, { scale: targetTheme === 'light' ? 0 : 1, rotation: targetTheme === 'light' ? -90 : 0, autoAlpha: targetTheme === 'light' ? 0 : 1, duration: 0.4, ease: 'power2.out' }, '>-0.3');
     }
 
-    Object.values(allAnimatedElements).forEach(elements => {
-        if (!elements) return;
-        const isStroke = (elements as NodeList).length > 0 && (elements[0] as SVGElement).tagName.toLowerCase() === 'path' && !(elements[0] as SVGElement).hasAttribute('fill');
-        
-        if (isStroke) {
-          toggleTl.to(elements, { stroke: toTheme.uiPrimaryStroke, duration: 0.5 }, '<');
-        } else {
-          const prop = (elements as any).length !== undefined ? 'fill' : 'fill'; // Fallback
-          const targetColorKey = Object.keys(fromTheme).find(key => (fromTheme as any)[key] === (elements as any).fill);
-          if (targetColorKey) {
-            toggleTl.to(elements, { [prop]: (toTheme as any)[targetColorKey], duration: 0.5 }, '<');
-          }
-        }
-    });
-
-    toggleTl.to(allAnimatedElements.mainBg, { fill: toTheme.bg, duration: 0.5 }, '<')
-            .to(allAnimatedElements.uiBg, { fill: toTheme.uiBg, duration: 0.5 }, '<')
-            .to(allAnimatedElements.uiStroke, { stroke: toTheme.uiStroke, duration: 0.5 }, '<')
-            .to(allAnimatedElements.uiFillMuted, { fill: toTheme.uiFillMuted, duration: 0.5 }, '<')
-            .to(allAnimatedElements.uiFillPrimary, { fill: toTheme.uiFillPrimary, duration: 0.5 }, '<')
-            .to(allAnimatedElements.uiTextMuted, { fill: toTheme.uiTextMuted, duration: 0.5 }, '<')
-            .to(allAnimatedElements.tagText, { fill: toTheme.tagText, duration: 0.5 }, '<')
-            .to(allAnimatedElements.uiPrimaryStroke, { stroke: toTheme.uiFillPrimary, duration: 0.5 }, '<')
-            .to(allAnimatedElements.logo, { fill: toTheme.primary, duration: 0.5}, '<');
+    toggleTl.to(svg.querySelectorAll('.main-bg'), { fill: toColors.bg, duration: 0.5 }, '<')
+            .to(svg.querySelectorAll('.ui-bg'), { fill: toColors.uiBg, duration: 0.5 }, '<')
+            .to(svg.querySelectorAll('.ui-stroke'), { stroke: toColors.uiStroke, duration: 0.5 }, '<')
+            .to(svg.querySelectorAll('.ui-fill-muted'), { fill: toColors.uiFillMuted, duration: 0.5 }, '<')
+            .to(svg.querySelectorAll('.ui-fill-primary'), { fill: toColors.uiFillPrimary, duration: 0.5 }, '<')
+            .to(svg.querySelectorAll('.ui-text-muted'), { fill: toColors.uiTextMuted, duration: 0.5 }, '<')
+            .to(svg.querySelectorAll('.tag-text'), { fill: toColors.tagText, duration: 0.5 }, '<')
+            .to(svg.querySelectorAll('.ui-primary-stroke'), { stroke: toColors.uiFillPrimary, duration: 0.5 }, '<')
+            .to(logoTextRef.current, { fill: toColors.primary, duration: 0.5}, '<');
 
     masterTl.add(toggleTl, '+=0.2');
 
@@ -269,11 +242,9 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
     
     // 3. Scroll to services section and animate content
     if (scrollGroupRef.current && servicesUiRef.current) {
-        const servicesUiBBox = servicesUiRef.current.getBBox();
-        const servicesY = servicesUiBBox.y;
         const serviceDescGroups = svg.querySelectorAll('.service-desc-group');
         
-        masterTl.to(scrollGroupRef.current, { y: -servicesY + 60, duration: 1.5, ease: 'power3.inOut' }, '+=0.3');
+        masterTl.to(scrollGroupRef.current, { y: -360, duration: 1.5, ease: 'power3.inOut' }, '+=0.3');
         
         if (serviceDescGroups.length > 0) {
             masterTl.fromTo(serviceDescGroups,
@@ -292,12 +263,12 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
 
     // Fade out for reset
     const allUiElements = uis.map(r => r.current).filter(Boolean);
+    const allTagElements = tagGroups.map(r => r.current).filter(Boolean);
     if(cursorRef.current) {
-      masterTl.to([cursorRef.current, ...allUiElements], { autoAlpha: 0, duration: 0.8 }, '+=1');
+      masterTl.to([cursorRef.current, ...allUiElements, ...allTagElements], { autoAlpha: 0, duration: 0.8 }, '+=1');
     } else {
-      masterTl.to(allUiElements, { autoAlpha: 0, duration: 0.8 }, '+=1');
+      masterTl.to([...allUiElements, ...allTagElements], { autoAlpha: 0, duration: 0.8 }, '+=1');
     }
-
 
     return () => {
       masterTl.kill();
@@ -305,7 +276,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
   }, [theme]);
 
   return (
-    <svg ref={svgRef} viewBox="0 0 500 500" className="h-full w-full object-contain">
+    <svg ref={svgRef} viewBox="0 0 500 650" className="h-full w-full object-contain">
       <defs>
         <style>
           {`
@@ -330,14 +301,14 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
           `}
         </style>
         <clipPath id="mainClip">
-          <rect x="20" y="20" width="460" height="460" rx="10" />
+          <rect x="20" y="20" width="460" height="610" rx="10" />
         </clipPath>
         <g id="cursor" ref={cursorRef} transform="scale(1.5)">
             <path fill="hsl(var(--foreground))" d="M11.22,9.45,3.95,2.18A1.07,1.07,0,0,0,2.44,2.18L2.18,2.44a1.07,1.07,0,0,0,0,1.51l7.27,7.27-2.3,6.89a1.06,1.06,0,0,0,1,1.33,1,1,0,0,0,.32-.06l7.15-2.4a1.07,1.07,0,0,0,.68-1Z"/>
         </g>
       </defs>
 
-      <rect x="20" y="20" width="460" height="460" rx="10" class="main-bg ui-stroke" stroke-width="2"/>
+      <rect x="20" y="20" width="460" height="610" rx="10" class="main-bg ui-stroke" stroke-width="2"/>
       <g clipPath="url(#mainClip)">
         <g ref={scrollGroupRef}>
             {/* --- Navbar --- */}
@@ -365,7 +336,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
             </g>
 
             {/* --- Hero --- */}
-            <g transform="translate(250, 130)">
+            <g transform="translate(250, 150)">
               <g ref={heroTagGroupRef}>
                 <text className="tag-text" text-anchor="middle">&lt;Hero /&gt;</text>
               </g>
@@ -376,7 +347,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
             </g>
 
             {/* --- About --- */}
-            <g transform="translate(250, 220)">
+            <g transform="translate(250, 300)">
                 <g ref={aboutTagGroupRef}>
                     <text className="tag-text" text-anchor="middle">&lt;About /&gt;</text>
                 </g>
@@ -397,7 +368,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
             </g>
 
             {/* --- Services --- */}
-            <g transform="translate(250, 320)">
+            <g transform="translate(250, 450)">
                 <g ref={servicesTagGroupRef}>
                     <text className="tag-text" text-anchor="middle">&lt;Services /&gt;</text>
                 </g>
@@ -433,7 +404,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
             </g>
             
             {/* --- Contact --- */}
-            <g transform="translate(250, 430)">
+            <g transform="translate(250, 580)">
               <g ref={contactTagGroupRef}>
                 <text className="tag-text" text-anchor="middle">&lt;Contact /&gt;</text>
               </g>
@@ -449,5 +420,3 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
     </svg>
   );
 }
-
-    
