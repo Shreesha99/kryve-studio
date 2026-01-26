@@ -65,4 +65,21 @@
     'GRAD' 0,
     'opsz' 24
   }
+   @media (pointer: fine) {
+    html, body, a, button, [role="button"], input, textarea, select {
+      cursor: none;
+    }
+  }
+}
+
+.custom-cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  z-index: 9999;
+  will-change: transform;
+}
+.custom-cursor-path {
+  fill: hsl(var(--foreground));
 }

@@ -3,6 +3,7 @@ import './globals.css';
 import { AppProviders } from '@/components/common/app-providers';
 import { cn } from '@/lib/utils';
 import { ScrollToTop } from '@/components/common/scroll-to-top';
+import { CustomCursor } from '@/components/common/custom-cursor';
 
 export const metadata: Metadata = {
   title: {
@@ -81,6 +82,7 @@ export default function RootLayout({
       </head>
       <body className={cn('font-body antialiased')}>
         <AppProviders>
+          <CustomCursor />
           {children}
           <ScrollToTop />
         </AppProviders>
