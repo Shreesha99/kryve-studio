@@ -39,9 +39,9 @@ export function Hero() {
     )
     .fromTo(
       svgRef.current,
-      { opacity: 0, scale: 0.8 },
-      { opacity: 1, scale: 1, duration: 1.5, ease: 'elastic.out(1, 0.75)' },
-      '-=1.2'
+      { opacity: 0, scale: 0.95, y: 20 },
+      { opacity: 1, scale: 1, y: 0, duration: 1.0, ease: 'power3.out' },
+      '-=1.0'
     );
   }, []);
 
