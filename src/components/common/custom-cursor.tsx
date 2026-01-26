@@ -16,7 +16,7 @@ export function CustomCursor() {
       return;
     }
 
-    gsap.set(cursor, { xPercent: -5, yPercent: 0 });
+    gsap.set(cursor, { xPercent: -50, yPercent: -50 });
 
     const onMouseMove = (e: MouseEvent) => {
       gsap.to(cursor, {
@@ -56,7 +56,7 @@ export function CustomCursor() {
     window.addEventListener('mouseup', onMouseUp);
 
     const interactiveElements = document.querySelectorAll(
-      'a, button, [role="button"], input, textarea, select'
+      'a, button, [role="button"], input, textarea, select, .cursor-pointer'
     );
 
     interactiveElements.forEach((el) => {
@@ -81,10 +81,10 @@ export function CustomCursor() {
         width="36"
         height="36"
         viewBox="0 0 36 36"
-        style={{ transform: 'rotate(-15deg)' }}
+        style={{ transform: 'rotate(-45deg)' }}
       >
         <path
-          d="M 5 2 L 22 22 L 16 18 L 10 22 Z"
+          d="M 18 2 L 30 30 L 18 22 L 6 30 Z"
           className="custom-cursor-path"
         />
       </svg>

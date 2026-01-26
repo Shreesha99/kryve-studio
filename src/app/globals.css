@@ -67,7 +67,7 @@
   }
    @media (pointer: fine) {
     html, body, a, button, [role="button"], input, textarea, select {
-      cursor: none;
+      cursor: none !important;
     }
   }
 }
