@@ -10,7 +10,7 @@ export function Work() {
     <section id="work" className="w-full bg-secondary py-24 md:py-32 lg:py-40">
       <div className="container mx-auto px-4 md:px-6">
         <AnimateOnScroll className="mb-16 text-center">
-          <h2 className="font-headline text-4xl font-bold tracking-tight sm:text-5xl">
+          <h2 className="font-headline text-4xl font-semibold tracking-tight sm:text-5xl">
             Featured Work
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">

@@ -46,7 +46,7 @@ export function Contact() {
     <section id="contact" className="w-full bg-background py-24 md:py-32 lg:py-40">
       <div className="container mx-auto px-4 md:px-6">
         <AnimateOnScroll className="mx-auto max-w-3xl text-center">
-          <h2 className="font-headline text-4xl font-bold tracking-tight sm:text-5xl">
+          <h2 className="font-headline text-4xl font-semibold tracking-tight sm:text-5xl">
             Let's build something great together.
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">

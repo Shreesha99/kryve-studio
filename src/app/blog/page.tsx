@@ -59,7 +59,7 @@ export default function BlogPage() {
       <main className="flex-1">
         <section className="container mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24">
           <div className="space-y-4 text-center">
-            <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl">
+            <h1 className="font-headline text-4xl font-semibold tracking-tighter sm:text-5xl md:text-6xl">
               From the Studio
             </h1>
             <p className="mx-auto max-w-2xl text-muted-foreground md:text-xl">

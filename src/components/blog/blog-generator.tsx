@@ -58,7 +58,7 @@ export function BlogGenerator() {
   return (
     <div className="container mx-auto max-w-4xl px-4 pb-16 md:px-6 md:pb-24">
       <div className="space-y-4 text-center">
-        <h2 className="font-headline text-4xl font-bold tracking-tighter sm:text-5xl">
+        <h2 className="font-headline text-4xl font-semibold tracking-tighter sm:text-5xl">
           AI Blog Post Generator
         </h2>
         <p className="text-muted-foreground md:text-xl">
