@@ -274,7 +274,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
   }, [theme]);
 
   return (
-    <svg ref={svgRef} viewBox="0 0 600 1200" className="h-full w-full object-cover">
+    <svg ref={svgRef} viewBox="0 0 600 1200" preserveAspectRatio="xMidYMin slice" className="h-full w-full">
       <defs>
         <style>
           {`
