@@ -90,17 +90,16 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
 
     masterTl.eventCallback('onComplete', () => {
       if (!masterTlRef.current) return;
-      const restartTl = gsap.timeline();
-      const allUiElements = uis.map((r) => r.current).filter(Boolean);
+      const allUiElements = uis.map(r => r.current).filter(Boolean);
 
-      restartTl
-        .to(
-          scrollGroupRef.current,
-          { y: 0, duration: 1.2, ease: 'power3.inOut' },
-          0
-        )
-        .to(allUiElements, { autoAlpha: 0, duration: 1.0 }, 0)
-        .call(() => masterTl.restart(), undefined, '+=0.2');
+      // Create a new timeline to animate the reset
+      gsap.timeline({
+        onComplete: () => {
+          masterTlRef.current?.restart();
+        }
+      })
+      .to(allUiElements, { autoAlpha: 0, duration: 0.7, ease: 'power2.in' }, 0)
+      .to(scrollGroupRef.current, { y: 0, duration: 1, ease: 'power2.in' }, 0);
     });
 
     const setup = () => {
@@ -386,7 +385,6 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
     );
 
     masterTl.addLabel('interact', '+=1.5');
-    masterTl.add(contactTypingTl, 'interact-=1.0');
     masterTl.add(servicesClickTl, 'interact');
 
     if (scrollGroupRef.current) {
@@ -408,6 +406,8 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
         '>-1.8'
       );
     }
+    
+    masterTl.add(contactTypingTl, '+=1.0');
     masterTl.add(animateSection(footerUiRef), "+=1.0");
 
 
@@ -418,7 +418,7 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
         masterTlRef.current.kill();
       }
     };
-  }, [theme, isReadyToAnimate]);
+  }, [isReadyToAnimate]);
 
   return (
     <svg
@@ -459,10 +459,56 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
         width="560"
         height="360"
         rx="10"
-        strokeWidth="2"
+        strokeWidth="1"
       />
 
       <g ref={mainGroupRef} clipPath="url(#mainClip)">
+         {/* --- FIXED Navbar --- */}
+        <g ref={navUiRef} transform="translate(45, 35)">
+          <rect x="0" y="0" width="510" height="30" className="ui-bg" />
+          <text ref={logoTextRef} x="15" y="21" className="logo-text">
+            ZENITH
+          </text>
+          <text x="205" y="20.5" className="nav-link ui-text-muted">
+            About
+          </text>
+          <text
+            ref={servicesLinkRef}
+            x="275"
+            y="20.5"
+            className="nav-link ui-text-muted"
+          >
+            Services
+          </text>
+          <text x="345" y="20.5" className="nav-link ui-text-muted">
+            Work
+          </text>
+          <g transform="translate(480, 8)" style={{ cursor: 'pointer' }}>
+            <g ref={sunIconRef}>
+              <circle
+                cx="7"
+                cy="7"
+                r="2.5"
+                fill="none"
+                className="ui-primary-stroke"
+                strokeWidth="1.2"
+              />
+              <path
+                d="M7 1V3 M7 11V13 M2.64 2.64L3.35 3.35 M10.65 10.65L11.36 11.36 M1 7H3 M11 7H13 M2.64 11.36L3.35 10.65 M10.65 3.35L11.36 2.64"
+                className="ui-primary-stroke"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+              />
+            </g>
+            <g ref={moonIconRef}>
+              <path
+                d="M10 2.5 A5.5 5.5 0 0 1 2.5 10 A4 4 0 0 0 10 2.5z"
+                className="ui-fill-primary"
+              />
+            </g>
+          </g>
+        </g>
+        
         <g ref={scrollGroupRef}>
           {/* --- Hero --- */}
           <g transform="translate(300, 150)">
@@ -868,52 +914,6 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
             <text x="0" y="5" className="footer-title ui-text-muted">
               &copy; 2024. All rights reserved.
             </text>
-          </g>
-        </g>
-
-        {/* --- FIXED Navbar --- */}
-        <g ref={navUiRef} transform="translate(300, 50)">
-          <rect x="-280" y="-15" width="560" height="30" className="ui-bg" />
-          <text ref={logoTextRef} x="-265" y="6" className="logo-text">
-            ZENITH
-          </text>
-          <text x="-50" y="5.5" className="nav-link ui-text-muted">
-            About
-          </text>
-          <text
-            ref={servicesLinkRef}
-            x="20"
-            y="5.5"
-            className="nav-link ui-text-muted"
-          >
-            Services
-          </text>
-          <text x="90" y="5.5" className="nav-link ui-text-muted">
-            Work
-          </text>
-          <g transform="translate(235, -7)" style={{ cursor: 'pointer' }}>
-            <g ref={sunIconRef}>
-              <circle
-                cx="7"
-                cy="7"
-                r="2.5"
-                fill="none"
-                className="ui-primary-stroke"
-                strokeWidth="1.2"
-              />
-              <path
-                d="M7 1V3 M7 11V13 M2.64 2.64L3.35 3.35 M10.65 10.65L11.36 11.36 M1 7H3 M11 7H13 M2.64 11.36L3.35 10.65 M10.65 3.35L11.36 2.64"
-                className="ui-primary-stroke"
-                strokeWidth="1.2"
-                strokeLinecap="round"
-              />
-            </g>
-            <g ref={moonIconRef}>
-              <path
-                d="M10 2.5 A5.5 5.5 0 0 1 2.5 10 A4 4 0 0 0 10 2.5z"
-                className="ui-fill-primary"
-              />
-            </g>
           </g>
         </g>
       </g>
