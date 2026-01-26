@@ -58,6 +58,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
 
     const masterTl = gsap.timeline({
       repeat: -1,
+      repeatDelay: 1,
       defaults: { ease: 'power2.out', duration: 0.25 }
     });
 
@@ -119,8 +120,12 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
     // --- ANIMATION SEQUENCE ---
     masterTl.add(setup);
 
-    masterTl.add(animateSection(navUiRef), "+=0.1");
-    masterTl.add(animateSection(heroUiRef), "+=0.1");
+    masterTl.to(svg, { autoAlpha: 1, duration: 0.5 });
+    
+    const allUiElements = uis.map(r => r.current).filter(Boolean);
+
+    masterTl.add(animateSection(navUiRef));
+    masterTl.add(animateSection(heroUiRef), "+=0.05");
     masterTl.add(typeText(heroHeadlineRef, headlineText, 0.4), "+=0.1");
     masterTl.add(typeText(heroSubtitleRef, subtitleText, 0.4), "+=0.1");
 
@@ -218,11 +223,17 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
     }
 
     const resetTl = gsap.timeline();
-    const allUiElements = uis.map(r => r.current).filter(Boolean);
 
     if (scrollGroupRef.current && allUiElements.length > 0) {
-        resetTl.to(scrollGroupRef.current, { y: 0, duration: 0.8, ease: 'power2.inOut' })
-               .to(allUiElements, { autoAlpha: 0, duration: 0.4 }, "<0.2");
+        resetTl.to(scrollGroupRef.current, { 
+            y: 0, 
+            duration: 0.8, 
+            ease: 'power2.inOut' 
+        })
+        .to(allUiElements, { 
+            autoAlpha: 0, 
+            duration: 0.4 
+        }, "<0.2");
     }
     
     masterTl.add(resetTl, "+=0.5");
@@ -310,7 +321,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
                 <g ref={servicesUiRef}>
                     <g className="service-card" transform="translate(-160, 0)">
                         <rect x="-70" y="-40" width="140" height="90" rx="5" className="ui-bg ui-stroke" strokeWidth="1" />
-                        <path d="M-60 -25 l-3 3 h26 l-3 -3 M-47 -25 v-5 M-47 -15 v-5" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none" className="ui-primary-stroke" />
+                        <path d="M-57 -28 l-3 3 h26 l-3 -3 M-44 -28 v-5 M-44 -18 v-5" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none" className="ui-primary-stroke" transform="scale(0.8) translate(-10, -5)" />
                         <text x="-60" y="-5" className="service-title ui-fill-primary">Web Design</text>
                         <g className="service-desc-group">
                           <text x="-60" y="10" className="service-desc ui-text-muted">Visually stunning</text>
@@ -319,7 +330,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
                     </g>
                     <g className="service-card" transform="translate(0, 0)">
                         <rect x="-70" y="-40" width="140" height="90" rx="5" className="ui-bg ui-stroke" strokeWidth="1" />
-                        <path d="M-54 -22 l-8 5 l8 5 M-46 -22 l8 5 l-8 5" fill="none" className="ui-primary-stroke" strokeWidth="1.2" strokeLinecap="round"/>
+                        <path d="M-52 -25 l-8 5 l8 5 M-44 -25 l8 5 l-8 5" fill="none" className="ui-primary-stroke" strokeWidth="1.2" strokeLinecap="round" transform="scale(0.8) translate(-10, -3)" />
                         <text x="-60" y="-5" className="service-title ui-fill-primary">Development</text>
                         <g className="service-desc-group">
                           <text x="-60" y="10" className="service-desc ui-text-muted">Robust & Scalable</text>
@@ -328,7 +339,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
                     </g>
                     <g className="service-card" transform="translate(160, 0)">
                         <rect x="-70" y="-40" width="140" height="90" rx="5" className="ui-bg ui-stroke" strokeWidth="1" />
-                        <path d="M-55 -18 a8 8 0 1 0 16 0 a8 8 0 1 0 -16 0 M-47 -18 l0 -8 l8 4 z" fill="none" className="ui-primary-stroke" strokeWidth="1.2"/>
+                        <path d="M-52 -22 a8 8 0 1 0 16 0 a8 8 0 1 0 -16 0 M-44 -22 l0 -8 l8 4 z" fill="none" className="ui-primary-stroke" strokeWidth="1.2" transform="scale(0.8) translate(-10, -3)" />
                         <text x="-60" y="-5" className="service-title ui-fill-primary">Branding</text>
                         <g className="service-desc-group">
                           <text x="-60" y="10" className="service-desc ui-text-muted">Unique brand</text>
@@ -392,3 +403,5 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
     </svg>
   );
 }
+
+    
