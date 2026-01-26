@@ -94,40 +94,46 @@ export function Header() {
     <header ref={headerRef} className="fixed top-0 z-50 w-full p-2 md:p-4">
       <div
         className={cn(
-          'container relative mx-auto flex h-16 items-center justify-between rounded-full border px-4 shadow-sm transition-all md:px-6',
+          'container mx-auto flex h-16 items-center rounded-full border px-4 shadow-sm transition-all md:px-6',
           isScrolled
             ? 'border-border bg-background/80 backdrop-blur-sm'
             : 'border-transparent bg-background/30 backdrop-blur-sm'
         )}
       >
-        <Logo />
+        <div className="flex w-full items-center justify-between">
+          <div className="md:flex-1">
+            <Logo />
+          </div>
 
-        <nav className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-8 md:flex">
-          {navLinks.map((link) => (
-            <NavLink key={link.href} {...link} />
-          ))}
-        </nav>
+          <div className="hidden md:block">
+            <nav className="flex items-center gap-8">
+              {navLinks.map((link) => (
+                <NavLink key={link.href} {...link} />
+              ))}
+            </nav>
+          </div>
 
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <div className="md:hidden">
-            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <span className="material-symbols-outlined text-2xl">menu</span>
-                  <span className="sr-only">Open menu</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="top" className="w-full border-b bg-background/95 p-0 backdrop-blur-sm">
-                <div className="p-8">
-                  <nav className="mt-8 flex flex-col items-center gap-8">
-                    {navLinks.map((link) => (
-                      <NavLink key={link.href} {...link} />
-                    ))}
-                  </nav>
-                </div>
-              </SheetContent>
-            </Sheet>
+          <div className="flex items-center justify-end md:flex-1">
+            <ThemeToggle />
+            <div className="md:hidden">
+              <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <span className="material-symbols-outlined text-2xl">menu</span>
+                    <span className="sr-only">Open menu</span>
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="top" className="w-full border-b bg-background/95 p-0 backdrop-blur-sm">
+                  <div className="p-8">
+                    <nav className="mt-8 flex flex-col items-center gap-8">
+                      {navLinks.map((link) => (
+                        <NavLink key={link.href} {...link} />
+                      ))}
+                    </nav>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </div>
       </div>
