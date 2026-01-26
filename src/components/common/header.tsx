@@ -100,20 +100,18 @@ export function Header() {
             : 'border-transparent bg-background/30 backdrop-blur-sm'
         )}
       >
-        <div className="flex w-full items-center justify-between">
-          <div className="md:flex-1">
+        <div className="grid h-full w-full grid-cols-2 items-center md:grid-cols-3">
+          <div className="flex justify-start">
             <Logo />
           </div>
 
-          <div className="hidden md:block">
-            <nav className="flex items-center gap-8">
-              {navLinks.map((link) => (
-                <NavLink key={link.href} {...link} />
-              ))}
-            </nav>
-          </div>
+          <nav className="hidden items-center justify-center gap-8 md:flex">
+            {navLinks.map((link) => (
+              <NavLink key={link.href} {...link} />
+            ))}
+          </nav>
 
-          <div className="flex items-center justify-end md:flex-1">
+          <div className="flex items-center justify-end">
             <ThemeToggle />
             <div className="md:hidden">
               <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
