@@ -75,7 +75,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
 
     const masterTl = gsap.timeline({
       repeat: -1,
-      repeatDelay: 0,
+      repeatDelay: 0.5,
       defaults: { ease: 'power2.out', duration: 0.6 }
     });
 
@@ -230,13 +230,15 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
 
     // 2. Animate 'Services' nav link click
     if (navUiRef.current) {
-      masterTl.to(navUiRef.current, {
+      const navPulseTl = gsap.timeline();
+      navPulseTl.to(navUiRef.current, {
         scale: 1.02,
         yoyo: true,
         repeat: 1,
         duration: 0.2,
         transformOrigin: 'center'
-      }, '+=0.5');
+      });
+      masterTl.add(navPulseTl, '+=0.5');
     }
     
     // 3. Scroll to services section and animate content
@@ -272,7 +274,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
   }, [theme]);
 
   return (
-    <svg ref={svgRef} viewBox="0 0 600 1200" className="h-full w-full object-contain">
+    <svg ref={svgRef} viewBox="0 0 600 1200" className="h-full w-full object-cover">
       <defs>
         <style>
           {`

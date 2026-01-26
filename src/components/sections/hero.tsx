@@ -68,7 +68,7 @@ export function Hero() {
               </Button>
             </div>
           </div>
-          <div ref={svgRef} className="relative aspect-[600/600] w-full max-w-2xl justify-self-center lg:max-w-none">
+          <div ref={svgRef} className="relative aspect-[600/550] w-full max-w-2xl justify-self-center overflow-hidden rounded-lg lg:max-w-none">
              <MorphingSvg theme={resolvedTheme} />
           </div>
         </div>
