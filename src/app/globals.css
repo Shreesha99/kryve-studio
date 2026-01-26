@@ -66,7 +66,7 @@
     'opsz' 24
   }
    @media (pointer: fine) {
-    html, body, a, button, [role="button"], input, textarea, select {
+    html, body, a, button, [role="button"], input, textarea, select, .cursor-pointer {
       cursor: none !important;
     }
   }
