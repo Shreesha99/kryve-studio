@@ -94,19 +94,23 @@ export function Header() {
     <header ref={headerRef} className="fixed top-0 z-50 w-full p-2 md:p-4">
       <div
         className={cn(
-          'container mx-auto flex h-16 items-center justify-between rounded-full border px-4 md:px-6 shadow-sm transition-all',
+          'container mx-auto flex h-16 items-center rounded-full border px-4 md:px-6 shadow-sm transition-all',
           isScrolled
             ? 'border-border bg-background/80 backdrop-blur-sm'
             : 'border-transparent bg-background/30 backdrop-blur-sm'
         )}
       >
-        <Logo />
+        <div className="flex flex-1 justify-start">
+          <Logo />
+        </div>
+
         <nav className="hidden items-center gap-8 md:flex">
           {navLinks.map((link) => (
             <NavLink key={link.href} {...link} />
           ))}
         </nav>
-        <div className="flex items-center gap-2">
+
+        <div className="flex flex-1 items-center justify-end gap-2">
           <ThemeToggle />
           <div className="md:hidden">
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
