@@ -39,14 +39,14 @@ const services = [
       'Our code is clean, efficient, and built to last. We use cutting-edge technologies to engineer robust, scalable, and lightning-fast web experiences that perform flawlessly under pressure.',
     svg: (
       <>
-        <path className="bracket" d="M250 50 L150 100 L250 150" />
-        <path className="bracket" d="M350 50 L450 100 L350 150" />
+        <path className="bracket" d="M220 50 L120 100 L220 150" />
+        <path className="bracket" d="M380 50 L480 100 L380 150" />
         <text
           className="code-tag-text"
           x="300"
-          y="112"
+          y="118"
           textAnchor="middle"
-          fontSize="30"
+          fontSize="60"
           fontFamily="monospace"
           stroke="none"
           fill="hsl(var(--primary))"
@@ -73,8 +73,8 @@ const services = [
           />
         </g>
         <g className="arrow-group" opacity="0" transform="translate(0, 0) scale(1)">
-          <path d="M0 0 L-60 0" className="arrow-shaft" strokeWidth="6" />
-          <path d="M-5 5 L 0 0 L -5 -5" className="arrow-head" strokeWidth="6"/>
+          <path d="M-40 0 L0 0" className="arrow-shaft" strokeWidth="6" />
+          <path d="M-5 -8 L0 0 L-5 8" className="arrow-head" strokeWidth="6" />
         </g>
       </>
     ),
@@ -91,7 +91,9 @@ const services = [
         <path className="speed-line" d="M130 120 L 160 120" opacity="0"/>
         
         <g className="cart-container">
-          <path className="cart-body" d="M180 150 L160 70 H 440 L 420 150 Z" />
+          <g className="cart-body-group">
+            <path className="cart-body" d="M180 150 L160 70 H 420 L 400 150 Z" />
+          </g>
           <circle className="cart-wheel" cx="220" cy="170" r="15" />
           <circle className="cart-wheel" cx="380" cy="170" r="15" />
         </g>
@@ -140,6 +142,7 @@ export function Services() {
 
   useEffect(() => {
     secondaryAnimation.current?.kill();
+    gsap.killTweensOf('.code-tag-text');
 
     if (!isHovering && !isTouchDevice) {
       runAutoplay(activeIndex);
@@ -166,19 +169,20 @@ export function Services() {
         const mainDrawTl = gsap.timeline({
           onComplete: () => {
             secondaryAnimation.current?.kill();
-            secondaryAnimation.current = gsap.timeline({repeat: -1, repeatDelay: 1});
+            gsap.killTweensOf('.code-tag-text');
+            secondaryAnimation.current = gsap.timeline({repeat: -1, repeatDelay: 1.5});
 
             const currentService = services[activeIndex];
 
             if (currentService.id === 'design') {
                 const eyelid = activeSvg.querySelector('.eyelid');
-                const blinkTl = gsap.timeline({ repeat: 1, yoyo: true, repeatDelay: 1.5 });
+                const blinkTl = gsap.timeline({ repeat: 1, yoyo: true, repeatDelay: 2 });
                 blinkTl.to(eyelid, { 
                   attr: { d: "M150 100 C 200 100, 400 100, 450 100" }, 
                   duration: 0.15, 
                   ease: 'power2.inOut'
                 });
-                secondaryAnimation.current.add(blinkTl, '+=0.5');
+                secondaryAnimation.current.add(blinkTl);
             }
 
             if (currentService.id === 'development') {
@@ -186,7 +190,6 @@ export function Services() {
               if (textEl) {
                 const tags = ['a', 'p', 'h1', 'div'];
                 let index = 0;
-                gsap.set(textEl, { textContent: tags[0] });
                 secondaryAnimation.current.to(textEl, {
                   duration: 1.5,
                   text: {
@@ -196,10 +199,8 @@ export function Services() {
                     },
                     delimiter: "",
                   },
-                  repeat: -1,
-                  repeatDelay: 0.8,
                   ease: 'none',
-                }, '+=0.5');
+                });
               }
             }
 
@@ -208,7 +209,10 @@ export function Services() {
               const bullseye = activeSvg.querySelector('.pupil');
               const arrowTl = gsap.timeline();
               arrowTl
-                .fromTo(arrowGroup, {opacity: 1, x: 450, y: 80, scale: 1.8}, { x: 300, y: 100, scale: 1, duration: 0.4, ease: 'power2.in', delay: 0.5 })
+                .fromTo(arrowGroup, 
+                    {opacity: 1, x: 500, y: 50, scale: 1.8}, 
+                    { x: 305, y: 100, scale: 1, duration: 0.4, ease: 'power2.in', delay: 0.5 }
+                )
                 .to(bullseye, { scale: 1.5, duration: 0.1, yoyo: true, repeat: 1, transformOrigin: 'center' }, '>-=0.05')
                 .to(arrowGroup, { opacity: 0, duration: 0.2 }, '+=0.2');
               secondaryAnimation.current.add(arrowTl);
@@ -217,7 +221,8 @@ export function Services() {
             if (currentService.id === 'ecommerce') {
               const wheels = activeSvg.querySelectorAll('.cart-wheel');
               const speedLines = activeSvg.querySelectorAll('.speed-line');
-              const cartContainer = activeSvg.querySelector('.cart-container');
+              const cartBody = activeSvg.querySelector('.cart-body-group');
+              
               const cartMovementTl = gsap.timeline();
               cartMovementTl.to(wheels, {
                   rotation: 360,
@@ -230,9 +235,9 @@ export function Services() {
                   { x: -30, opacity: 0, duration: 0.8, ease: 'power2.out', stagger: 0.1},
                   "<"
               )
-              .to(cartContainer, {y: -3, repeat: 1, yoyo: true, duration: 0.2, ease: 'power2.inOut'}, "<0.1");
+              .to(cartBody, {y: -5, repeat: 1, yoyo: true, duration: 0.25, ease: 'power1.inOut'}, "<0.1");
 
-              secondaryAnimation.current.add(cartMovementTl, '+=0.5');
+              secondaryAnimation.current.add(cartMovementTl);
             }
           },
         });
@@ -248,19 +253,17 @@ export function Services() {
           activeSvg
         );
         if (paths.length > 0) {
-          paths.forEach((path) => {
-            const length = path.getTotalLength();
-            mainDrawTl.fromTo(
-              path,
-              { strokeDasharray: length, strokeDashoffset: length },
-              {
-                strokeDashoffset: 0,
-                duration: 1,
-                ease: 'power2.inOut',
-              },
-              '<'
-            );
-          });
+          mainDrawTl.fromTo(
+            paths,
+            { strokeDasharray: (i, el) => el.getTotalLength(), strokeDashoffset: (i, el) => el.getTotalLength() },
+            {
+              strokeDashoffset: 0,
+              duration: 1,
+              ease: 'power2.inOut',
+              stagger: 0.2
+            },
+            '<'
+          );
         }
         const circles = gsap.utils.toArray<SVGCircleElement>(
           '.pupil, .strategy-circle, .cart-wheel',
