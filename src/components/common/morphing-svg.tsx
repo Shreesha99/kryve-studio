@@ -44,6 +44,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
             uiFillPrimary: 'hsl(240 10% 3.9%)',
             uiTextMuted: 'hsl(240 3.8% 46.1%)',
             primary: 'hsl(240 10% 3.9%)',
+            primaryForeground: 'hsl(0 0% 98%)',
         },
         dark: {
             bg: 'hsl(240 10% 3.9%)',
@@ -53,13 +54,14 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
             uiFillPrimary: 'hsl(0 0% 98%)',
             uiTextMuted: 'hsl(240 5% 64.9%)',
             primary: 'hsl(0 0% 98%)',
+            primaryForeground: 'hsl(240 5.9% 10%)',
         }
     };
 
     const masterTl = gsap.timeline({
       repeat: -1,
-      repeatDelay: 1,
-      defaults: { ease: 'power2.out', duration: 0.25 }
+      repeatDelay: 0.5,
+      defaults: { ease: 'power2.out', duration: 0.2 }
     });
 
     const setup = () => {
@@ -79,11 +81,12 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
         
         gsap.set(svg.querySelectorAll('.main-bg'), { fill: startTheme.bg });
         gsap.set(svg.querySelectorAll('.ui-bg'), { fill: startTheme.uiBg });
-        gsap.set(svg.querySelectorAll('.ui-stroke'), { fill: 'none', stroke: startTheme.uiStroke });
+        gsap.set(svg.querySelectorAll('.ui-stroke'), { stroke: startTheme.uiStroke });
         gsap.set(svg.querySelectorAll('.ui-fill-muted'), { fill: startTheme.uiFillMuted });
         gsap.set(svg.querySelectorAll('.ui-fill-primary'), { fill: startTheme.uiFillPrimary });
         gsap.set(svg.querySelectorAll('.ui-text-muted'), { fill: startTheme.uiTextMuted });
         gsap.set(svg.querySelectorAll('.ui-primary-stroke'), { stroke: startTheme.uiFillPrimary });
+        gsap.set(svg.querySelectorAll('.contact-button-text'), { fill: startTheme.primaryForeground });
         if (logoTextRef.current) {
             gsap.set(logoTextRef.current, { fill: startTheme.primary });
         }
@@ -119,68 +122,30 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
 
     // --- ANIMATION SEQUENCE ---
     masterTl.add(setup);
-
-    masterTl.to(svg, { autoAlpha: 1, duration: 0.5 });
+    masterTl.to(svg, { autoAlpha: 1, duration: 0.3 });
     
-    const allUiElements = uis.map(r => r.current).filter(Boolean);
-
+    // Animate In Nav and Hero
     masterTl.add(animateSection(navUiRef));
     masterTl.add(animateSection(heroUiRef), "+=0.05");
     masterTl.add(typeText(heroHeadlineRef, headlineText, 0.4), "+=0.1");
     masterTl.add(typeText(heroSubtitleRef, subtitleText, 0.4), "+=0.1");
 
+    // Animate About Section
     const aboutTl = gsap.timeline();
     if (aboutUiRef.current) {
         const image = aboutUiRef.current.querySelector('.about-image');
         const textLines = aboutUiRef.current.querySelectorAll('.about-text-line');
         aboutTl.add(animateSection(aboutUiRef));
         if (image && textLines) {
-            aboutTl.fromTo(image, { autoAlpha: 0, scale: 0.9 }, { autoAlpha: 1, scale: 1, ease: 'power2.out' }, '>-0.1');
-            aboutTl.fromTo(textLines, { autoAlpha: 0, x: -10 }, { autoAlpha: 1, x: 0, stagger: 0.04, ease: 'power2.out' }, '>-0.1');
+            aboutTl.fromTo(image, { autoAlpha: 0, scale: 0.9 }, { autoAlpha: 1, scale: 1, ease: 'power2.out', duration: 0.2 }, '>-0.1');
+            aboutTl.fromTo(textLines, { autoAlpha: 0, x: -10 }, { autoAlpha: 1, x: 0, stagger: 0.04, ease: 'power2.out', duration: 0.2 }, '>-0.1');
         }
     }
     masterTl.add(aboutTl, '+=0.2');
 
-    const servicesTl = gsap.timeline();
-    if (servicesUiRef.current) {
-        const cards = servicesUiRef.current.querySelectorAll('.service-card');
-        servicesTl.add(animateSection(servicesUiRef));
-        if (cards.length > 0) {
-            servicesTl.fromTo(cards, { autoAlpha: 0, y: 15 }, { autoAlpha: 1, y: 0, stagger: 0.05, ease: 'power2.out' }, '>-0.1');
-        }
-    }
-    masterTl.add(servicesTl, '+=0.2');
+    // --- NEW SEQUENCE ---
 
-    const projectsTl = gsap.timeline();
-    if (projectsUiRef.current) {
-        const projectCards = projectsUiRef.current.querySelectorAll('.project-card');
-        projectsTl.add(animateSection(projectsUiRef));
-        if (projectCards.length > 0) {
-            projectsTl.fromTo(projectCards, { autoAlpha: 0, y: 15 }, { autoAlpha: 1, y: 0, stagger: 0.05, ease: 'power2.out' }, '>-0.1' );
-        }
-    }
-    masterTl.add(projectsTl, "+=0.2");
-    
-    const creativeTl = gsap.timeline();
-    if (creativeUiRef.current) {
-        creativeTl.add(animateSection(creativeUiRef));
-        creativeTl.from(creativeUiRef.current.children, { scale: 0.8, autoAlpha: 0, stagger: 0.05, transformOrigin: 'center' }, '>-0.1');
-    }
-    masterTl.add(creativeTl, "+=0.2");
-
-    const contactTl = gsap.timeline();
-    if (contactUiRef.current) {
-        const fields = contactUiRef.current.querySelectorAll('.contact-field');
-        const button = contactUiRef.current.querySelector('.contact-button');
-        contactTl.add(animateSection(contactUiRef));
-        contactTl.from(fields, { autoAlpha: 0, x: -10, stagger: 0.05 }, '>-0.1');
-        contactTl.from(button, { autoAlpha: 0, scale: 0.8 }, '>-0.1');
-    }
-    masterTl.add(contactTl, "+=0.2");
-    masterTl.add(animateSection(footerUiRef), "+=0.1");
-    
-    masterTl.addLabel('interact', "+=0.4");
-
+    // 1. Animate Theme Toggle
     const toggleTl = gsap.timeline();
     const startTheme = theme === 'dark' ? 'dark' : 'light';
     const targetTheme = startTheme === 'dark' ? 'light' : 'dark';
@@ -192,51 +157,95 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
         if (startTheme === 'dark') {
             [sunState, moonState].forEach(s => { [s.scale, s.autoAlpha] = [s.autoAlpha, s.scale]; s.rotation = -s.rotation; });
         }
-        toggleTl.to(sunIconRef.current, { scale: moonState.scale, rotation: moonState.rotation, autoAlpha: moonState.autoAlpha, ease: 'power2.in' })
-                .to(moonIconRef.current, { scale: sunState.scale, rotation: sunState.rotation, autoAlpha: sunState.autoAlpha, ease: 'power2.out' }, '>-0.2');
+        toggleTl.to(sunIconRef.current, { scale: moonState.scale, rotation: moonState.rotation, autoAlpha: moonState.autoAlpha, ease: 'power2.in', duration: 0.15 })
+                .to(moonIconRef.current, { scale: sunState.scale, rotation: sunState.rotation, autoAlpha: sunState.autoAlpha, ease: 'power2.out', duration: 0.15 }, '>-0.15');
     }
 
-    toggleTl.to(svg.querySelectorAll('.main-bg'), { fill: toColors.bg }, '<')
-            .to(svg.querySelectorAll('.ui-bg'), { fill: toColors.uiBg }, '<')
-            .to(svg.querySelectorAll('.ui-stroke'), { stroke: toColors.uiStroke }, '<')
-            .to(svg.querySelectorAll('.ui-fill-muted'), { fill: toColors.uiFillMuted }, '<')
-            .to(svg.querySelectorAll('.ui-fill-primary'), { fill: toColors.uiFillPrimary }, '<')
-            .to(svg.querySelectorAll('.ui-text-muted'), { fill: toColors.uiTextMuted }, '<')
-            .to(svg.querySelectorAll('.ui-primary-stroke'), { stroke: toColors.uiFillPrimary }, '<');
+    toggleTl.to(svg.querySelectorAll('.main-bg'), { fill: toColors.bg, duration: 0.25 }, '<')
+            .to(svg.querySelectorAll('.ui-bg'), { fill: toColors.uiBg, duration: 0.25 }, '<')
+            .to(svg.querySelectorAll('.ui-stroke'), { stroke: toColors.uiStroke, duration: 0.25 }, '<')
+            .to(svg.querySelectorAll('.ui-fill-muted'), { fill: toColors.uiFillMuted, duration: 0.25 }, '<')
+            .to(svg.querySelectorAll('.ui-fill-primary'), { fill: toColors.uiFillPrimary, duration: 0.25 }, '<')
+            .to(svg.querySelectorAll('.ui-text-muted'), { fill: toColors.uiTextMuted, duration: 0.25 }, '<')
+            .to(svg.querySelectorAll('.ui-primary-stroke'), { stroke: toColors.uiFillPrimary, duration: 0.25 }, '<')
+            .to(svg.querySelectorAll('.contact-button-text'), { fill: toColors.primaryForeground, duration: 0.25 }, '<');
 
     if (logoTextRef.current) {
-      toggleTl.to(logoTextRef.current, { fill: toColors.primary }, '<');
+      toggleTl.to(logoTextRef.current, { fill: toColors.primary, duration: 0.25 }, '<');
     }
-    masterTl.add(toggleTl, 'interact');
+    masterTl.add(toggleTl, '+=0.2');
+
+    // 2. Animate in the rest of the sections sequentially
+    const servicesTl = gsap.timeline();
+    if (servicesUiRef.current) {
+        const cards = servicesUiRef.current.querySelectorAll('.service-card');
+        servicesTl.add(animateSection(servicesUiRef));
+        if (cards.length > 0) {
+            servicesTl.fromTo(cards, { autoAlpha: 0, y: 15 }, { autoAlpha: 1, y: 0, stagger: 0.05, ease: 'power2.out', duration: 0.2 }, '>-0.1');
+        }
+    }
+    masterTl.add(servicesTl, '+=0.1');
+
+    const projectsTl = gsap.timeline();
+    if (projectsUiRef.current) {
+        const projectCards = projectsUiRef.current.querySelectorAll('.project-card');
+        projectsTl.add(animateSection(projectsUiRef));
+        if (projectCards.length > 0) {
+            projectsTl.fromTo(projectCards, { autoAlpha: 0, y: 15 }, { autoAlpha: 1, y: 0, stagger: 0.05, ease: 'power2.out', duration: 0.2 }, '>-0.1' );
+        }
+    }
+    masterTl.add(projectsTl, "+=0.1");
+    
+    const creativeTl = gsap.timeline();
+    if (creativeUiRef.current) {
+        creativeTl.add(animateSection(creativeUiRef));
+        creativeTl.from(creativeUiRef.current.children, { scale: 0.8, autoAlpha: 0, stagger: 0.05, transformOrigin: 'center', duration: 0.2 }, '>-0.1');
+    }
+    masterTl.add(creativeTl, "+=0.1");
+
+    const contactTl = gsap.timeline();
+    if (contactUiRef.current) {
+        const fields = contactUiRef.current.querySelectorAll('.contact-field');
+        const button = contactUiRef.current.querySelector('.contact-button');
+        contactTl.add(animateSection(contactUiRef));
+        contactTl.from(fields, { autoAlpha: 0, x: -10, stagger: 0.05, duration: 0.15 }, '>-0.1');
+        contactTl.from(button, { autoAlpha: 0, scale: 0.8, duration: 0.15 }, '>-0.1');
+    }
+    masterTl.add(contactTl, "+=0.1");
+    masterTl.add(animateSection(footerUiRef), "+=0.1");
+    
+    // 3. Animate the 'Services' click and scroll
+    masterTl.addLabel('interact', "+=0.3");
 
     const servicesClickTl = gsap.timeline();
     if (servicesLinkRef.current) {
-        const originalColor = toColors.uiTextMuted;
         const activeColor = toColors.uiFillPrimary;
-        servicesClickTl.to(servicesLinkRef.current, { fill: activeColor, scale: 1.05, transformOrigin: 'center middle', duration: 0.1, yoyo: true, repeat: 1, repeatDelay: 0.1 });
+        servicesClickTl.to(servicesLinkRef.current, { fill: activeColor, scale: 1.05, transformOrigin: 'center middle', duration: 0.08, yoyo: true, repeat: 1, repeatDelay: 0.1 });
     }
-    masterTl.add(servicesClickTl, 'interact+=0.2');
+    masterTl.add(servicesClickTl, 'interact');
     
     if (scrollGroupRef.current) {
-        masterTl.to(scrollGroupRef.current, { y: -350, duration: 0.6, ease: 'power3.inOut' }, 'interact+=0.3');
-        masterTl.fromTo(svg.querySelectorAll('.service-desc-group'), { autoAlpha: 0, y: 5 }, { autoAlpha: 1, y: 0, stagger: 0.05, ease: 'power2.out' }, '>-0.3');
+        masterTl.to(scrollGroupRef.current, { y: -350, duration: 0.5, ease: 'power3.inOut' }, 'interact+=0.1');
+        masterTl.fromTo(svg.querySelectorAll('.service-desc-group'), { autoAlpha: 0, y: 5 }, { autoAlpha: 1, y: 0, stagger: 0.05, ease: 'power2.out', duration: 0.2 }, '>-0.2');
     }
 
+    // 4. Smooth Reset
+    const allUiElements = uis.map(r => r.current).filter(Boolean);
     const resetTl = gsap.timeline();
 
     if (scrollGroupRef.current && allUiElements.length > 0) {
         resetTl.to(scrollGroupRef.current, { 
             y: 0, 
-            duration: 0.8, 
+            duration: 0.6, 
             ease: 'power2.inOut' 
-        })
+        }, "+=0.5")
         .to(allUiElements, { 
             autoAlpha: 0, 
             duration: 0.4 
-        }, "<0.2");
+        }, "<");
     }
     
-    masterTl.add(resetTl, "+=0.5");
+    masterTl.add(resetTl);
 
 
     return () => {
@@ -261,17 +270,121 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
             .project-desc { font-size: 8px; }
             .contact-title { font-size: 12px; font-weight: 600; text-anchor: middle; }
             .contact-field-text { font-size: 9px; }
+            .contact-button-text { font-size: 9px; font-weight: 600; text-anchor: middle; }
           `}
         </style>
         <clipPath id="mainClip">
           <rect x="20" y="20" width="560" height="1160" rx="10" />
         </clipPath>
       </defs>
+      
+      <g ref={scrollGroupRef}>
+        <rect x="20" y="20" width="560" height="1160" rx="10" className="main-bg"/>
+        {/* --- Hero --- */}
+        <g transform="translate(300, 150)">
+          <g ref={heroUiRef}>
+            <text ref={heroHeadlineRef} y="0" className="hero-headline ui-fill-primary"></text>
+            <text ref={heroSubtitleRef} y="20" className="hero-subtitle ui-text-muted"></text>
+          </g>
+        </g>
 
-      <rect x="20" y="20" width="560" height="1160" rx="10" className="main-bg ui-stroke" strokeWidth="2"/>
+        {/* --- About --- */}
+        <g transform="translate(300, 300)">
+            <g ref={aboutUiRef}>
+                <g className="about-image">
+                    <rect x="-190" y="-40" width="140" height="100" rx="5" className="ui-bg ui-stroke" strokeWidth="1"/>
+                    <path d="M -180 45 l 20 -20 l 25 25 l 30 -35 l 35 40" fill="none" className="ui-primary-stroke" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="-165" cy="-20" r="8" className="ui-fill-primary" opacity="0.5"/>
+                </g>
+                <g className="about-text">
+                    <text x="-20" y="-30" className="about-title ui-fill-primary about-text-line">Our Philosophy</text>
+                    <text x="-20" y="-10" className="about-text ui-text-muted about-text-line" >We believe in design that solves</text>
+                    <text x="-20" y="2" className="about-text ui-text-muted about-text-line" >problems and code that feels</text>
+                    <text x="-20" y="14" className="about-text ui-text-muted about-text-line">like magic.</text>
+                    <rect x="-20" y="35" width="80" height="12" rx="3" className="about-text-line ui-fill-primary" />
+                </g>
+            </g>
+        </g>
+
+        {/* --- Services --- */}
+        <g transform="translate(300, 450)">
+            <g ref={servicesUiRef}>
+                <g className="service-card" transform="translate(-160, 0)">
+                    <rect x="-70" y="-40" width="140" height="90" rx="5" className="ui-bg ui-stroke" strokeWidth="1" />
+                    <path d="M-57 -28 l-3 3 h26 l-3 -3 M-44 -28 v-5 M-44 -18 v-5" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none" className="ui-primary-stroke" transform="scale(0.6) translate(-25, -20)" />
+                    <text x="-60" y="-5" className="service-title ui-fill-primary">Web Design</text>
+                    <g className="service-desc-group">
+                      <text x="-60" y="10" className="service-desc ui-text-muted">Visually stunning</text>
+                      <text x="-60" y="20" className="service-desc ui-text-muted">interfaces.</text>
+                    </g>
+                </g>
+                <g className="service-card" transform="translate(0, 0)">
+                    <rect x="-70" y="-40" width="140" height="90" rx="5" className="ui-bg ui-stroke" strokeWidth="1" />
+                    <path d="M-52 -25 l-8 5 l8 5 M-44 -25 l8 5 l-8 5" fill="none" className="ui-primary-stroke" strokeWidth="1.2" strokeLinecap="round" transform="scale(0.6) translate(-25, -18)" />
+                    <text x="-60" y="-5" className="service-title ui-fill-primary">Development</text>
+                    <g className="service-desc-group">
+                      <text x="-60" y="10" className="service-desc ui-text-muted">Robust & Scalable</text>
+                      <text x="-60" y="20" className="service-desc ui-text-muted">solutions.</text>
+                    </g>
+                </g>
+                <g className="service-card" transform="translate(160, 0)">
+                    <rect x="-70" y="-40" width="140" height="90" rx="5" className="ui-bg ui-stroke" strokeWidth="1" />
+                    <path d="M-52 -22 a8 8 0 1 0 16 0 a8 8 0 1 0 -16 0 M-44 -22 l0 -8 l8 4 z" fill="none" className="ui-primary-stroke" strokeWidth="1.2" transform="scale(0.6) translate(-25, -18)" />
+                    <text x="-60" y="-5" className="service-title ui-fill-primary">Branding</text>
+                    <g className="service-desc-group">
+                      <text x="-60" y="10" className="service-desc ui-text-muted">Unique brand</text>
+                      <text x="-60" y="20" className="service-desc ui-text-muted">identities.</text>
+                    </g>
+                </g>
+            </g>
+        </g>
+
+         {/* --- Projects --- */}
+        <g transform="translate(300, 620)">
+          <g ref={projectsUiRef}>
+              <g className="project-card">
+                <rect x="-220" y="-50" width="200" height="120" rx="5" className="ui-bg ui-stroke" />
+                <rect x="-210" y="-40" width="180" height="70" rx="3" className="ui-fill-muted" opacity="0.3"/>
+                <text x="-210" y="45" className="project-title ui-fill-primary">Project One</text>
+                <text x="-210" y="60" className="project-desc ui-text-muted">A short description here.</text>
+              </g>
+              <g className="project-card">
+                <rect x="20" y="-50" width="200" height="120" rx="5" className="ui-bg ui-stroke" />
+                <rect x="30" y="-40" width="180" height="70" rx="3" className="ui-fill-muted" opacity="0.3"/>
+                <text x="30" y="45" className="project-title ui-fill-primary">Project Two</text>
+                <text x="30" y="60" className="project-desc ui-text-muted">Another short description.</text>
+              </g>
+          </g>
+        </g>
+
+        {/* --- Creative --- */}
+        <g transform="translate(300, 780)">
+          <g ref={creativeUiRef}>
+              <circle cx="-60" cy="0" r="50" className="ui-fill-muted" opacity="0.1"/>
+              <path d="M 50 -50 Q 0 0 50 50" fill="none" className="ui-primary-stroke" strokeWidth="2"/>
+              <rect x="-40" y="-40" width="80" height="80" rx="5" fill="none" className="ui-primary-stroke" strokeDasharray="5 5" />
+          </g>
+        </g>
+        
+        {/* --- Contact --- */}
+        <g transform="translate(300, 900)">
+          <g ref={contactUiRef}>
+            <text y="-35" className="contact-title ui-fill-primary">Let's build together.</text>
+            <rect x="-150" y="-15" width="145" height="25" rx="4" className="contact-field ui-bg ui-stroke" strokeWidth="1" />
+            <text x="-140" y="2" className="contact-field-text ui-text-muted contact-field">Your Name</text>
+            <rect x="5" y="-15" width="145" height="25" rx="4" className="contact-field ui-bg ui-stroke" strokeWidth="1" />
+            <text x="15" y="2" className="contact-field-text ui-text-muted contact-field">Your Email</text>
+            <rect x="-100" y="25" width="200" height="30" rx="5" className="contact-button ui-fill-primary" />
+            <text x="0" y="44" className="contact-button-text">Send Message</text>
+          </g>
+        </g>
+      </g>
+      
       <g clipPath="url(#mainClip)">
+        <rect x="20" y="20" width="560" height="1160" fill="none" className="ui-stroke" strokeWidth="2"/>
+
         {/* --- FIXED Navbar --- */}
-        <g transform="translate(300, 50)">
+        <g ref={navUiRef} transform="translate(300, 50)">
           <rect x="-280" y="-15" width="560" height="30" className="ui-bg" />
           <text ref={logoTextRef} x="-270" y="6" className="logo-text">KRYVE</text>
           <text x="-50" y="5.5" className="nav-link ui-text-muted">About</text>
@@ -289,109 +402,8 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
           </g>
         </g>
         
-        <g ref={scrollGroupRef}>
-            {/* --- Hero --- */}
-            <g transform="translate(300, 150)">
-              <g ref={heroUiRef}>
-                <text ref={heroHeadlineRef} y="0" className="hero-headline ui-fill-primary"></text>
-                <text ref={heroSubtitleRef} y="20" className="hero-subtitle ui-text-muted"></text>
-              </g>
-            </g>
-
-            {/* --- About --- */}
-            <g transform="translate(300, 300)">
-                <g ref={aboutUiRef}>
-                    <g className="about-image">
-                        <rect x="-190" y="-40" width="140" height="100" rx="5" className="ui-bg ui-stroke" strokeWidth="1"/>
-                        <path d="M -180 45 l 20 -20 l 25 25 l 30 -35 l 35 40" fill="none" className="ui-primary-stroke" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        <circle cx="-165" cy="-20" r="8" className="ui-fill-primary" opacity="0.5"/>
-                    </g>
-                    <g className="about-text">
-                        <text x="-20" y="-30" className="about-title ui-fill-primary about-text-line">Our Philosophy</text>
-                        <text x="-20" y="-10" className="about-text ui-text-muted about-text-line" >We believe in design that solves</text>
-                        <text x="-20" y="2" className="about-text ui-text-muted about-text-line" >problems and code that feels</text>
-                        <text x="-20" y="14" className="about-text ui-text-muted about-text-line">like magic.</text>
-                        <rect x="-20" y="35" width="80" height="12" rx="3" className="about-text-line ui-fill-primary" />
-                    </g>
-                </g>
-            </g>
-
-            {/* --- Services --- */}
-            <g transform="translate(300, 450)">
-                <g ref={servicesUiRef}>
-                    <g className="service-card" transform="translate(-160, 0)">
-                        <rect x="-70" y="-40" width="140" height="90" rx="5" className="ui-bg ui-stroke" strokeWidth="1" />
-                        <path d="M-57 -28 l-3 3 h26 l-3 -3 M-44 -28 v-5 M-44 -18 v-5" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none" className="ui-primary-stroke" transform="scale(0.8) translate(-10, -5)" />
-                        <text x="-60" y="-5" className="service-title ui-fill-primary">Web Design</text>
-                        <g className="service-desc-group">
-                          <text x="-60" y="10" className="service-desc ui-text-muted">Visually stunning</text>
-                          <text x="-60" y="20" className="service-desc ui-text-muted">interfaces.</text>
-                        </g>
-                    </g>
-                    <g className="service-card" transform="translate(0, 0)">
-                        <rect x="-70" y="-40" width="140" height="90" rx="5" className="ui-bg ui-stroke" strokeWidth="1" />
-                        <path d="M-52 -25 l-8 5 l8 5 M-44 -25 l8 5 l-8 5" fill="none" className="ui-primary-stroke" strokeWidth="1.2" strokeLinecap="round" transform="scale(0.8) translate(-10, -3)" />
-                        <text x="-60" y="-5" className="service-title ui-fill-primary">Development</text>
-                        <g className="service-desc-group">
-                          <text x="-60" y="10" className="service-desc ui-text-muted">Robust & Scalable</text>
-                          <text x="-60" y="20" className="service-desc ui-text-muted">solutions.</text>
-                        </g>
-                    </g>
-                    <g className="service-card" transform="translate(160, 0)">
-                        <rect x="-70" y="-40" width="140" height="90" rx="5" className="ui-bg ui-stroke" strokeWidth="1" />
-                        <path d="M-52 -22 a8 8 0 1 0 16 0 a8 8 0 1 0 -16 0 M-44 -22 l0 -8 l8 4 z" fill="none" className="ui-primary-stroke" strokeWidth="1.2" transform="scale(0.8) translate(-10, -3)" />
-                        <text x="-60" y="-5" className="service-title ui-fill-primary">Branding</text>
-                        <g className="service-desc-group">
-                          <text x="-60" y="10" className="service-desc ui-text-muted">Unique brand</text>
-                          <text x="-60" y="20" className="service-desc ui-text-muted">identities.</text>
-                        </g>
-                    </g>
-                </g>
-            </g>
-
-             {/* --- Projects --- */}
-            <g transform="translate(300, 620)">
-              <g ref={projectsUiRef}>
-                  <g className="project-card">
-                    <rect x="-220" y="-50" width="200" height="120" rx="5" className="ui-bg ui-stroke" />
-                    <rect x="-210" y="-40" width="180" height="70" rx="3" className="ui-fill-muted" opacity="0.3"/>
-                    <text x="-210" y="45" className="project-title ui-fill-primary">Project One</text>
-                    <text x="-210" y="60" className="project-desc ui-text-muted">A short description here.</text>
-                  </g>
-                  <g className="project-card">
-                    <rect x="20" y="-50" width="200" height="120" rx="5" className="ui-bg ui-stroke" />
-                    <rect x="30" y="-40" width="180" height="70" rx="3" className="ui-fill-muted" opacity="0.3"/>
-                    <text x="30" y="45" className="project-title ui-fill-primary">Project Two</text>
-                    <text x="30" y="60" className="project-desc ui-text-muted">Another short description.</text>
-                  </g>
-              </g>
-            </g>
-
-            {/* --- Creative --- */}
-            <g transform="translate(300, 780)">
-              <g ref={creativeUiRef}>
-                  <circle cx="-60" cy="0" r="50" className="ui-fill-muted" opacity="0.1"/>
-                  <path d="M 50 -50 Q 0 0 50 50" fill="none" className="ui-primary-stroke" strokeWidth="2"/>
-                  <rect x="-40" y="-40" width="80" height="80" rx="5" fill="none" className="ui-primary-stroke" strokeDasharray="5 5" />
-              </g>
-            </g>
-            
-            {/* --- Contact --- */}
-            <g transform="translate(300, 900)">
-              <g ref={contactUiRef}>
-                <text y="-35" className="contact-title ui-fill-primary">Let's build together.</text>
-                <rect x="-150" y="-15" width="145" height="25" rx="4" className="contact-field ui-bg ui-stroke" strokeWidth="1" />
-                <text x="-140" y="2" className="contact-field-text ui-text-muted contact-field">Your Name</text>
-                <rect x="5" y="-15" width="145" height="25" rx="4" className="contact-field ui-bg ui-stroke" strokeWidth="1" />
-                <text x="15" y="2" className="contact-field-text ui-text-muted contact-field">Your Email</text>
-                <rect x="-100" y="25" width="200" height="30" rx="5" className="contact-button ui-fill-primary" />
-                <text x="-25" y="44" fill="hsl(var(--primary-foreground))" fontSize="9px" fontWeight="600" className="contact-button">Send Message</text>
-              </g>
-            </g>
-        </g>
-        
         {/* --- FIXED Footer --- */}
-        <g transform="translate(300, 1150)">
+        <g ref={footerUiRef} transform="translate(300, 1150)">
           <rect x="-280" y="-15" width="560" height="30" className="ui-bg" />
           <text x="-270" y="6" className="logo-text ui-fill-primary">KRYVE</text>
           <text x="0" y="5" fontSize="8" textAnchor="middle" className="ui-text-muted">&copy; 2024. All rights reserved.</text>
@@ -403,5 +415,3 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
     </svg>
   );
 }
-
-    
