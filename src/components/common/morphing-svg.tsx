@@ -66,7 +66,6 @@ export function MorphingSvg() {
 
     const masterTl = gsap.timeline({ repeat: -1, repeatDelay: 1 });
     
-    // --- ANIMATION CREATION HELPER ---
     const createComponentAnimation = (
         codeRef: React.RefObject<SVGTextElement>,
         uiRef: React.RefObject<SVGGElement>,
@@ -75,38 +74,33 @@ export function MorphingSvg() {
     ) => {
         const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
 
-        // 1. Position and show code at top center
         const codeBBox = codeRef.current!.getBBox();
-        const codeX = 250 - codeBBox.width / 2;
-        const codeY = 150 - codeBBox.height / 2;
-
+        const codeY = 250 - codeBBox.height / 2;
         tl.fromTo(codeRef.current, 
-          { autoAlpha: 0, x: codeX - codeBBox.x, y: codeY - codeBBox.y },
-          { autoAlpha: 1, duration: 0.5 }
+            { autoAlpha: 0, y: codeY - codeBBox.y, x: 50 - codeBBox.x }, 
+            { autoAlpha: 1, x: 100 - codeBBox.x, duration: 0.5 }
         );
-        
-        // 2. Build UI below it ("Fade Down")
-        tl.add(uiSetup, "+=1");
-        
-        const uiBBox = uiRef.current!.getBBox();
-        const uiX = 250 - uiBBox.width / 2;
-        const uiY = 300 - uiBBox.height / 2;
 
-        tl.fromTo(uiRef.current, 
-            { autoAlpha: 0, scale: 0.8, x: uiX - uiBBox.x, y: (codeY - uiBBox.y) + 30 }, 
-            { autoAlpha: 1, scale: 1, y: uiY - uiBBox.y, duration: 0.8 }, 
-            ">-0.2");
+        tl.to(codeRef.current, { x: 220 - codeBBox.x, autoAlpha: 0, duration: 0.4, ease: 'power2.in' }, "+=1");
         
-        // 3. Interaction
+        tl.add(uiSetup, "<");
+
+        const uiBBox = uiRef.current!.getBBox();
+        const uiX = 320;
+        const uiY = 250 - uiBBox.height / 2;
+        
+        tl.fromTo(uiRef.current, 
+            { autoAlpha: 0, scale: 0.5, x: (280 - uiBBox.x), y: uiY - uiBBox.y }, 
+            { autoAlpha: 1, scale: 1, x: uiX - uiBBox.x, duration: 0.6 }, 
+            "<");
+        
         interaction(tl, uiX, uiY);
 
-        // 4. Fade out
-        tl.to([codeRef.current, uiRef.current, cursorRef.current], { autoAlpha: 0, duration: 0.5 }, "+=1.5");
+        tl.to([uiRef.current, cursorRef.current], { autoAlpha: 0, duration: 0.5 }, "+=1.5");
         
         return tl;
     }
 
-    // --- INTERACTION DEFINITIONS ---
     const buttonInteraction = (tl: gsap.core.Timeline, uiX: number, uiY: number) => {
       const uiBBox = uiButtonRef.current!.getBBox();
       tl.to(cursorRef.current, { autoAlpha: 1, x: uiX + uiBBox.width / 2, y: uiY + uiBBox.height / 2, duration: 0.5 });
@@ -161,7 +155,6 @@ export function MorphingSvg() {
         tl.to(uiChartLineRef.current, { strokeDashoffset: 0, duration: 1.5, ease: 'power1.inOut' });
     };
 
-    // --- BUILD MASTER TIMELINE ---
     masterTl
         .add(createComponentAnimation(codeButtonRef, uiButtonRef, () => {}, buttonInteraction))
         .add(createComponentAnimation(codeInputRef, uiInputRef, () => {}, inputInteraction))
@@ -205,6 +198,8 @@ export function MorphingSvg() {
               font-weight: 500;
               font-size: 20px;
               fill: hsl(var(--muted-foreground));
+              text-anchor: end;
+              dominant-baseline: middle;
             }
             .ui-text {
                 font-size: 12px;
@@ -213,12 +208,18 @@ export function MorphingSvg() {
                 dominant-baseline: middle;
                 text-anchor: middle;
             }
+            .build-line {
+              stroke: hsl(var(--border));
+              stroke-width: 2px;
+            }
           `}
         </style>
         <g id="cursor" ref={cursorRef}>
             <path fill="hsl(var(--foreground))" d="M11.22,9.45,3.95,2.18A1.07,1.07,0,0,0,2.44,2.18L2.18,2.44a1.07,1.07,0,0,0,0,1.51l7.27,7.27-2.3,6.89a1.06,1.06,0,0,0,1,1.33,1,1,0,0,0,.32-.06l7.15-2.4a1.07,1.07,0,0,0,.68-1Z"/>
         </g>
       </defs>
+
+      <line x1="250" y1="0" x2="250" y2="500" className="build-line"/>
 
       {/* Code Components */}
       <g>
