@@ -1,11 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { gsap } from 'gsap';
 import { cn } from '@/lib/utils';
-import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
+import { InteractiveOrbs } from '@/components/common/interactive-orbs';
 
 const services = [
   {
@@ -13,69 +11,129 @@ const services = [
     title: 'Visual Craft',
     description:
       'We forge digital identities. Our design philosophy merges aesthetic intuition with data-driven strategy to build interfaces that are not only beautiful but deeply functional and unforgettable.',
-    svgPath: 'M 50 100 C 150 20, 250 180, 350 100 S 550 0, 550 150',
+    svg: (
+      <path d="M200 150 L220 130 M200 150 Q150 100, 200 50 L400 50 Q450 100, 400 150 Z M200 50 L180 30" />
+    ),
   },
   {
     id: 'development',
     title: 'Code Artistry',
     description:
       'Our code is clean, efficient, and built to last. We use cutting-edge technologies to engineer robust, scalable, and lightning-fast web experiences that perform flawlessly under pressure.',
-    svgPath: 'M 100 150 L 150 100 L 200 150 M 250 100 L 350 100 M 400 150 L 450 100 L 500 150',
+    svg: <path d="M250 50 L150 100 L250 150 M350 50 L450 100 L350 150" />,
   },
   {
     id: 'branding',
-    title: 'Identity Design',
+    title: 'Identity & Strategy',
     description:
       'A brand is a story, a feeling, a promise. We help you define and articulate your unique identity, creating a cohesive brand world that resonates with your audience and stands the test of time.',
-    svgPath: 'M 300 50 L 320 150 L 250 100 H 350 L 280 150 Z',
+    svg: (
+      <>
+        <circle className="strategy-circle" cx="300" cy="100" r="60" />
+        <circle className="strategy-circle" cx="300" cy="100" r="30" />
+        <circle
+          cx="300"
+          cy="100"
+          r="5"
+          className="fill-primary"
+          stroke="none"
+        />
+      </>
+    ),
   },
   {
     id: 'ecommerce',
     title: 'Commerce Platforms',
     description:
       'We build powerful e-commerce engines designed for growth. From seamless user journeys to secure payment gateways, we create online stores that convert visitors into loyal customers.',
-    svgPath: 'M 100 150 H 130 L 160 50 H 450 L 420 150 H 180 M 200 180 a 20 20 0 1 0 40 0 a 20 20 0 1 0 -40 0 M 350 180 a 20 20 0 1 0 40 0 a 20 20 0 1 0 -40 0',
+    svg: (
+      <>
+        <path d="M180 150 L150 60 H 450 L 420 150 Z" />
+        <path d="M200 100 h 200" />
+        <circle cx="240" cy="170" r="15" />
+        <circle cx="360" cy="170" r="15" />
+      </>
+    ),
   },
 ];
 
+const AUTOPLAY_DURATION = 5; // seconds
+
 export function Services() {
-  const [activeService, setActiveService] = useState(services[0]);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isHovering, setIsHovering] = useState(false);
+
   const sectionRef = useRef<HTMLElement>(null);
-  const svgContainerRef = useRef<HTMLDivElement>(null);
-  const descRef = useRef<HTMLParagraphElement>(null);
+  const progressTl = useRef<gsap.core.Timeline>();
 
+  const runAutoplay = useCallback((index: number) => {
+    progressTl.current?.kill();
+    const progressBars = gsap.utils.toArray<HTMLDivElement>('.progress-bar', sectionRef.current);
+    gsap.set(progressBars, { scaleX: 0, transformOrigin: 'left' });
+
+    progressTl.current = gsap.timeline({
+      onComplete: () => {
+        const nextIndex = (index + 1) % services.length;
+        setActiveIndex(nextIndex);
+      },
+    }).to(progressBars[index], {
+      scaleX: 1,
+      duration: AUTOPLAY_DURATION,
+      ease: 'linear',
+    });
+  }, []);
+
+  // Effect to handle animations when activeIndex changes
   useEffect(() => {
+    if (!isHovering) {
+      runAutoplay(activeIndex);
+    }
     const ctx = gsap.context(() => {
-      if (!svgContainerRef.current || !descRef.current || !activeService) return;
-
-      const svg = svgContainerRef.current.querySelector(`#svg-${activeService.id}`) as SVGSVGElement | null;
-      if (!svg) return;
-      
-      const path = svg.querySelector('path');
-      if (!path) return;
-
-      const length = path.getTotalLength();
-      
-      const masterTl = gsap.timeline();
-      
-      masterTl.fromTo(descRef.current, 
-          { autoAlpha: 0, y: 15 },
-          { autoAlpha: 1, y: 0, duration: 0.6, ease: 'power3.out' }
+      // Animate description
+      gsap.fromTo(
+        '.service-description',
+        { opacity: 0, y: 15 },
+        { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }
       );
-
-      masterTl.to(svgContainerRef.current.querySelectorAll('svg:not(#' + svg.id + ')'), { autoAlpha: 0, duration: 0.4 }, 0);
       
-      const svgTl = gsap.timeline();
-      svgTl.set(path, { strokeDasharray: length, strokeDashoffset: length, autoAlpha: 1 })
-        .to(svg, { autoAlpha: 1 }, 0)
-        .to(path, { strokeDashoffset: 0, duration: 1.5, ease: 'power2.inOut' });
-
-      masterTl.add(svgTl, 0);
+      // Animate SVGs
+      const allSvgs = gsap.utils.toArray<SVGSVGElement>('svg.service-svg', sectionRef.current);
+      const activeSvg = allSvgs.find(svg => svg.id === `svg-${services[activeIndex].id}`);
+      
+      gsap.to(allSvgs, { autoAlpha: 0, duration: 0.4 });
+      
+      if(activeSvg) {
+          gsap.fromTo(activeSvg, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.4 });
+          const paths = gsap.utils.toArray<SVGPathElement>('path', activeSvg);
+          if (paths.length > 0) {
+            paths.forEach(path => {
+                const length = path.getTotalLength();
+                gsap.set(path, { strokeDasharray: length, strokeDashoffset: length });
+                gsap.to(path, { strokeDashoffset: 0, duration: 1.5, ease: 'power2.inOut' });
+            });
+          }
+          const circles = gsap.utils.toArray<SVGCircleElement>('.strategy-circle', activeSvg);
+          if (circles.length > 0) {
+            gsap.fromTo(circles, { scale: 0, transformOrigin: 'center' }, { scale: 1, stagger: 0.2, duration: 1, ease: 'elastic.out(1, 0.5)' });
+          }
+      }
 
     }, sectionRef);
-
     return () => ctx.revert();
-  }, [activeService]);
+  }, [activeIndex, isHovering, runAutoplay]);
+  
+  const handleMouseEnter = (index: number) => {
+    setIsHovering(true);
+    progressTl.current?.pause();
+    if(index !== activeIndex) {
+      setActiveIndex(index);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovering(false);
+    progressTl.current?.play();
+  };
 
   return (
     <section
@@ -83,63 +141,77 @@ export function Services() {
       ref={sectionRef}
       className="relative flex min-h-screen w-full items-center overflow-hidden bg-background py-24 md:py-32"
     >
-      <div className="container mx-auto px-4 md:px-6">
+      <InteractiveOrbs />
+      <div className="container relative z-10 mx-auto px-4 md:px-6">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-24">
           <div className="space-y-8">
-             <h2 className="font-headline text-4xl font-semibold tracking-tight sm:text-5xl">
+            <h2 className="font-headline text-4xl font-semibold tracking-tight sm:text-5xl">
               Anatomy of Excellence
-             </h2>
-            
-            <ul className="border-t border-border">
-              {services.map((service) => (
-                <li key={service.id}>
-                  <button
-                    onMouseEnter={() => setActiveService(service)}
+            </h2>
+
+            <ul className="border-t border-border" onMouseLeave={handleMouseLeave}>
+              {services.map((service, index) => (
+                <li
+                  key={service.id}
+                  className="relative border-b border-border"
+                  onMouseEnter={() => handleMouseEnter(index)}
+                >
+                  <div
                     className={cn(
-                      'group flex w-full cursor-pointer items-center justify-between border-b border-border py-8 text-left transition-colors duration-300'
+                      'group flex w-full cursor-pointer items-center justify-between py-8 text-left transition-colors duration-300'
                     )}
                   >
-                    <h3 className={cn(
+                    <h3
+                      className={cn(
                         'font-headline text-3xl font-medium sm:text-4xl transition-colors',
-                         activeService.id === service.id ? 'text-primary' : 'text-foreground/60 group-hover:text-foreground'
-                        )}>
+                        activeIndex === index
+                          ? 'text-primary'
+                          : 'text-foreground/60 group-hover:text-foreground'
+                      )}
+                    >
                       {service.title}
                     </h3>
-                    <span className={cn(
-                        "material-symbols-outlined text-4xl text-primary transition-all duration-500 ease-in-out",
-                        activeService.id === service.id ? "translate-x-0 opacity-100" : "-translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100"
-                        )}>
-                        arrow_right_alt
+                    <span
+                      className={cn(
+                        'material-symbols-outlined text-4xl text-primary transition-all duration-500 ease-in-out',
+                        activeIndex === index
+                          ? 'translate-x-0 opacity-100'
+                          : '-translate-x-4 opacity-0'
+                      )}
+                    >
+                      arrow_right_alt
                     </span>
-                  </button>
+                  </div>
+                   <div className="progress-bar absolute bottom-0 left-0 h-px bg-primary"></div>
                 </li>
               ))}
             </ul>
           </div>
-          <div className="relative flex h-80 min-h-[300px] w-full flex-col items-center justify-center rounded-lg lg:h-96">
-              <div ref={svgContainerRef} className="absolute inset-0 flex items-center justify-center p-8">
+          <div className="relative flex min-h-[300px] w-full flex-col items-center justify-center rounded-lg lg:h-96">
+            <div
+              ref={svgContainerRef}
+              className="absolute inset-0 flex items-center justify-center p-8"
+            >
               {services.map(service => (
-                  <svg
+                <svg
                   key={service.id}
                   id={`svg-${service.id}`}
                   viewBox="0 0 600 200"
-                  className="absolute h-full w-full opacity-0"
+                  className="service-svg absolute h-full w-full opacity-0"
                   preserveAspectRatio="xMidYMid meet"
                   fill="none"
-                  >
-                  <path
-                      d={service.svgPath}
-                      stroke="hsl(var(--primary))"
-                      strokeWidth="4"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                  />
-                  </svg>
+                  stroke="hsl(var(--primary))"
+                  strokeWidth="8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  {service.svg}
+                </svg>
               ))}
-              </div>
-              <p ref={descRef} className="relative mt-8 text-center text-lg text-muted-foreground opacity-0 lg:mt-16">
-                  {activeService.description}
-              </p>
+            </div>
+            <p className="service-description relative z-10 max-w-md text-center text-lg text-muted-foreground">
+              {services[activeIndex].description}
+            </p>
           </div>
         </div>
       </div>

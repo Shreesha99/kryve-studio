@@ -1,112 +1,73 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTheme } from 'next-themes';
 import { gsap } from 'gsap';
-import { cn } from '@/lib/utils';
 
-// Individual Orb component
-const Orb = ({ className, sizeClass }: { className?: string; sizeClass?: string }) => {
-  const orbRef = useRef<SVGSVGElement>(null);
+export function InteractiveOrbs() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
-    if (!mounted) return; // Don't run animations until mounted and theme is resolved
+    const container = containerRef.current;
+    if (!container) return;
+    
+    const orbs = gsap.utils.toArray<HTMLDivElement>('.orb', container);
 
-    const orb = orbRef.current;
-    if (!orb) return;
-
-    // Set initial position
-    gsap.set(orb, { x: 'random(-5, 5)', y: 'random(-5, 5)' });
-
-    // Ambient floating animation
-    const floatTl = gsap.timeline({ repeat: -1, yoyo: true });
-    floatTl
-      .to(orb, {
-        x: 'random(-20, 20)',
-        y: 'random(-20, 20)',
-        duration: 'random(5, 8)',
-        ease: 'sine.inOut',
-      })
-      .to(
-        orb,
-        {
-          rotation: 'random(-45, 45)',
-          duration: 'random(6, 9)',
-          ease: 'sine.inOut',
-        },
-        0
-      );
-
-    // Hover interaction
-    let hoverTl: gsap.core.Timeline;
-    const onMouseEnter = () => {
-      hoverTl = gsap.timeline();
-      hoverTl.to(orb, {
-        scale: 1.4,
-        duration: 0.4,
-        ease: 'power3.out',
-      });
+    const onMouseMove = (e: MouseEvent) => {
+        gsap.to(orbs, {
+            x: e.clientX,
+            y: e.clientY,
+            stagger: {
+              each: 0.05,
+              from: "start"
+            },
+            overwrite: 'auto',
+            duration: 1.5,
+            ease: 'power3.out',
+        });
     };
+    
+    gsap.set(orbs, { 
+        x: window.innerWidth / 2, 
+        y: window.innerHeight / 2,
+        scale: () => Math.random() * 0.5 + 0.5,
+        opacity: 0,
+    });
+    
+    gsap.to(orbs, {
+        x: () => Math.random() * window.innerWidth,
+        y: () => Math.random() * window.innerHeight,
+        opacity: 0.1,
+        duration: 2,
+        ease: 'power2.out',
+        stagger: 0.1
+    });
 
-    const onMouseLeave = () => {
-      hoverTl?.reverse();
-    };
+    window.addEventListener('mousemove', onMouseMove);
+    return () => window.removeEventListener('mousemove', onMouseMove);
+  }, []);
 
-    orb.addEventListener('mouseenter', onMouseEnter);
-    orb.addEventListener('mouseleave', onMouseLeave);
-
-    return () => {
-      floatTl.kill();
-      if (hoverTl) hoverTl.kill();
-      if (orb) {
-        orb.removeEventListener('mouseenter', onMouseEnter);
-        orb.removeEventListener('mouseleave', onMouseLeave);
-      }
-    };
-  }, [mounted]);
-
-  if (!mounted) return null;
+  const orbColor = resolvedTheme === 'dark' ? 'hsl(0 0% 98%)' : 'hsl(240 5.9% 10%)';
 
   return (
-    <svg
-      ref={orbRef}
-      viewBox="0 0 100 100"
-      className={cn('absolute', sizeClass, className)}
-      style={{ willChange: 'transform' }}
+    <div
+      ref={containerRef}
+      className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
       aria-hidden="true"
     >
-      <circle
-        cx="50"
-        cy="50"
-        r="50"
-        fill={`hsl(${
-          resolvedTheme === 'dark' ? '0 0% 98%' : '240 5.9% 10%'
-        })`}
-        fillOpacity="0.1"
-      />
-    </svg>
-  );
-};
-
-// Container for all orbs
-export function InteractiveOrbs() {
-  return (
-    <div className="absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-      <Orb className="top-[15%] left-[5%]" sizeClass="w-16 h-16" />
-      <Orb
-        className="top-[60%] left-[25%] hidden sm:block"
-        sizeClass="w-12 h-12"
-      />
-      <Orb className="top-[25%] right-[10%]" sizeClass="w-20 h-20" />
-      <Orb
-        className="bottom-[15%] right-[20%] hidden md:block"
-        sizeClass="w-14 h-14"
-      />
-      <Orb className="bottom-[5%] left-[45%]" sizeClass="w-8 h-8" />
+      {[...Array(5)].map((_, i) => (
+        <div
+          key={i}
+          className="orb absolute h-24 w-24 rounded-full"
+          style={{ 
+            backgroundColor: orbColor,
+            top: '-12rem',
+            left: '-12rem',
+            willChange: 'transform'
+          }}
+        />
+      ))}
     </div>
   );
 }
