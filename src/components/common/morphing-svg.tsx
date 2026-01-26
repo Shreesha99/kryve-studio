@@ -84,10 +84,9 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
         
         if (heroHeadlineRef.current) heroHeadlineRef.current.textContent = '';
         if (heroSubtitleRef.current) heroSubtitleRef.current.textContent = '';
-        if (svg) {
-            const serviceContents = svg.querySelectorAll('.service-card-content');
-            gsap.set(serviceContents, { autoAlpha: 0 });
-        }
+        
+        const serviceDescGroups = svg.querySelectorAll('.service-desc-group');
+        gsap.set(serviceDescGroups, { autoAlpha: 0 });
 
 
         if (sunIconRef.current && moonIconRef.current) {
@@ -225,9 +224,27 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
     const fromTheme = theme === 'dark' ? colors.dark : colors.light;
     const toTheme = theme === 'dark' ? colors.light : colors.dark;
     
-    toggleTl.to(sunIconRef.current, { scale: theme === 'dark' ? 1 : 0, rotation: theme === 'dark' ? 0 : 90, autoAlpha: theme === 'dark' ? 1: 0, duration: 0.4, ease: 'power2.in' })
-            .to(moonIconRef.current, { scale: theme === 'dark' ? 0 : 1, rotation: theme === 'dark' ? -90 : 0, autoAlpha: theme === 'dark' ? 0 : 1, duration: 0.4, ease: 'power2.out' }, '>-0.3')
-            .to(allAnimatedElements.mainBg, { fill: toTheme.bg, duration: 0.5 }, '<')
+    if (sunIconRef.current && moonIconRef.current) {
+      toggleTl.to(sunIconRef.current, { scale: theme === 'dark' ? 1 : 0, rotation: theme === 'dark' ? 0 : 90, autoAlpha: theme === 'dark' ? 1: 0, duration: 0.4, ease: 'power2.in' })
+              .to(moonIconRef.current, { scale: theme === 'dark' ? 0 : 1, rotation: theme === 'dark' ? -90 : 0, autoAlpha: theme === 'dark' ? 0 : 1, duration: 0.4, ease: 'power2.out' }, '>-0.3')
+    }
+
+    Object.values(allAnimatedElements).forEach(elements => {
+        if (!elements) return;
+        const isStroke = (elements as NodeList).length > 0 && (elements[0] as SVGElement).tagName.toLowerCase() === 'path' && !(elements[0] as SVGElement).hasAttribute('fill');
+        
+        if (isStroke) {
+          toggleTl.to(elements, { stroke: toTheme.uiPrimaryStroke, duration: 0.5 }, '<');
+        } else {
+          const prop = (elements as any).length !== undefined ? 'fill' : 'fill'; // Fallback
+          const targetColorKey = Object.keys(fromTheme).find(key => (fromTheme as any)[key] === (elements as any).fill);
+          if (targetColorKey) {
+            toggleTl.to(elements, { [prop]: (toTheme as any)[targetColorKey], duration: 0.5 }, '<');
+          }
+        }
+    });
+
+    toggleTl.to(allAnimatedElements.mainBg, { fill: toTheme.bg, duration: 0.5 }, '<')
             .to(allAnimatedElements.uiBg, { fill: toTheme.uiBg, duration: 0.5 }, '<')
             .to(allAnimatedElements.uiStroke, { stroke: toTheme.uiStroke, duration: 0.5 }, '<')
             .to(allAnimatedElements.uiFillMuted, { fill: toTheme.uiFillMuted, duration: 0.5 }, '<')
@@ -254,12 +271,12 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
     if (scrollGroupRef.current && servicesUiRef.current) {
         const servicesUiBBox = servicesUiRef.current.getBBox();
         const servicesY = servicesUiBBox.y;
-        const serviceContents = svg.querySelectorAll('.service-card-content');
+        const serviceDescGroups = svg.querySelectorAll('.service-desc-group');
         
         masterTl.to(scrollGroupRef.current, { y: -servicesY + 60, duration: 1.5, ease: 'power3.inOut' }, '+=0.3');
         
-        if (serviceContents.length > 0) {
-            masterTl.fromTo(serviceContents,
+        if (serviceDescGroups.length > 0) {
+            masterTl.fromTo(serviceDescGroups,
                 { autoAlpha: 0, y: 10 },
                 { autoAlpha: 1, y: 0, stagger: 0.2, duration: 0.5, ease: 'power2.out' },
                 '>-0.8'
@@ -387,29 +404,29 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
                 <g ref={servicesUiRef}>
                     <g className="service-card" transform="translate(-140, 0)">
                         <rect x="-50" y="-30" width="100" height="70" rx="5" class="ui-bg ui-stroke" stroke-width="1" />
-                        <g className="service-card-content">
-                            <rect x="-40" y="-20" width="20" height="8" rx="2" class="ui-fill-primary" />
-                            <text x="-40" y="0" className="service-title ui-fill-primary">Web Design</text>
-                            <text x="-40" y="12" className="service-desc ui-text-muted">Visually stunning</text>
-                            <text x="-40" y="20" className="service-desc ui-text-muted">interfaces.</text>
+                        <rect x="-40" y="-20" width="20" height="8" rx="2" class="ui-fill-primary" />
+                        <text x="-40" y="0" className="service-title ui-fill-primary">Web Design</text>
+                        <g className="service-desc-group">
+                          <text x="-40" y="12" className="service-desc ui-text-muted">Visually stunning</text>
+                          <text x="-40" y="20" className="service-desc ui-text-muted">interfaces.</text>
                         </g>
                     </g>
                     <g className="service-card" transform="translate(0, 0)">
                         <rect x="-50" y="-30" width="100" height="70" rx="5" class="ui-bg ui-stroke" stroke-width="1" />
-                        <g className="service-card-content">
-                            <rect x="-40" y="-20" width="20" height="8" rx="2" class="ui-fill-primary" />
-                            <text x="-40" y="0" className="service-title ui-fill-primary">Development</text>
-                            <text x="-40" y="12" className="service-desc ui-text-muted">Robust & Scalable</text>
-                            <text x="-40" y="20" className="service-desc ui-text-muted">solutions.</text>
+                        <rect x="-40" y="-20" width="20" height="8" rx="2" class="ui-fill-primary" />
+                        <text x="-40" y="0" className="service-title ui-fill-primary">Development</text>
+                        <g className="service-desc-group">
+                          <text x="-40" y="12" className="service-desc ui-text-muted">Robust & Scalable</text>
+                          <text x="-40" y="20" className="service-desc ui-text-muted">solutions.</text>
                         </g>
                     </g>
                     <g className="service-card" transform="translate(140, 0)">
                         <rect x="-50" y="-30" width="100" height="70" rx="5" class="ui-bg ui-stroke" stroke-width="1" />
-                        <g className="service-card-content">
-                            <rect x="-40" y="-20" width="20" height="8" rx="2" class="ui-fill-primary" />
-                            <text x="-40" y="0" className="service-title ui-fill-primary">Branding</text>
-                            <text x="-40" y="12" className="service-desc ui-text-muted">Unique brand</text>
-                            <text x="-40" y="20" className="service-desc ui-text-muted">identities.</text>
+                        <rect x="-40" y="-20" width="20" height="8" rx="2" class="ui-fill-primary" />
+                        <text x="-40" y="0" className="service-title ui-fill-primary">Branding</text>
+                        <g className="service-desc-group">
+                          <text x="-40" y="12" className="service-desc ui-text-muted">Unique brand</text>
+                          <text x="-40" y="20" className="service-desc ui-text-muted">identities.</text>
                         </g>
                     </g>
                 </g>
@@ -432,3 +449,5 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
     </svg>
   );
 }
+
+    
