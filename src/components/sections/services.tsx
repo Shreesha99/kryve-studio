@@ -38,7 +38,7 @@ const services = [
           x="300"
           y="110"
           textAnchor="middle"
-          fontSize="36"
+          fontSize="30"
           fontFamily="monospace"
           stroke="none"
           fill="hsl(var(--primary))"
@@ -64,10 +64,6 @@ const services = [
             stroke="none"
           />
         </g>
-        <g className="arrow-group" opacity="0" transform="translate(0, 0) scale(1)">
-          <path d="M-40 0 L0 0" className="arrow-shaft" strokeWidth="6" transform="translate(0, 2)" />
-          <path d="M-5 -8 L0 0 L-5 8" className="arrow-head" strokeWidth="6" />
-        </g>
       </>
     ),
   },
@@ -78,16 +74,18 @@ const services = [
       'We build powerful e-commerce engines designed for growth. From seamless user journeys to secure payment gateways, we create online stores that convert visitors into loyal customers.',
     svg: (
       <g className="cart-group">
-        <path className="speed-line" d="M130 80 L 160 80" opacity="0"/>
-        <path className="speed-line" d="M120 100 L 170 100" opacity="0"/>
-        <path className="speed-line" d="M130 120 L 160 120" opacity="0"/>
+        <g className="speed-lines-group">
+            <path className="speed-line" d="M130 80 L 160 80" opacity="0"/>
+            <path className="speed-line" d="M120 100 L 170 100" opacity="0"/>
+            <path className="speed-line" d="M130 120 L 160 120" opacity="0"/>
+        </g>
         
         <g className="cart-container">
           <g className="cart-body-group">
-            <path className="cart-body" d="M180 150 L160 70 H 400 L 380 150 Z" />
+            <path className="cart-body" d="M230 150 L210 70 H 350 L 330 150 Z" />
           </g>
           <circle className="cart-wheel" cx="220" cy="170" r="15" />
-          <circle className="cart-wheel" cx="380" cy="170" r="15" />
+          <circle className="cart-wheel" cx="340" cy="170" r="15" />
         </g>
       </g>
     ),
@@ -162,12 +160,12 @@ export function Services() {
           onComplete: () => {
             secondaryAnimation.current?.kill();
             gsap.killTweensOf('.code-tag-text');
-            secondaryAnimation.current = gsap.timeline({repeat: -1, repeatDelay: 1.5});
+            secondaryAnimation.current = gsap.timeline({ repeat: -1, repeatDelay: 1.5 });
 
             const currentService = services[activeIndex];
 
             if (currentService.id === 'design') {
-                const blinkTl = gsap.timeline({ repeat: 1, repeatDelay: 0.4 });
+                const blinkTl = gsap.timeline({ repeat: 1, repeatDelay: 1 });
                 blinkTl.to([activeSvg.querySelector('.eye-outline'), activeSvg.querySelector('.pupil')], {
                     scaleY: 0,
                     duration: 0.07,
@@ -184,39 +182,39 @@ export function Services() {
             if (currentService.id === 'development') {
               const textEl = activeSvg.querySelector('.code-tag-text');
               if (textEl) {
-                const textTl = gsap.timeline({ repeat: -1 });
-                const tags = ['a', 'p', 'h1', 'div'];
-                tags.forEach(tag => {
-                    textTl.set(textEl, { text: tag }, "+=1.5");
-                });
-                secondaryAnimation.current.add(textTl);
+                  gsap.set(textEl, { text: 'a', autoAlpha: 1 });
+                  const textTl = gsap.timeline({
+                      repeat: -1,
+                  });
+                  const tags = ['p', 'h1', 'div', 'a'];
+                  tags.forEach(tag => {
+                      textTl
+                      .to(textEl, {
+                          duration: 0.2,
+                          autoAlpha: 0,
+                          ease: 'power1.in',
+                      }, '+=1.2')
+                      .set(textEl, { text: tag })
+                      .to(textEl, {
+                          duration: 0.2,
+                          autoAlpha: 1,
+                          ease: 'power1.out',
+                      });
+                  });
+                  secondaryAnimation.current.add(textTl);
               }
             }
-
-            if (currentService.id === 'branding') {
-              const arrowGroup = activeSvg.querySelector('.arrow-group');
-              const bullseye = activeSvg.querySelector('.pupil');
-              const arrowTl = gsap.timeline();
-              arrowTl
-                .fromTo(arrowGroup, 
-                    {opacity: 1, x: 100, y: 150, scale: 2.5}, 
-                    { opacity: 1, x: 295, y: 100, scale: 1, duration: 0.4, ease: 'power2.in' }
-                )
-                .to(bullseye, { scale: 1.5, duration: 0.1, yoyo: true, repeat: 1, transformOrigin: 'center' }, '>-=0.05')
-                .to(arrowGroup, { opacity: 0, duration: 0.2 }, '+=0.2');
-              secondaryAnimation.current.add(arrowTl, "+=0.5");
-            }
-
+            
             if (currentService.id === 'ecommerce') {
               const cartBody = activeSvg.querySelector('.cart-body-group');
               const speedLines = activeSvg.querySelectorAll('.speed-line');
               
               const cartMovementTl = gsap.timeline({ repeat: -1 });
               cartMovementTl
-                .to(cartBody, { y: -3, duration: 0.15, ease: 'power1.inOut' })
-                .to(cartBody, { y: 0, duration: 0.15, ease: 'power1.inOut' });
+                .to(cartBody, { y: -2, duration: 0.1, ease: 'power1.out' })
+                .to(cartBody, { y: 0, duration: 0.1, ease: 'power1.in' });
 
-              const speedLinesTl = gsap.timeline({ repeat: -1, repeatDelay: 0.1 });
+              const speedLinesTl = gsap.timeline({ repeat: -1 });
                speedLinesTl.fromTo(speedLines, 
                   { x: 0, opacity: 1 }, 
                   { 
@@ -227,7 +225,7 @@ export function Services() {
                     stagger: 0.15,
                   }
               );
-              secondaryAnimation.current.add(cartMovementTl).add(speedLinesTl, 0);
+              secondaryAnimation.current.add(cartMovementTl, 0).add(speedLinesTl, 0);
             }
           },
         });
