@@ -63,7 +63,7 @@ export default function BlogPage() {
               From the Studio
             </h1>
             <p className="mx-auto max-w-2xl text-muted-foreground md:text-xl">
-              News, insights, and stories from the team at Kryve.
+              News, insights, and stories from the team at Apex.
             </p>
           </div>
 

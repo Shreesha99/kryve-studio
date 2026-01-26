@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { gsap } from 'gsap';
 import { Logo } from './logo';
 import { ThemeToggle } from './theme-toggle';
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,7 @@ const navLinks = [
 
 export function Header() {
   const pathname = usePathname();
+  const headerRef = useRef<HTMLDivElement>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -27,6 +29,15 @@ export function Header() {
       setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
+    
+    gsap.from(headerRef.current, {
+      y: -100,
+      opacity: 0,
+      duration: 1,
+      ease: 'power3.out',
+      delay: 2.8 // Align with preloader
+    });
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -81,7 +92,7 @@ export function Header() {
   };
   
   return (
-    <header className="fixed top-0 z-50 w-full p-2 md:p-4">
+    <header ref={headerRef} className="fixed top-0 z-50 w-full p-2 md:p-4 opacity-0">
       <div
         className={cn(
           'container mx-auto flex h-16 items-center justify-between rounded-full border px-4 md:px-6 shadow-sm transition-all',

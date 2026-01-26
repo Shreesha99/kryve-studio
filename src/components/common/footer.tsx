@@ -13,10 +13,10 @@ export function Footer() {
               <div className="space-y-3">
                 <h4 className="text-sm text-background/70">New Business:</h4>
                 <a
-                  href="mailto:hello@kryve.com"
+                  href="mailto:hello@apex.com"
                   className="text-lg transition-colors hover:text-background/80"
                 >
-                  hello@kryve.com
+                  hello@apex.com
                 </a>
               </div>
               <div className="max-w-xs space-y-3">
@@ -72,16 +72,16 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-24 flex flex-col justify-between gap-4 border-t border-background/20 pt-8 text-sm text-background/70 sm:flex-row">
-            <p>&copy; {new Date().getFullYear()} Kryve Studio</p>
+            <p>&copy; {new Date().getFullYear()} Apex Studio</p>
             <Link href="#" className="transition-colors hover:text-background/80">Terms of Use</Link>
         </div>
       </div>
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute bottom-0 left-0 right-0 z-0 text-center font-headline font-extrabold text-white/5 dark:text-black/5"
+        className="pointer-events-none absolute bottom-0 left-0 right-0 z-0 text-center font-headline font-extrabold text-white/5 dark:text-white/5"
         style={{ fontSize: 'clamp(8rem, 25vw, 20rem)', lineHeight: '0.8' }}
       >
-        KRYVE
+        APEX
       </div>
     </footer>
   );

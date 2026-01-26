@@ -202,7 +202,7 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
       contactTypingTl
         .set(contactMessageRef.current, { textContent: '' })
         .set(contactCursorRef.current, { autoAlpha: 1 })
-        .to(contactCursorRef.current, { autoAlpha: 0, repeat: -1, yoyo: true, duration: 0.5, ease: 'steps(1)' })
+        .to(contactCursorRef.current, { autoAlpha: 0, repeat: 4, yoyo: true, duration: 0.5, ease: 'steps(1)' })
         .add(typeText(contactMessageRef, 'Hello!', 0.8))
         .set(contactCursorRef.current, { autoAlpha: 0 });
     }
@@ -256,10 +256,12 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
     masterTl.add(servicesClickTl, 'interact');
     
     if (scrollGroupRef.current) {
-        masterTl.to(scrollGroupRef.current, { y: -780, duration: 2.5, ease: 'power3.inOut' }, 'interact+=0.2');
+        masterTl.to(scrollGroupRef.current, { y: -300, duration: 2.5, ease: 'power3.inOut' }, 'interact+=0.2');
         masterTl.fromTo(svg.querySelectorAll('.service-desc-group'), { autoAlpha: 0, y: 10 }, { autoAlpha: 1, y: 0, stagger: 0.2, ease: 'power2.out', duration: 0.6 }, '>-1.8');
     }
     
+    masterTl.add(animateSection(footerUiRef), "+=1.0");
+
     masterTl.to({}, { duration: 4.0 });
 
     return () => {
@@ -428,7 +430,7 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
         {/* --- FIXED Navbar --- */}
         <g ref={navUiRef} transform="translate(300, 50)">
           <rect x="-280" y="-15" width="560" height="30" className="ui-bg" />
-          <text ref={logoTextRef} x="-270" y="6" className="logo-text">KRYVE</text>
+          <text ref={logoTextRef} x="-265" y="6" className="logo-text">APEX</text>
           <text x="-50" y="5.5" className="nav-link ui-text-muted">About</text>
           <text ref={servicesLinkRef} x="20" y="5.5" className="nav-link ui-text-muted">Services</text>
           <text x="90" y="5.5" className="nav-link ui-text-muted">Work</text>

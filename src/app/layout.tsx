@@ -28,14 +28,14 @@ export default function RootLayout({
     setIsLoading(false);
   };
 
-  const faviconSvg = `<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><style>text{font-family:sans-serif;font-weight:bold;font-size:24px;text-anchor:middle;dominant-baseline:central;fill:hsl(240 10% 3.9%)}@media (prefers-color-scheme:dark){text{fill:hsl(0 0% 98%)}}</style><text x="50%" y="53%">K</text></svg>`;
+  const faviconSvg = `<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><style>text{font-family:sans-serif;font-weight:bold;font-size:24px;text-anchor:middle;dominant-baseline:central;fill:hsl(240 10% 3.9%)}@media (prefers-color-scheme:dark){text{fill:hsl(0 0% 98%)}}</style><text x="50%" y="53%">A</text></svg>`;
   const faviconDataUri = `data:image/svg+xml,${encodeURIComponent(faviconSvg)}`;
 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         {/* Since this is a client component, we use static tags for default metadata */}
-        <title>Kryve Studio</title>
+        <title>Apex Studio</title>
         <meta
           name="description"
           content="A premium, minimal website for a digital studio."
@@ -61,6 +61,7 @@ export default function RootLayout({
           attribute="class"
           defaultTheme="system"
           enableSystem
+          disableTransitionOnChange={false}
         >
           {isLoading ? (
             <Preloader onAnimationComplete={handleAnimationComplete} />

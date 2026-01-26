@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
   }
 
   return {
-    title: `${post.title} | Kryve Studio`,
+    title: `${post.title} | Apex Studio`,
     description: post.excerpt,
   };
 }
