@@ -62,7 +62,6 @@ export default function RootLayout({
           attribute="class"
           defaultTheme="system"
           enableSystem
-          disableTransitionOnChange
         >
           {isLoading ? (
             <Preloader onAnimationComplete={handleAnimationComplete} />

@@ -356,8 +356,17 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
     masterTl.add(animateSection(heroUiRef), '+=0.2');
     masterTl.add(typeText(heroHeadlineRef, headlineText, 1.2), '+=0.3');
     masterTl.add(typeText(heroSubtitleRef, subtitleText, 1.2), '+=0.2');
-    masterTl.add(animateSection(aboutUiRef), '+=1.0');
-
+    
+    // Animate About section
+    if (aboutUiRef.current) {
+      masterTl.fromTo(
+        aboutUiRef.current, 
+        { autoAlpha: 0, y: 15 },
+        { autoAlpha: 1, y: 0, duration: 0.5, ease: 'power2.out' }, 
+        '+=1.0'
+      );
+    }
+    
     masterTl.add(toggleTl, '+=1.2');
 
     const sequenceTl = gsap.timeline();
@@ -384,7 +393,7 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
       '>-4.0'
     );
 
-    masterTl.addLabel('interact', '+=1.5');
+    masterTl.addLabel('interact', '+=0.5'); // Reduced pause
     masterTl.add(servicesClickTl, 'interact');
 
     if (scrollGroupRef.current) {
@@ -463,52 +472,6 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
       />
 
       <g ref={mainGroupRef} clipPath="url(#mainClip)">
-         {/* --- FIXED Navbar --- */}
-        <g ref={navUiRef} transform="translate(45, 35)">
-          <rect x="0" y="0" width="510" height="30" className="ui-bg" />
-          <text ref={logoTextRef} x="15" y="21" className="logo-text">
-            ZENITH
-          </text>
-          <text x="205" y="20.5" className="nav-link ui-text-muted">
-            About
-          </text>
-          <text
-            ref={servicesLinkRef}
-            x="275"
-            y="20.5"
-            className="nav-link ui-text-muted"
-          >
-            Services
-          </text>
-          <text x="345" y="20.5" className="nav-link ui-text-muted">
-            Work
-          </text>
-          <g transform="translate(480, 8)" style={{ cursor: 'pointer' }}>
-            <g ref={sunIconRef}>
-              <circle
-                cx="7"
-                cy="7"
-                r="2.5"
-                fill="none"
-                className="ui-primary-stroke"
-                strokeWidth="1.2"
-              />
-              <path
-                d="M7 1V3 M7 11V13 M2.64 2.64L3.35 3.35 M10.65 10.65L11.36 11.36 M1 7H3 M11 7H13 M2.64 11.36L3.35 10.65 M10.65 3.35L11.36 2.64"
-                className="ui-primary-stroke"
-                strokeWidth="1.2"
-                strokeLinecap="round"
-              />
-            </g>
-            <g ref={moonIconRef}>
-              <path
-                d="M10 2.5 A5.5 5.5 0 0 1 2.5 10 A4 4 0 0 0 10 2.5z"
-                className="ui-fill-primary"
-              />
-            </g>
-          </g>
-        </g>
-        
         <g ref={scrollGroupRef}>
           {/* --- Hero --- */}
           <g transform="translate(300, 150)">
@@ -538,6 +501,8 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
                 className="ui-bg ui-stroke"
                 strokeWidth="1"
               />
+               <rect x="-180" y="-25" width="120" height="60" rx="3" className="ui-fill-muted" opacity="0.2"/>
+               <path d="M -165 -10 l 15 15 l 20 -10" strokeWidth="2" fill="none" className="ui-fill-muted" opacity="0.5" />
               <text x="-20" y="-30" className="about-title ui-fill-primary">
                 Our Philosophy
               </text>
@@ -914,6 +879,51 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
             <text x="0" y="5" className="footer-title ui-text-muted">
               &copy; 2024. All rights reserved.
             </text>
+          </g>
+        </g>
+         {/* --- FIXED Navbar --- */}
+        <g ref={navUiRef} transform="translate(45, 35)">
+          <rect x="0" y="0" width="510" height="30" className="ui-bg" />
+          <text ref={logoTextRef} x="15" y="21" className="logo-text">
+            ZENITH
+          </text>
+          <text x="205" y="20.5" className="nav-link ui-text-muted">
+            About
+          </text>
+          <text
+            ref={servicesLinkRef}
+            x="275"
+            y="20.5"
+            className="nav-link ui-text-muted"
+          >
+            Services
+          </text>
+          <text x="345" y="20.5" className="nav-link ui-text-muted">
+            Work
+          </text>
+          <g transform="translate(480, 8)" style={{ cursor: 'pointer' }}>
+            <g ref={sunIconRef}>
+              <circle
+                cx="7"
+                cy="7"
+                r="2.5"
+                fill="none"
+                className="ui-primary-stroke"
+                strokeWidth="1.2"
+              />
+              <path
+                d="M7 1V3 M7 11V13 M2.64 2.64L3.35 3.35 M10.65 10.65L11.36 11.36 M1 7H3 M11 7H13 M2.64 11.36L3.35 10.65 M10.65 3.35L11.36 2.64"
+                className="ui-primary-stroke"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+              />
+            </g>
+            <g ref={moonIconRef}>
+              <path
+                d="M10 2.5 A5.5 5.5 0 0 1 2.5 10 A4 4 0 0 0 10 2.5z"
+                className="ui-fill-primary"
+              />
+            </g>
           </g>
         </g>
       </g>
