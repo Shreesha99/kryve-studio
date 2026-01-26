@@ -12,7 +12,11 @@ const services = [
     description:
       'We forge digital identities. Our design philosophy merges aesthetic intuition with data-driven strategy to build interfaces that are not only beautiful but deeply functional and unforgettable.',
     svg: (
-      <path d="M200 150 L220 130 M200 150 Q150 100, 200 50 L400 50 Q450 100, 400 150 Z M200 50 L180 30" />
+      <path
+        d="M150 150 Q 250 50, 300 100 T 450 150"
+        strokeWidth="12"
+        strokeLinecap="round"
+      />
     ),
   },
   {
