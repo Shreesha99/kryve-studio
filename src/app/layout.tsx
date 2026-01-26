@@ -5,6 +5,7 @@ import './globals.css';
 import { ThemeProvider } from '@/components/common/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { Preloader } from '@/components/common/preloader';
+import { cn } from '@/lib/utils';
 
 export default function RootLayout({
   children,
@@ -28,14 +29,14 @@ export default function RootLayout({
     setIsLoading(false);
   };
 
-  const faviconSvg = `<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><style>text{font-family:sans-serif;font-weight:bold;font-size:24px;text-anchor:middle;dominant-baseline:central;fill:hsl(240 10% 3.9%)}@media (prefers-color-scheme:dark){text{fill:hsl(0 0% 98%)}}</style><text x="50%" y="53%">A</text></svg>`;
+  const faviconSvg = `<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><style>text{font-family:sans-serif;font-weight:bold;font-size:24px;text-anchor:middle;dominant-baseline:central;fill:hsl(240 10% 3.9%)}@media (prefers-color-scheme:dark){text{fill:hsl(0 0% 98%)}}</style><text x="50%" y="53%">Z</text></svg>`;
   const faviconDataUri = `data:image/svg+xml,${encodeURIComponent(faviconSvg)}`;
 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         {/* Since this is a client component, we use static tags for default metadata */}
-        <title>Apex Studio</title>
+        <title>Zenith Studio</title>
         <meta
           name="description"
           content="A premium, minimal website for a digital studio."
@@ -56,12 +57,12 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
         />
       </head>
-      <body className="font-body antialiased">
+      <body className={cn("font-body antialiased transition-colors duration-300")}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
-          disableTransitionOnChange={false}
+          disableTransitionOnChange
         >
           {isLoading ? (
             <Preloader onAnimationComplete={handleAnimationComplete} />

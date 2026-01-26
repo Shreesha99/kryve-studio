@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
   }
 
   return {
-    title: `${post.title} | Apex Studio`,
+    title: `${post.title} | Zenith Studio`,
     description: post.excerpt,
   };
 }
