@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { useTheme } from 'next-themes';
 import { gsap } from 'gsap';
 
 interface MorphingSvgProps {
@@ -12,7 +13,6 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
 
   // Main container refs
   const scrollGroupRef = useRef<SVGGElement>(null);
-  const cursorRef = useRef<SVGGElement>(null);
 
   // Tag group refs
   const navTagGroupRef = useRef<SVGGElement>(null);
@@ -33,7 +33,6 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
   const creativeUiRef = useRef<SVGGElement>(null);
   const contactUiRef = useRef<SVGGElement>(null);
   const footerUiRef = useRef<SVGGElement>(null);
-
 
   // Interactive element refs
   const themeToggleRef = useRef<SVGGElement>(null);
@@ -84,11 +83,10 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
         const allUiElements = uis.map(r => r.current).filter(Boolean);
         const allTagElements = tagGroups.map(r => r.current).filter(Boolean);
 
-        gsap.set([...allUiElements, cursorRef.current], { autoAlpha: 0 });
+        gsap.set(allUiElements, { autoAlpha: 0 });
         gsap.set(allTagElements, { autoAlpha: 1 });
         
         if (scrollGroupRef.current) gsap.set(scrollGroupRef.current, { y: 0 });
-        if (cursorRef.current) gsap.set(cursorRef.current, { x: 300, y: 100 });
         
         if (heroHeadlineRef.current) heroHeadlineRef.current.textContent = '';
         if (heroSubtitleRef.current) heroSubtitleRef.current.textContent = '';
@@ -113,9 +111,6 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
         gsap.set(svg.querySelectorAll('.ui-primary-stroke'), { stroke: startTheme.uiFillPrimary });
         if (logoTextRef.current) {
             gsap.set(logoTextRef.current, { fill: startTheme.primary });
-        }
-        if (cursorRef.current) {
-            gsap.set(cursorRef.current, { color: startTheme.primary });
         }
     };
 
@@ -205,17 +200,6 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
     // Interaction phase
     masterTl.addLabel('interact', "+=1.5");
 
-    // 1. Show cursor and move to theme toggle
-    if (cursorRef.current && themeToggleRef.current) {
-        const themeToggleBBox = themeToggleRef.current.getBBox();
-        masterTl.to(cursorRef.current, { 
-          autoAlpha: 1, 
-          x: themeToggleBBox.x + themeToggleBBox.width / 2 + 235, 
-          y: themeToggleBBox.y + themeToggleBBox.height / 2 + 42,
-          duration: 0.7
-        }, 'interact');
-    }
-    
     // Animate the theme toggle
     const toggleTl = gsap.timeline();
     
@@ -241,21 +225,18 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
     if (logoTextRef.current) {
       toggleTl.to(logoTextRef.current, { fill: toColors.primary, duration: 0.5}, '<');
     }
-    if (cursorRef.current) {
-        toggleTl.to(cursorRef.current, { color: toColors.primary, duration: 0.5 }, '<');
-    }
 
     masterTl.add(toggleTl, '+=0.2');
 
-    // 2. Click 'Services' nav link
-    if (cursorRef.current && servicesLinkRef.current) {
-        const servicesLinkBBox = servicesLinkRef.current.getBBox();
-        masterTl.to(cursorRef.current, {
-          x: servicesLinkBBox.x + servicesLinkBBox.width / 2 + 20,
-          y: servicesLinkBBox.y + servicesLinkBBox.height / 2 + 42,
-          duration: 0.7
-        }, '+=0.5');
-        masterTl.to(servicesLinkRef.current, { scale: 0.9, yoyo: true, repeat: 1, duration: 0.15, transformOrigin: 'center' });
+    // 2. Animate 'Services' nav link click
+    if (navUiRef.current) {
+      masterTl.to(navUiRef.current, {
+        scale: 1.02,
+        yoyo: true,
+        repeat: 1,
+        duration: 0.2,
+        transformOrigin: 'center'
+      }, '+=0.5');
     }
     
     // 3. Scroll to services section and animate content
@@ -275,13 +256,13 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
 
     // 4. Scroll back to top and fade out gracefully
     const endTl = gsap.timeline();
-    const allFadeElements = [...uis.map(r => r.current).filter(Boolean), cursorRef.current];
+    const allFadeElements = uis.map(r => r.current).filter(Boolean);
 
     if (scrollGroupRef.current) {
         endTl.to(scrollGroupRef.current, { y: 0, duration: 1.5, ease: 'power3.inOut' });
     }
     if (allFadeElements.length > 0) {
-        endTl.to(allFadeElements, { autoAlpha: 0, duration: 0.8, ease: 'power2.in' }, '<0.7');
+        endTl.to(allFadeElements, { autoAlpha: 0, duration: 0.8 }, '<0.7');
     }
     masterTl.add(endTl, "+=1.5");
 
@@ -291,7 +272,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
   }, [theme]);
 
   return (
-    <svg ref={svgRef} viewBox="0 0 600 800" className="h-full w-full object-contain">
+    <svg ref={svgRef} viewBox="0 0 600 1200" className="h-full w-full object-contain">
       <defs>
         <style>
           {`
@@ -319,11 +300,11 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
           `}
         </style>
         <clipPath id="mainClip">
-          <rect x="20" y="20" width="560" height="760" rx="10" />
+          <rect x="20" y="20" width="560" height="1160" rx="10" />
         </clipPath>
       </defs>
 
-      <rect x="20" y="20" width="560" height="760" rx="10" class="main-bg ui-stroke" stroke-width="2"/>
+      <rect x="20" y="20" width="560" height="1160" rx="10" class="main-bg ui-stroke" stroke-width="2"/>
       <g clipPath="url(#mainClip)">
         {/* --- FIXED Navbar --- */}
         <g transform="translate(300, 50)">
@@ -464,7 +445,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
         </g>
         
         {/* --- FIXED Footer --- */}
-        <g transform="translate(300, 750)">
+        <g transform="translate(300, 1150)">
           <g ref={footerTagGroupRef}>
               <text className="tag-text" text-anchor="middle">&lt;Footer /&gt;</text>
           </g>
@@ -477,10 +458,6 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
               <circle cx="276" cy="5" r="6" class="ui-fill-muted" />
           </g>
         </g>
-      </g>
-      
-      <g ref={cursorRef} transform="scale(1.5)">
-        <path fill="currentColor" d="M11.22,9.45,3.95,2.18A1.07,1.07,0,0,0,2.44,2.18L2.18,2.44a1.07,1.07,0,0,0,0,1.51l7.27,7.27-2.3,6.89a1.06,1.06,0,0,0,1,1.33,1,1,0,0,0,.32-.06l7.15-2.4a1.07,1.07,0,0,0,.68-1Z"/>
       </g>
     </svg>
   );
