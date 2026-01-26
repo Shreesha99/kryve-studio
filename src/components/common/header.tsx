@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { Logo } from './logo';
 import { ThemeToggle } from './theme-toggle';
@@ -21,9 +21,6 @@ const navLinks = [
 export function Header() {
   const pathname = usePathname();
   const headerRef = useRef<HTMLDivElement>(null);
-  const navRef = useRef<HTMLDivElement>(null);
-  const pillRef = useRef<HTMLDivElement>(null);
-  const linkRefs = useRef<(HTMLAnchorElement | null)[]>([]);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -43,80 +40,7 @@ export function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useLayoutEffect(() => {
-    const activeLinkIndex = navLinks.findIndex(
-      (link) => link.href.startsWith('/') && pathname.startsWith(link.href)
-    );
-    const activeLinkEl =
-      activeLinkIndex !== -1 ? linkRefs.current[activeLinkIndex] : null;
-
-    const movePill = (element: HTMLAnchorElement | null) => {
-      // Clear all active attributes first
-      linkRefs.current.forEach((link) => {
-        if (link) {
-          link.dataset.activePill = 'false';
-        }
-      });
-
-      if (element && navRef.current && pillRef.current) {
-        element.dataset.activePill = 'true';
-        const navRect = navRef.current.getBoundingClientRect();
-        const linkRect = element.getBoundingClientRect();
-
-        gsap.to(pillRef.current, {
-          left: linkRect.left - navRect.left,
-          width: linkRect.width,
-          opacity: 1,
-          duration: 0.4,
-          ease: 'power3.out',
-        });
-      } else if (pillRef.current) {
-        gsap.to(pillRef.current, {
-          opacity: 0,
-          duration: 0.2,
-        });
-      }
-    };
-
-    // Initial move on page load/route change
-    movePill(activeLinkEl);
-
-    // --- Event Listeners for Hover Effect ---
-    const navElement = navRef.current;
-
-    const handleMouseEnter = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (target.tagName === 'A' && navElement?.contains(target)) {
-        movePill(target as HTMLAnchorElement);
-      }
-    };
-
-    const handleMouseLeave = () => {
-      movePill(activeLinkEl);
-    };
-
-    if (navElement) {
-      navElement.addEventListener('mouseover', handleMouseEnter);
-      navElement.addEventListener('mouseleave', handleMouseLeave);
-    }
-
-    return () => {
-      if (navElement) {
-        navElement.removeEventListener('mouseover', handleMouseEnter);
-        navElement.removeEventListener('mouseleave', handleMouseLeave);
-      }
-    };
-  }, [pathname]);
-
-  const NavLink = ({
-    href,
-    label,
-    linkRef,
-  }: {
-    href: string;
-    label: string;
-    linkRef: (el: HTMLAnchorElement | null) => void;
-  }) => {
+  const NavLink = ({ href, label }: { href: string; label: string }) => {
     const isPageLink = href.startsWith('/');
     const isHomePage = pathname === '/';
     const isActive = isPageLink ? pathname.startsWith(href) : false;
@@ -127,9 +51,8 @@ export function Header() {
       if (isHomePage) {
         return (
           <a
-            ref={linkRef}
             href={href}
-            className="relative z-10 text-lg font-medium text-muted-foreground transition-colors duration-200 data-[active-pill=true]:!text-primary-foreground md:text-sm"
+            className="text-lg font-medium text-muted-foreground transition-colors hover:text-primary md:text-sm"
             onClick={(e) => {
               e.preventDefault();
               const targetElement = document.querySelector(href);
@@ -147,8 +70,7 @@ export function Header() {
       return (
         <Link
           href={`/${href}`}
-          ref={linkRef}
-          className="relative z-10 text-lg font-medium text-muted-foreground transition-colors duration-200 data-[active-pill=true]:!text-primary-foreground md:text-sm"
+          className="text-lg font-medium text-muted-foreground transition-colors hover:text-primary md:text-sm"
           onClick={() => setIsMobileMenuOpen(false)}
         >
           {label}
@@ -160,9 +82,8 @@ export function Header() {
     return (
       <Link
         href={href}
-        ref={linkRef}
         className={cn(
-          'relative z-10 text-lg font-medium transition-colors duration-200 data-[active-pill=true]:!text-primary-foreground md:text-sm',
+          'text-lg font-medium transition-colors hover:text-primary md:text-sm',
           isActive ? 'text-primary' : 'text-muted-foreground'
         )}
         onClick={() => setIsMobileMenuOpen(false)}
@@ -189,26 +110,13 @@ export function Header() {
           <Logo />
         </div>
 
-        <div className="relative hidden items-center justify-center md:flex">
-          <nav
-            ref={navRef}
-            className="flex h-full items-center justify-center gap-8"
-          >
-            <div
-              ref={pillRef}
-              className="absolute top-1/2 h-8 -translate-y-1/2 rounded-md bg-primary"
-            />
-            {navLinks.map((link, index) => (
-              <NavLink
-                key={link.href}
-                {...link}
-                linkRef={(el: HTMLAnchorElement | null) =>
-                  (linkRefs.current[index] = el)
-                }
-              />
+        <nav className="relative hidden items-center justify-center md:flex">
+          <div className="flex h-full items-center justify-center gap-8">
+            {navLinks.map((link) => (
+              <NavLink key={link.href} {...link} />
             ))}
-          </nav>
-        </div>
+          </div>
+        </nav>
 
         <div className="flex items-center justify-end">
           <ThemeToggle />
@@ -229,15 +137,7 @@ export function Header() {
                 <div className="p-8">
                   <nav className="mt-8 flex flex-col items-center gap-8">
                     {navLinks.map((link) => (
-                      // This NavLink doesn't need refs as it's for mobile
-                      <a
-                        key={link.href}
-                        href={link.href}
-                        className="text-lg font-medium text-muted-foreground transition-colors hover:text-primary"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        {link.label}
-                      </a>
+                      <NavLink key={link.href} {...link} />
                     ))}
                   </nav>
                 </div>
