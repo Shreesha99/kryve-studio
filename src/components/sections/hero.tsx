@@ -62,10 +62,22 @@ export function Hero() {
           <div className="text-left">
             <h1 ref={headlineRef} className="font-headline text-5xl font-semibold tracking-tighter sm:text-6xl md:text-7xl">
               <div className="overflow-hidden py-1">
-                <span className="inline-block">Engineering Elegance.</span>
+                <span className="inline-block">
+                  Engineering{' '}
+                  <span className="inline-block rounded-full border border-foreground/50 px-4 py-1">
+                    Elegance
+                  </span>
+                  .
+                </span>
               </div>
               <div className="overflow-hidden py-1">
-                <span className="inline-block">Designing Impact.</span>
+                <span className="inline-block">
+                  Designing{' '}
+                  <span className="inline-block rounded-full border border-foreground/50 px-4 py-1">
+                    Impact
+                  </span>
+                  .
+                </span>
               </div>
             </h1>
             <p ref={paragraphRef} className="mt-6 max-w-xl text-lg text-muted-foreground md:text-xl">

@@ -30,26 +30,26 @@ export function Preloader({ onAnimationComplete }: PreloaderProps) {
       opacity: 1,
       y: 0,
       rotationX: 0,
-      duration: 1,
+      duration: 0.8,
       ease: 'power3.out',
     })
-      .to(progressContainerRef.current, { opacity: 1, duration: 0.5 }, "-=0.8")
+      .to(progressContainerRef.current, { opacity: 1, duration: 0.4 }, "-=0.6")
       .fromTo(
         progressBarRef.current,
         { width: '0%' },
-        { width: '100%', duration: 1.2, ease: 'power2.inOut' },
-        '-=0.5'
+        { width: '100%', duration: 1, ease: 'power2.inOut' },
+        '-=0.4'
       )
       .to([logoRef.current, progressContainerRef.current], {
         opacity: 0,
         y: -50,
-        duration: 0.8,
+        duration: 0.6,
         ease: 'power3.in',
-        delay: 0.3,
+        delay: 0.2,
       })
       .to(preloaderRef.current, {
         opacity: 0,
-        duration: 0.5,
+        duration: 0.4,
         onComplete: () => {
           if (preloaderRef.current) {
             preloaderRef.current.style.display = 'none';
