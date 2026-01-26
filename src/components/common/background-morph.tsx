@@ -31,6 +31,8 @@ export function BackgroundMorph() {
     const stop1 = stop1Ref.current;
     const stop2 = stop2Ref.current;
     
+    gsap.killTweensOf([stop1, stop2]); // Prevent overlapping tweens on theme change
+
     gsap.to(stop1, { attr: { 'stop-color': colors.stop1 }, duration: 0.5 });
     gsap.to(stop2, { attr: { 'stop-color': colors.stop2 }, duration: 0.5 });
 
@@ -86,6 +88,9 @@ export function BackgroundMorph() {
 
     return () => {
       gsap.killTweensOf(points);
+      if (stop1Ref.current && stop2Ref.current) {
+          gsap.killTweensOf([stop1Ref.current, stop2Ref.current]);
+      }
     };
 
   }, [resolvedTheme]);
@@ -98,8 +103,8 @@ export function BackgroundMorph() {
     >
       <defs>
         <radialGradient id="morph-gradient" cx="50%" cy="50%" r="50%">
-          <stop ref={stop1Ref} id="grad-stop-1" offset="0%" />
-          <stop ref={stop2Ref} id="grad-stop-2" offset="100%" />
+          <stop ref={stop1Ref} id="grad-stop-1" offset="0%" stopColor="transparent" />
+          <stop ref={stop2Ref} id="grad-stop-2" offset="100%" stopColor="transparent" />
         </radialGradient>
       </defs>
       <path ref={pathRef} fill="url(#morph-gradient)" />
