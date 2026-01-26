@@ -39,8 +39,8 @@ export function Hero() {
     )
     .fromTo(
       svgRef.current,
-      { opacity: 0, scale: 0.95, y: 20 },
-      { opacity: 1, scale: 1, y: 0, duration: 1.0, ease: 'power3.out' },
+      { opacity: 0, scale: 0.98, y: 10 },
+      { opacity: 1, scale: 1, y: 0, duration: 0.8, ease: 'power3.out' },
       '-=1.0'
     );
   }, []);
@@ -68,7 +68,7 @@ export function Hero() {
               </Button>
             </div>
           </div>
-          <div ref={svgRef} className="relative aspect-[600/550] w-full max-w-2xl justify-self-center overflow-hidden rounded-lg lg:max-w-none">
+          <div ref={svgRef} className="relative aspect-[600/400] w-full max-w-2xl justify-self-center overflow-hidden rounded-lg lg:max-w-none">
              <MorphingSvg theme={resolvedTheme} />
           </div>
         </div>
