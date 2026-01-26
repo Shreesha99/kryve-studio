@@ -34,7 +34,8 @@ export function MorphingSvg() {
   const logoTextRef = useRef<SVGTextElement>(null);
 
   useEffect(() => {
-    if (!svgRef.current) return;
+    const svg = svgRef.current;
+    if (!svg) return;
     
     const tags = [navTagRef, heroTagRef, aboutTagRef, servicesTagRef, contactTagRef];
     const uis = [navUiRef, heroUiRef, aboutUiRef, servicesUiRef, contactUiRef];
@@ -82,10 +83,9 @@ export function MorphingSvg() {
         if (moonIconRef.current) gsap.set(moonIconRef.current, { autoAlpha: 0, scale: 0, rotation: 90 });
         
         // Reset colors to light theme state
-        const svg = svgRef.current;
-        if (!svg) return;
+        gsap.set(svg.querySelectorAll('.main-bg'), { fill: colors.light.bg });
         gsap.set(svg.querySelectorAll('.ui-bg'), { fill: colors.light.uiBg });
-        gsap.set(svg.querySelectorAll('.ui-stroke'), { stroke: colors.light.uiStroke });
+        gsap.set(svg.querySelectorAll('.ui-stroke'), { fill: 'none', stroke: colors.light.uiStroke });
         gsap.set(svg.querySelectorAll('.ui-fill-muted'), { fill: colors.light.uiFillMuted });
         gsap.set(svg.querySelectorAll('.ui-fill-primary'), { fill: colors.light.uiFillPrimary });
         gsap.set(svg.querySelectorAll('.ui-text-muted'), { fill: colors.light.uiTextMuted });
@@ -131,7 +131,24 @@ export function MorphingSvg() {
     masterTl.add(typeText(heroHeadlineRef, headlineText, 1.2), "+=0.5");
     masterTl.add(typeText(heroSubtitleRef, subtitleText, 1.2), "+=0.2");
 
-    masterTl.add(animateSection(aboutTagRef, aboutUiRef), "+=0.2");
+    // --- About Section Custom Animation ---
+    const aboutTl = gsap.timeline();
+    if (aboutTagRef.current && aboutUiRef.current) {
+        aboutTl.to(aboutTagRef.current, { autoAlpha: 0, duration: 0.3 });
+        aboutTl.to(aboutUiRef.current, { autoAlpha: 1, duration: 0.1 }, '<');
+        
+        const image = aboutUiRef.current.querySelector('.about-image');
+        const textLines = aboutUiRef.current.querySelectorAll('.about-text-line');
+
+        if (image) {
+            aboutTl.from(image, { autoAlpha: 0, scale: 0.9, duration: 0.4, ease: 'power2.out' }, '>');
+        }
+        if (textLines) {
+            aboutTl.from(textLines, { autoAlpha: 0, x: -15, stagger: 0.1, duration: 0.4, ease: 'power2.out' }, '>-0.3');
+        }
+    }
+    masterTl.add(aboutTl, '+=0.5');
+
     masterTl.add(animateSection(servicesTagRef, servicesUiRef), "+=0.2");
     masterTl.add(animateSection(contactTagRef, contactUiRef), "+=0.2");
     
@@ -151,8 +168,7 @@ export function MorphingSvg() {
     
     // Animate the theme toggle
     const toggleTl = gsap.timeline();
-    const svg = svgRef.current;
-    if (svg && sunIconRef.current && moonIconRef.current && logoTextRef.current) {
+    if (sunIconRef.current && moonIconRef.current && logoTextRef.current) {
         toggleTl.to(sunIconRef.current, { scale: 0, rotation: 90, autoAlpha: 0, duration: 0.4, ease: 'power2.in' })
                 .to(moonIconRef.current, { scale: 1, rotation: 0, autoAlpha: 1, duration: 0.4, ease: 'power2.out' }, '>-0.3')
                 .to(svg.querySelectorAll('.main-bg'), { fill: colors.dark.bg, duration: 0.5 }, '<')
@@ -218,7 +234,7 @@ export function MorphingSvg() {
             .ui-fill-primary { fill: hsl(var(--primary)); }
             .ui-primary-stroke { stroke: hsl(var(--primary)); }
             .ui-text-muted { fill: hsl(var(--muted-foreground)); font-family: sans-serif; }
-            .logo-text { font-family: Poppins, sans-serif; font-size: 12px; font-weight: bold; fill: hsl(var(--primary)); }
+            .logo-text { font-family: Poppins, sans-serif; font-size: 12px; font-weight: bold; }
             .hero-headline { font-family: Poppins, sans-serif; font-size: 14px; font-weight: 600; letter-spacing: -0.5px; text-anchor: middle; fill: hsl(var(--primary)); }
             .hero-subtitle { font-size: 8px; text-anchor: middle; fill: hsl(var(--muted-foreground)); }
             .nav-link { font-size: 9px; text-anchor: middle; fill: hsl(var(--muted-foreground)); cursor: pointer; }
@@ -268,13 +284,21 @@ export function MorphingSvg() {
 
             {/* --- About --- */}
             <g transform="translate(250, 220)">
-              <text ref={aboutTagRef} className="tag-text">&lt;About /&gt;</text>
-              <g ref={aboutUiRef}>
-                <rect x="-100" y="-20" width="200" height="12" rx="3" class="ui-fill-muted" />
-                <rect x="-150" y="2" width="120" height="6" rx="2" class="ui-fill-muted" opacity="0.4"/>
-                <rect x="-150" y="12" width="180" height="6" rx="2" class="ui-fill-muted" opacity="0.4"/>
-                <rect x="50" y="-10" width="100" height="40" rx="4" class="ui-fill-primary" opacity="0.2"/>
-              </g>
+                <text ref={aboutTagRef} className="tag-text">&lt;About /&gt;</text>
+                <g ref={aboutUiRef}>
+                    <g className="about-image">
+                        <rect x="-150" y="-20" width="100" height="80" rx="5" className="ui-bg ui-stroke" stroke-width="1"/>
+                        <path d="M -140 45 l 20 -20 l 15 15 l 20 -25 l 25 30" fill="none" className="ui-primary-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="-130" cy="-5" r="5" className="ui-fill-primary" opacity="0.5"/>
+                    </g>
+                    <g>
+                        <rect x="-30" y="-20" width="180" height="12" rx="3" className="about-text-line ui-fill-muted" />
+                        <rect x="-30" y="5" width="180" height="6" rx="2" className="about-text-line ui-fill-muted" opacity="0.4"/>
+                        <rect x="-30" y="15" width="150" height="6" rx="2" className="about-text-line ui-fill-muted" opacity="0.4"/>
+                        <rect x="-30" y="25" width="180" height="6" rx="2" className="about-text-line ui-fill-muted" opacity="0.4"/>
+                        <rect x="-30" y="35" width="100" height="6" rx="2" className="about-text-line ui-fill-muted" opacity="0.4"/>
+                    </g>
+                </g>
             </g>
 
             {/* --- Services --- */}
