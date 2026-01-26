@@ -6,185 +6,110 @@ import { gsap } from 'gsap';
 export function MorphingSvg() {
   const svgRef = useRef<SVGSVGElement>(null);
 
-  // General Refs
+  // Main container refs
+  const scrollGroupRef = useRef<SVGGElement>(null);
   const cursorRef = useRef<SVGGElement>(null);
+  const clipPathRectRef = useRef<SVGRectElement>(null);
 
-  // Code Refs
-  const codeButtonRef = useRef<SVGTextElement>(null);
-  const codeInputRef = useRef<SVGTextElement>(null);
-  const codeToggleRef = useRef<SVGTextElement>(null);
-  const codeImageRef = useRef<SVGTextElement>(null);
-  const codeDropdownRef = useRef<SVGTextElement>(null);
-  const codeSliderRef = useRef<SVGTextElement>(null);
-  const codeCheckboxRef = useRef<SVGTextElement>(null);
-  const codeChartRef = useRef<SVGTextElement>(null);
+  // Tag refs
+  const navTagRef = useRef<SVGTextElement>(null);
+  const heroTagRef = useRef<SVGTextElement>(null);
+  const aboutTagRef = useRef<SVGTextElement>(null);
+  const servicesTagRef = useRef<SVGTextElement>(null);
+  const contactTagRef = useRef<SVGTextElement>(null);
 
-  // UI Refs
-  const uiButtonRef = useRef<SVGGElement>(null);
-  const uiInputRef = useRef<SVGGElement>(null);
-  const uiInputCaretRef = useRef<SVGLineElement>(null);
-  const uiToggleRef = useRef<SVGGElement>(null);
-  const uiToggleKnobRef = useRef<SVGRectElement>(null);
-  const uiImageRef = useRef<SVGGElement>(null);
-  const uiImageSunRef = useRef<SVGCircleElement>(null);
-  const uiImageMountain1Ref = useRef<SVGPathElement>(null);
-  const uiImageMountain2Ref = useRef<SVGPathElement>(null);
-  const uiDropdownRef = useRef<SVGGElement>(null);
-  const uiDropdownMenuRef = useRef<SVGGElement>(null);
-  const uiSliderRef = useRef<SVGGElement>(null);
-  const uiSliderHandleRef = useRef<SVGCircleElement>(null);
-  const uiCheckboxRef = useRef<SVGGElement>(null);
-  const uiCheckboxCheckRef = useRef<SVGPathElement>(null);
-  const uiChartRef = useRef<SVGGElement>(null);
-  const uiChartLineRef = useRef<SVGPathElement>(null);
+  // UI group refs
+  const navUiRef = useRef<SVGGElement>(null);
+  const heroUiRef = useRef<SVGGElement>(null);
+  const aboutUiRef = useRef<SVGGElement>(null);
+  const servicesUiRef = useRef<SVGGElement>(null);
+  const contactUiRef = useRef<SVGGElement>(null);
 
+  // Interactive element refs
+  const themeToggleRef = useRef<SVGGElement>(null);
+  const themeToggleIconRef = useRef<SVGPathElement>(null);
+  const heroHeadlineRef = useRef<SVGRectElement>(null);
+  const heroSubtitleRef = useRef<SVGRectElement>(null);
+  const servicesLinkRef = useRef<SVGTextElement>(null);
 
   useEffect(() => {
     if (!svgRef.current) return;
     
-    const codeElements = [
-        codeButtonRef, codeInputRef, codeToggleRef, codeImageRef,
-        codeDropdownRef, codeSliderRef, codeCheckboxRef, codeChartRef
-    ];
-    const uiElements = [
-        uiButtonRef, uiInputRef, uiToggleRef, uiImageRef,
-        uiDropdownRef, uiSliderRef, uiCheckboxRef, uiChartRef,
-    ];
-    const drawableElements = [uiCheckboxCheckRef, uiChartLineRef, uiImageMountain1Ref, uiImageMountain2Ref];
-
-    // --- INITIAL SETUP ---
-    gsap.set([...codeElements.map(r=>r.current), ...uiElements.map(r=>r.current), cursorRef.current], { autoAlpha: 0 });
-    gsap.set(cursorRef.current, { x: 250, y: -50 });
-    gsap.set(uiDropdownMenuRef.current, { autoAlpha: 0, scaleY: 0, transformOrigin: 'top center' });
+    const tags = [navTagRef, heroTagRef, aboutTagRef, servicesTagRef, contactTagRef];
+    const uis = [navUiRef, heroUiRef, aboutUiRef, servicesUiRef, contactUiRef];
     
-    drawableElements.forEach(ref => {
-        if(ref.current) {
-            const length = ref.current.getTotalLength();
-            gsap.set(ref.current, { strokeDasharray: length, strokeDashoffset: length });
-        }
+    const masterTl = gsap.timeline({
+      repeat: -1,
+      repeatDelay: 2,
+      defaults: { ease: 'power2.out', duration: 0.8 }
     });
 
-    const masterTl = gsap.timeline({ repeat: -1, repeatDelay: 1 });
+    // --- INITIAL STATE ---
+    const setup = () => {
+        gsap.set(uis.map(r => r.current), { autoAlpha: 0 });
+        gsap.set(tags.map(r => r.current), { autoAlpha: 1 });
+        gsap.set(scrollGroupRef.current, { y: 0 });
+        gsap.set(cursorRef.current, { autoAlpha: 0, x: 250, y: 100 });
+        gsap.set([heroHeadlineRef.current, heroSubtitleRef.current], { scaleX: 0, transformOrigin: 'left' });
+        gsap.set(themeToggleIconRef.current, { rotation: 0, transformOrigin: 'center' });
+    };
+
+    const animateSection = (tagRef: React.RefObject<SVGTextElement>, uiRef: React.RefObject<SVGGElement>) => {
+      const tl = gsap.timeline();
+      tl.to(tagRef.current, { autoAlpha: 0, duration: 0.4 })
+        .to(uiRef.current, { autoAlpha: 1, duration: 0.6 }, '<');
+      return tl;
+    };
+
+    // --- ANIMATION SEQUENCE ---
+    masterTl.add(setup);
+
+    masterTl.add(animateSection(navTagRef, navUiRef), "+=0.5");
+    masterTl.add(animateSection(heroTagRef, heroUiRef), "-=0.2");
     
-    const createComponentAnimation = (
-        codeRef: React.RefObject<SVGTextElement>,
-        uiRef: React.RefObject<SVGGElement>,
-        uiSetup: () => void,
-        interaction: (tl: gsap.core.Timeline, uiX: number, uiY: number) => void
-    ) => {
-        const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
-
-        const codeBBox = codeRef.current!.getBBox();
-        const codeY = 250 - codeBBox.height / 2;
-        tl.fromTo(codeRef.current, 
-            { autoAlpha: 0, y: codeY - codeBBox.y, x: 50 - codeBBox.x }, 
-            { autoAlpha: 1, x: 100 - codeBBox.x, duration: 0.5 }
-        );
-
-        tl.to(codeRef.current, { x: 220 - codeBBox.x, autoAlpha: 0, duration: 0.4, ease: 'power2.in' }, "+=1");
-        
-        tl.add(uiSetup, "<");
-
-        const uiBBox = uiRef.current!.getBBox();
-        const uiX = 320;
-        const uiY = 250 - uiBBox.height / 2;
-        
-        tl.fromTo(uiRef.current, 
-            { autoAlpha: 0, scale: 0.5, x: (280 - uiBBox.x), y: uiY - uiBBox.y }, 
-            { autoAlpha: 1, scale: 1, x: uiX - uiBBox.x, duration: 0.6 }, 
-            "<");
-        
-        interaction(tl, uiX, uiY);
-
-        tl.to([uiRef.current, cursorRef.current], { autoAlpha: 0, duration: 0.5 }, "+=1.5");
-        
-        return tl;
-    }
-
-    const buttonInteraction = (tl: gsap.core.Timeline, uiX: number, uiY: number) => {
-      const uiBBox = uiButtonRef.current!.getBBox();
-      tl.to(cursorRef.current, { autoAlpha: 1, x: uiX + uiBBox.width / 2, y: uiY + uiBBox.height / 2, duration: 0.5 });
-      tl.to(uiButtonRef.current, { scale: 0.95, duration: 0.1, yoyo: true, repeat: 1, transformOrigin: 'center center' });
-    };
+    // Hero text typing animation
+    masterTl.to(heroHeadlineRef.current, { scaleX: 1, duration: 1, ease: 'power2.inOut' });
+    masterTl.to(heroSubtitleRef.current, { scaleX: 1, duration: 1, ease: 'power2.inOut' }, "-=0.7");
     
-    const inputInteraction = (tl: gsap.core.Timeline, uiX: number, uiY: number) => {
-      const uiBBox = uiInputRef.current!.getBBox();
-      tl.to(cursorRef.current, { autoAlpha: 1, x: uiX + uiBBox.width - 10, y: uiY + uiBBox.height / 2, duration: 0.5 });
-      tl.set(uiInputCaretRef.current, { autoAlpha: 1 });
-      tl.to(uiInputCaretRef.current, { autoAlpha: 0, repeat: 3, yoyo: true, duration: 0.3, ease: 'steps(1)' });
-      tl.set(uiInputCaretRef.current, { autoAlpha: 0 });
-    };
-
-    const toggleInteraction = (tl: gsap.core.Timeline, uiX: number, uiY: number) => {
-        const uiBBox = uiToggleRef.current!.getBBox();
-        tl.to(cursorRef.current, { autoAlpha: 1, x: uiX + uiBBox.width / 2, y: uiY + uiBBox.height / 2, duration: 0.5 });
-        tl.to(uiToggleKnobRef.current, { attr: {x: 28}, duration: 0.4, ease: 'power2.inOut' });
-        tl.to(uiToggleKnobRef.current, { attr: {x: 4}, duration: 0.4, ease: 'power2.inOut' }, "+=0.5");
-    };
-
-    const imageInteraction = (tl: gsap.core.Timeline) => {
-        tl.to(uiImageSunRef.current, { attr: { cy: 30 }, duration: 0.8, ease: 'power1.out'});
-        tl.to(uiImageMountain1Ref.current, { strokeDashoffset: 0, duration: 1 }, '-=0.3');
-        tl.to(uiImageMountain2Ref.current, { strokeDashoffset: 0, duration: 1 }, '-=0.7');
-    };
+    masterTl.add(animateSection(aboutTagRef, aboutUiRef), "-=0.2");
+    masterTl.add(animateSection(servicesTagRef, servicesUiRef), "-=0.2");
+    masterTl.add(animateSection(contactTagRef, contactUiRef), "-=0.2");
     
-    const dropdownInteraction = (tl: gsap.core.Timeline, uiX: number, uiY: number) => {
-        const uiBBox = uiDropdownRef.current!.getBBox();
-        tl.to(cursorRef.current, { autoAlpha: 1, x: uiX + uiBBox.width / 2, y: uiY + uiBBox.height / 2, duration: 0.5 });
-        tl.to(uiDropdownRef.current, { scale: 0.98, duration: 0.1, yoyo: true, repeat: 1, transformOrigin: 'center center' });
-        tl.to(uiDropdownMenuRef.current, { autoAlpha: 1, scaleY: 1, duration: 0.4 }, "-=0.1");
-        tl.to(uiDropdownMenuRef.current, { autoAlpha: 0, scaleY: 0, duration: 0.4 }, "+=1");
-    };
+    // Interaction phase
+    masterTl.addLabel('interact', "+=1");
 
-    const sliderInteraction = (tl: gsap.core.Timeline, uiX: number, uiY: number) => {
-        const uiBBox = uiSliderRef.current!.getBBox();
-        const uiSliderHandleBBox = uiSliderHandleRef.current!.getBBox();
-        tl.to(cursorRef.current, { autoAlpha: 1, x: uiX + 40, y: uiY + uiSliderHandleBBox.height / 2, duration: 0.5 });
-        tl.to(uiSliderHandleRef.current, { attr: {cx: 100}, duration: 1, ease: 'power1.inOut' });
-        tl.to(uiSliderHandleRef.current, { attr: {cx: 40}, duration: 1, ease: 'power1.inOut' }, "+=0.2");
-    };
+    // 1. Click theme toggle
+    const themeToggleBBox = themeToggleRef.current!.getBBox();
+    masterTl.to(cursorRef.current, { 
+      autoAlpha: 1, 
+      x: themeToggleBBox.x + themeToggleBBox.width / 2, 
+      y: themeToggleBBox.y + themeToggleBBox.height / 2,
+      duration: 0.7
+    }, 'interact');
+    masterTl.to(themeToggleIconRef.current, { rotation: 180, duration: 0.5, ease: 'back.inOut(1.7)' }, '+=0.2');
 
-    const checkboxInteraction = (tl: gsap.core.Timeline, uiX: number, uiY: number) => {
-        const uiBBox = uiCheckboxRef.current!.getBBox();
-        tl.to(cursorRef.current, { autoAlpha: 1, x: uiX + uiBBox.width/2, y: uiY + uiBBox.height/2, duration: 0.5 });
-        tl.to(uiCheckboxRef.current, { scale: 0.9, duration: 0.1, yoyo: true, repeat: 1, transformOrigin: 'center center' });
-        tl.to(uiCheckboxCheckRef.current, { strokeDashoffset: 0, duration: 0.5 });
-    };
+    // 2. Click 'Services' nav link
+    const servicesLinkBBox = servicesLinkRef.current!.getBBox();
+    masterTl.to(cursorRef.current, {
+      x: servicesLinkBBox.x + servicesLinkBBox.width / 2,
+      y: servicesLinkBBox.y + servicesLinkBBox.height / 2,
+      duration: 0.7
+    }, '+=0.5');
+    masterTl.to(servicesLinkRef.current, { scale: 0.9, yoyo: true, repeat: 1, duration: 0.1, transformOrigin: 'center' });
+    
+    // 3. Scroll to services section
+    const servicesUiBBox = servicesUiRef.current!.getBBox();
+    const servicesY = servicesUiBBox.y;
+    masterTl.to(scrollGroupRef.current, { y: -servicesY + 60, duration: 1.5, ease: 'power3.inOut' }, '+=0.2');
 
-    const chartInteraction = (tl: gsap.core.Timeline) => {
-        tl.to(uiChartLineRef.current, { strokeDashoffset: 0, duration: 1.5, ease: 'power1.inOut' });
-    };
+    // 4. Scroll back to top
+    masterTl.to(scrollGroupRef.current, { y: 0, duration: 1.5, ease: 'power3.inOut' }, '+=1.5');
 
-    masterTl
-        .add(createComponentAnimation(codeButtonRef, uiButtonRef, () => {}, buttonInteraction))
-        .add(createComponentAnimation(codeInputRef, uiInputRef, () => {}, inputInteraction))
-        .add(createComponentAnimation(codeToggleRef, uiToggleRef, () => {gsap.set(uiToggleKnobRef.current, {attr: {x:4}})}, toggleInteraction))
-        .add(createComponentAnimation(codeImageRef, uiImageRef, () => {
-            gsap.set(uiImageSunRef.current, { attr: { cy: 110 } });
-            [uiImageMountain1Ref, uiImageMountain2Ref].forEach(ref => {
-                if (ref.current) {
-                    const length = ref.current.getTotalLength();
-                    gsap.set(ref.current, { strokeDasharray: length, strokeDashoffset: length });
-                }
-            });
-        }, imageInteraction))
-        .add(createComponentAnimation(codeDropdownRef, uiDropdownRef, () => {}, dropdownInteraction))
-        .add(createComponentAnimation(codeSliderRef, uiSliderRef, () => {gsap.set(uiSliderHandleRef.current, {attr: {cx:40}})}, sliderInteraction))
-        .add(createComponentAnimation(codeCheckboxRef, uiCheckboxRef, () => {
-             if(uiCheckboxCheckRef.current) {
-                const length = uiCheckboxCheckRef.current.getTotalLength();
-                gsap.set(uiCheckboxCheckRef.current, { strokeDasharray: length, strokeDashoffset: length });
-            }
-        }, checkboxInteraction))
-        .add(createComponentAnimation(codeChartRef, uiChartRef, () => {
-            if(uiChartLineRef.current) {
-                const length = uiChartLineRef.current.getTotalLength();
-                gsap.set(uiChartLineRef.current, { strokeDasharray: length, strokeDashoffset: length });
-            }
-        }, chartInteraction));
+    // Fade out for reset
+    masterTl.to([cursorRef.current, ...uis.map(r => r.current)], { autoAlpha: 0, duration: 1 }, '+=1');
 
     return () => {
-        masterTl.kill();
+      masterTl.kill();
     };
   }, []);
 
@@ -193,98 +118,101 @@ export function MorphingSvg() {
       <defs>
         <style>
           {`
-            .code-text {
+            .tag-text {
               font-family: 'Roboto Mono', monospace;
               font-weight: 500;
-              font-size: 20px;
+              font-size: 16px;
               fill: hsl(var(--muted-foreground));
-              text-anchor: end;
-              dominant-baseline: middle;
+              text-anchor: middle;
             }
-            .ui-text {
-                font-size: 12px;
-                font-weight: bold;
-                fill: hsl(var(--primary-foreground));
-                dominant-baseline: middle;
-                text-anchor: middle;
-            }
-            .build-line {
-              stroke: hsl(var(--border));
-              stroke-width: 2px;
-            }
+            .ui-bg { fill: hsl(var(--secondary)); }
+            .ui-stroke { stroke: hsl(var(--border)); stroke-width: 1.5; }
+            .ui-fill { fill: hsl(var(--muted-foreground)); }
+            .ui-fill-primary { fill: hsl(var(--primary)); }
+            .ui-text { fill: hsl(var(--foreground)); font-family: sans-serif; }
+            .ui-text-muted { fill: hsl(var(--muted-foreground)); font-family: sans-serif; }
           `}
         </style>
+        <clipPath id="mainClip">
+          <rect ref={clipPathRectRef} x="20" y="20" width="460" height="460" rx="10" />
+        </clipPath>
         <g id="cursor" ref={cursorRef}>
             <path fill="hsl(var(--foreground))" d="M11.22,9.45,3.95,2.18A1.07,1.07,0,0,0,2.44,2.18L2.18,2.44a1.07,1.07,0,0,0,0,1.51l7.27,7.27-2.3,6.89a1.06,1.06,0,0,0,1,1.33,1,1,0,0,0,.32-.06l7.15-2.4a1.07,1.07,0,0,0,.68-1Z"/>
         </g>
       </defs>
 
-      <line x1="250" y1="0" x2="250" y2="500" className="build-line"/>
+      <rect x="20" y="20" width="460" height="460" rx="10" class="ui-bg" stroke="hsl(var(--border))" stroke-width="2"/>
+      <g clipPath="url(#mainClip)">
+        <g ref={scrollGroupRef}>
+            {/* --- Navbar --- */}
+            <g transform="translate(250, 50)">
+              <text ref={navTagRef} y="15" className="tag-text">&lt;Navbar /&gt;</text>
+              <g ref={navUiRef}>
+                  <rect x="-210" y="0" width="420" height="30" class="ui-bg" />
+                  <rect x="-200" y="8" width="50" height="14" rx="3" class="ui-fill-primary"/>
+                  <rect x="-50" y="12" width="20" height="6" rx="2" class="ui-fill"/>
+                  <rect x="-20" y="12" width="30" height="6" rx="2" class="ui-fill"/>
+                  <text ref={servicesLinkRef} x="25" y="17.5" font-size="9" class="ui-text-muted">Services</text>
+                  <rect x="70" y="12" width="25" height="6" rx="2" class="ui-fill"/>
+                  <g ref={themeToggleRef} transform="translate(185, 8)">
+                    <rect width="14" height="14" rx="7" class="ui-fill" />
+                    <path ref={themeToggleIconRef} d="M 7 2 L 7 12 M 2 7 L 12 7" stroke="hsl(var(--secondary))" stroke-width="1.5" stroke-linecap="round"/>
+                  </g>
+              </g>
+            </g>
 
-      {/* Code Components */}
-      <g>
-        <text ref={codeButtonRef} className="code-text">&lt;Button /&gt;</text>
-        <text ref={codeInputRef} className="code-text">&lt;Input /&gt;</text>
-        <text ref={codeToggleRef} className="code-text">&lt;Switch /&gt;</text>
-        <text ref={codeImageRef} className="code-text">&lt;Image /&gt;</text>
-        <text ref={codeDropdownRef} className="code-text">&lt;Dropdown /&gt;</text>
-        <text ref={codeSliderRef} className="code-text">&lt;Slider /&gt;</text>
-        <text ref={codeCheckboxRef} className="code-text">&lt;Checkbox /&gt;</text>
-        <text ref={codeChartRef} className="code-text">&lt;Chart /&gt;</text>
-      </g>
-      
-      {/* UI Elements (will be positioned by GSAP) */}
-      <g>
-        <g ref={uiButtonRef}>
-            <rect width="100" height="35" rx="6" fill="hsl(var(--primary))" />
-            <text x="50" y="17.5" className="ui-text">SUBMIT</text>
-        </g>
-        
-        <g ref={uiInputRef}>
-            <rect width="140" height="35" rx="6" fill="hsl(var(--secondary))" stroke="hsl(var(--border))" />
-            <line ref={uiInputCaretRef} x1="8" y1="8" x2="8" y2="27" stroke="hsl(var(--foreground))" strokeWidth="2" opacity="0" />
-        </g>
-        
-        <g ref={uiToggleRef}>
-            <rect width="50" height="26" rx="13" fill="hsl(var(--secondary))" />
-            <rect ref={uiToggleKnobRef} x="4" y="3" width="20" height="20" rx="10" fill="hsl(var(--background))" stroke="hsl(var(--border))" strokeWidth="1"/>
-        </g>
+            {/* --- Hero --- */}
+            <g transform="translate(250, 130)">
+              <text ref={heroTagRef} className="tag-text">&lt;Hero /&gt;</text>
+              <g ref={heroUiRef}>
+                <rect ref={heroHeadlineRef} x="-140" y="-15" width="280" height="18" rx="4" class="ui-fill" />
+                <rect ref={heroSubtitleRef} x="-180" y="15" width="360" height="8" rx="3" class="ui-fill-primary" opacity="0.6"/>
+              </g>
+            </g>
 
-        <g ref={uiImageRef}>
-          <rect width="190" height="120" rx="8" fill="hsl(var(--secondary))" />
-          <circle ref={uiImageSunRef} cx="150" cy="110" r="12" fill="hsl(var(--primary) / 0.5)" />
-          <path ref={uiImageMountain1Ref} d="M 20 120 L 60 60 L 100 100" stroke="hsl(var(--primary) / 0.4)" strokeWidth="4" fill="none" strokeLinecap="round" />
-          <path ref={uiImageMountain2Ref} d="M 80 120 L 120 30 L 170 120" stroke="hsl(var(--primary) / 0.4)" strokeWidth="4" fill="none" strokeLinecap="round" />
-        </g>
+            {/* --- About --- */}
+            <g transform="translate(250, 220)">
+              <text ref={aboutTagRef} className="tag-text">&lt;About /&gt;</text>
+              <g ref={aboutUiRef}>
+                <rect x="-100" y="-20" width="200" height="12" rx="3" class="ui-fill" />
+                <rect x="-150" y="2" width="120" height="6" rx="2" class="ui-fill" opacity="0.4"/>
+                <rect x="-150" y="12" width="180" height="6" rx="2" class="ui-fill" opacity="0.4"/>
+                <rect x="20" y="-10" width="100" height="40" rx="4" class="ui-fill-primary" opacity="0.2"/>
+              </g>
+            </g>
 
-        <g ref={uiDropdownRef}>
-            <rect width="140" height="35" rx="6" fill="hsl(var(--secondary))" stroke="hsl(var(--border))" />
-            <path d="M 120 15 l 5 5 l 5 -5" stroke="hsl(var(--muted-foreground))" strokeWidth="2" fill="none" strokeLinecap="round"/>
-            <g ref={uiDropdownMenuRef} transform="translate(0, 40)">
-                <rect width="140" height="90" rx="6" fill="hsl(var(--background))" stroke="hsl(var(--border))"/>
-                <rect x="5" y="5" width="130" height="25" rx="4" fill="hsl(var(--accent))"/>
-                <rect x="5" y="35" width="130" height="25" rx="4" fill="hsl(var(--secondary))"/>
-                <rect x="5" y="65" width="130" height="25" rx="4" fill="hsl(var(--secondary))"/>
+            {/* --- Services --- */}
+            <g transform="translate(250, 310)">
+              <text ref={servicesTagRef} className="tag-text">&lt;Services /&gt;</text>
+              <g ref={servicesUiRef}>
+                  <rect x="-180" y="-10" width="100" height="50" rx="5" class="ui-bg" stroke="hsl(var(--border))" stroke-width="1" />
+                  <rect x="-170" y="0" width="20" height="8" rx="2" class="ui-fill-primary" />
+                  <rect x="-170" y="12" width="80" height="4" rx="2" class="ui-fill" opacity="0.3" />
+                  <rect x="-170" y="20" width="60" height="4" rx="2" class="ui-fill" opacity="0.3" />
+                  
+                  <rect x="-70" y="-10" width="100" height="50" rx="5" class="ui-bg" stroke="hsl(var(--border))" stroke-width="1" />
+                  <rect x="-60" y="0" width="20" height="8" rx="2" class="ui-fill-primary" />
+                  <rect x="-60" y="12" width="80" height="4" rx="2" class="ui-fill" opacity="0.3" />
+                  <rect x="-60" y="20" width="60" height="4" rx="2" class="ui-fill" opacity="0.3" />
+
+                  <rect x="40" y="-10" width="100" height="50" rx="5" class="ui-bg" stroke="hsl(var(--border))" stroke-width="1" />
+                  <rect x="50" y="0" width="20" height="8" rx="2" class="ui-fill-primary" />
+                  <rect x="50" y="12" width="80" height="4" rx="2" class="ui-fill" opacity="0.3" />
+                  <rect x="50" y="20" width="60" height="4" rx="2" class="ui-fill" opacity="0.3" />
+              </g>
+            </g>
+            
+            {/* --- Contact --- */}
+            <g transform="translate(250, 410)">
+              <text ref={contactTagRef} className="tag-text">&lt;Contact /&gt;</text>
+              <g ref={contactUiRef}>
+                <rect x="-120" y="-25" width="240" height="12" rx="3" class="ui-fill" />
+                <rect x="-150" y="0" width="145" height="20" rx="4" class="ui-bg" stroke="hsl(var(--border))" stroke-width="1" />
+                <rect x="5" y="0" width="145" height="20" rx="4" class="ui-bg" stroke="hsl(var(--border))" stroke-width="1" />
+                <rect x="-80" y="30" width="160" height="25" rx="5" class="ui-fill-primary" />
+              </g>
             </g>
         </g>
-        
-        <g ref={uiSliderRef}>
-            <rect y="2.5" width="140" height="10" rx="5" fill="hsl(var(--secondary))"/>
-            <rect y="2.5" width="40" height="10" rx="5" fill="hsl(var(--primary))"/>
-            <circle ref={uiSliderHandleRef} cx="40" cy="7.5" r="8" fill="hsl(var(--background))" stroke="hsl(var(--primary))" strokeWidth="2" />
-        </g>
-        
-        <g ref={uiCheckboxRef}>
-            <rect width="26" height="26" rx="6" fill="hsl(var(--secondary))" stroke="hsl(var(--border))"/>
-            <path ref={uiCheckboxCheckRef} d="M 7 13 l 5 5 l 10 -10" stroke="hsl(var(--primary))" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-        </g>
-        
-        <g ref={uiChartRef}>
-          <rect width="190" height="120" rx="8" fill="hsl(var(--secondary))" />
-          <path d="M 10 110 L 10 10 M 10 110 L 180 110" stroke="hsl(var(--border))" strokeWidth="2" />
-          <path ref={uiChartLineRef} d="M 10 90 Q 50 20, 90 60 T 170 30" stroke="hsl(var(--primary))" strokeWidth="3" fill="none" />
-        </g>
-
       </g>
     </svg>
   );
