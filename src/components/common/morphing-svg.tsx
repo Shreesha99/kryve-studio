@@ -20,9 +20,13 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
   const aboutUiRef = useRef<SVGGElement>(null);
   const servicesUiRef = useRef<SVGGElement>(null);
   const projectsUiRef = useRef<SVGGElement>(null);
-  const creativeUiRef = useRef<SVGGElement>(null);
   const contactUiRef = useRef<SVGGElement>(null);
   const footerUiRef = useRef<SVGGElement>(null);
+
+  const processUiRef = useRef<SVGGElement>(null);
+  const processLine1Ref = useRef<SVGPathElement>(null);
+  const processLine2Ref = useRef<SVGPathElement>(null);
+  const processLine3Ref = useRef<SVGPathElement>(null);
 
   const sunIconRef = useRef<SVGGElement>(null);
   const moonIconRef = useRef<SVGGElement>(null);
@@ -30,6 +34,8 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
   const heroSubtitleRef = useRef<SVGTextElement>(null);
   const servicesLinkRef = useRef<SVGTextElement>(null);
   const logoTextRef = useRef<SVGTextElement>(null);
+  const contactMessageRef = useRef<SVGTextElement>(null);
+  const contactCursorRef = useRef<SVGPathElement>(null);
   
   const masterTlRef = useRef<gsap.core.Timeline | null>(null);
 
@@ -45,7 +51,7 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
       masterTlRef.current.kill();
     }
     
-    const uis = [navUiRef, heroUiRef, aboutUiRef, servicesUiRef, projectsUiRef, creativeUiRef, contactUiRef, footerUiRef];
+    const uis = [navUiRef, heroUiRef, aboutUiRef, servicesUiRef, projectsUiRef, processUiRef, contactUiRef, footerUiRef];
     
     const colors = {
         light: {
@@ -78,15 +84,9 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
       const restartTl = gsap.timeline();
       const allUiElements = uis.map(r => r.current).filter(Boolean);
       
-      restartTl.to(scrollGroupRef.current, { 
-          y: 0, 
-          duration: 1.2, 
-          ease: 'power3.inOut' 
-      }, 0)
-      .to(allUiElements, { 
-          autoAlpha: 0, 
-          duration: 1.0 
-      }, 0)
+      restartTl
+      .to(scrollGroupRef.current, { y: 0, duration: 1.2, ease: 'power3.inOut' }, 0)
+      .to(allUiElements, { autoAlpha: 0, duration: 1.0 }, 0)
       .call(() => masterTl.restart(), undefined, '+=0.2');
     });
     
@@ -95,9 +95,23 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
         gsap.set(svg, { autoAlpha: 1 });
         gsap.set(allUiElements, { autoAlpha: 0 });
         if (scrollGroupRef.current) gsap.set(scrollGroupRef.current, { y: 0 });
+
         if (heroHeadlineRef.current) heroHeadlineRef.current.textContent = '';
         if (heroSubtitleRef.current) heroSubtitleRef.current.textContent = '';
+        if (contactMessageRef.current) contactMessageRef.current.textContent = '';
+        if (contactCursorRef.current) gsap.set(contactCursorRef.current, { autoAlpha: 0 });
+
         gsap.set(svg.querySelectorAll('.service-desc-group'), { autoAlpha: 0 });
+        gsap.set(svg.querySelectorAll('.project-detail'), { autoAlpha: 0 });
+        gsap.set(svg.querySelectorAll('.process-step'), { autoAlpha: 0 });
+        
+        const processLines = [processLine1Ref, processLine2Ref, processLine3Ref];
+        processLines.forEach(lineRef => {
+            if (lineRef.current) {
+                const length = lineRef.current.getTotalLength();
+                gsap.set(lineRef.current, { strokeDasharray: length, strokeDashoffset: length });
+            }
+        });
         
         const startThemeKey = theme === 'dark' ? 'dark' : 'light';
         const startTheme = colors[startThemeKey];
@@ -182,6 +196,28 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
     if (logoTextRef.current) {
       toggleTl.to(logoTextRef.current, { fill: toColors.primary, duration: 0.8 }, '<');
     }
+    
+    const contactTypingTl = gsap.timeline();
+    if (contactMessageRef.current && contactCursorRef.current) {
+      contactTypingTl
+        .set(contactMessageRef.current, { textContent: '' })
+        .set(contactCursorRef.current, { autoAlpha: 1 })
+        .to(contactCursorRef.current, { autoAlpha: 0, repeat: -1, yoyo: true, duration: 0.5, ease: 'steps(1)' })
+        .add(typeText(contactMessageRef, 'Hello!', 0.8))
+        .set(contactCursorRef.current, { autoAlpha: 0 });
+    }
+
+    const processAnimationTl = gsap.timeline();
+    if(processUiRef.current) {
+      const steps = gsap.utils.toArray('.process-step', processUiRef.current);
+      const lines = [processLine1Ref.current, processLine2Ref.current, processLine3Ref.current];
+      processAnimationTl.to(steps, { autoAlpha: 1, stagger: 0.8, duration: 0.4});
+      lines.forEach((line, index) => {
+        if (line) {
+          processAnimationTl.to(line, { strokeDashoffset: 0, duration: 0.6, ease: 'power1.inOut' }, `<${index * 0.8 + 0.4}`);
+        }
+      });
+    }
 
     const servicesClickTl = gsap.timeline();
     if (servicesLinkRef.current) {
@@ -192,32 +228,39 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
     
     // --- MASTER TIMELINE ---
     masterTl.add(setup);
-    masterTl.add(animateSection(navUiRef), "+=0.3");
+    masterTl.add(animateSection(navUiRef), "+=0.5");
     masterTl.add(animateSection(heroUiRef), "+=0.2");
-    masterTl.add(typeText(heroHeadlineRef, headlineText, 0.8), "+=0.3");
-    masterTl.add(typeText(heroSubtitleRef, subtitleText, 0.8), "+=0.2");
-    masterTl.add(animateSection(aboutUiRef), '+=0.8');
+    masterTl.add(typeText(heroHeadlineRef, headlineText, 1.2), "+=0.3");
+    masterTl.add(typeText(heroSubtitleRef, subtitleText, 1.2), "+=0.2");
+    masterTl.add(animateSection(aboutUiRef), '+=1.0');
     
-    masterTl.add(toggleTl, '+=0.8');
+    masterTl.add(toggleTl, '+=1.2');
 
     const sequenceTl = gsap.timeline();
-    sequenceTl.add(animateSection(servicesUiRef), '+=0.5')
+    sequenceTl.add(animateSection(servicesUiRef), '+=0.8')
               .add(animateSection(projectsUiRef), '>-0.4')
-              .add(animateSection(creativeUiRef), '>-0.4')
-              .add(animateSection(contactUiRef), '>-0.4')
-              .add(animateSection(footerUiRef), '>-0.4');
-    
+              .add(animateSection(processUiRef), '>-0.2')
+              .add(animateSection(contactUiRef), '>-0.2');
+              
     masterTl.add(sequenceTl);
+    
+    masterTl.add(processAnimationTl, '>-1.5');
+    
+    masterTl.fromTo(svg.querySelectorAll('.project-detail'), 
+        { autoAlpha: 0, y: 10 }, 
+        { autoAlpha: 1, y: 0, stagger: 0.3, ease: 'power2.out', duration: 0.6 }, '>-4.0'
+    );
 
-    masterTl.addLabel('interact', "+=1.0");
+    masterTl.addLabel('interact', "+=1.5");
+    masterTl.add(contactTypingTl, 'interact-=1.0');
     masterTl.add(servicesClickTl, 'interact');
     
     if (scrollGroupRef.current) {
-        masterTl.to(scrollGroupRef.current, { y: -350, duration: 1.5, ease: 'power3.inOut' }, 'interact+=0.2');
-        masterTl.fromTo(svg.querySelectorAll('.service-desc-group'), { autoAlpha: 0, y: 10 }, { autoAlpha: 1, y: 0, stagger: 0.2, ease: 'power2.out', duration: 0.6 }, '>-0.8');
+        masterTl.to(scrollGroupRef.current, { y: -780, duration: 2.5, ease: 'power3.inOut' }, 'interact+=0.2');
+        masterTl.fromTo(svg.querySelectorAll('.service-desc-group'), { autoAlpha: 0, y: 10 }, { autoAlpha: 1, y: 0, stagger: 0.2, ease: 'power2.out', duration: 0.6 }, '>-1.8');
     }
     
-    masterTl.to({}, { duration: 3.0 });
+    masterTl.to({}, { duration: 4.0 });
 
     return () => {
       if (masterTlRef.current) {
@@ -241,9 +284,12 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
             .service-title { font-size: 9px; font-weight: 600; }
             .service-desc { font-size: 8px; }
             .project-title { font-size: 10px; font-weight: 600; }
+            .project-desc { font-size: 8px; }
+            .process-title { font-size: 9px; font-weight: 600; text-anchor: middle; }
             .contact-title { font-size: 12px; font-weight: 600; text-anchor: middle; }
             .contact-field-text { font-size: 9px; }
             .contact-button-text { font-size: 9px; font-weight: 600; text-anchor: middle; }
+            .footer-title { font-size: 9px; text-anchor: middle; }
           `}
         </style>
         <clipPath id="mainClip">
@@ -279,7 +325,7 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
               <g ref={servicesUiRef}>
                   <g className="service-card" transform="translate(-160, 0)">
                       <rect x="-70" y="-40" width="140" height="90" rx="5" className="ui-bg ui-stroke" strokeWidth="1" />
-                      <path d="M -57 -28 l -3 3 h 26 l -3 -3 M -44 -28 v -5 M -44 -18 v -5" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none" className="ui-primary-stroke" transform="scale(0.8) translate(-25, -25)" />
+                      <path d="M -57 -28 l -3 3 h 26 l -3 -3 M -44 -28 v -5 M -44 -18 v -5" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none" className="ui-primary-stroke" transform="scale(0.6) translate(-45, -35)" />
                       <text x="-60" y="-5" className="service-title ui-fill-primary">Web Design</text>
                       <g className="service-desc-group">
                         <text x="-60" y="10" className="service-desc ui-text-muted">Visually stunning</text>
@@ -288,7 +334,7 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
                   </g>
                   <g className="service-card" transform="translate(0, 0)">
                       <rect x="-70" y="-40" width="140" height="90" rx="5" className="ui-bg ui-stroke" strokeWidth="1" />
-                      <path d="M-52 -25 l-8 5 l8 5 M-44 -25 l8 5 l-8 5" fill="none" className="ui-primary-stroke" strokeWidth="1.2" strokeLinecap="round" transform="scale(0.8) translate(-25, -22)" />
+                      <path d="M-52 -25 l-8 5 l8 5 M-44 -25 l8 5 l-8 5" fill="none" className="ui-primary-stroke" strokeWidth="1.2" strokeLinecap="round" transform="scale(0.6) translate(-45, -32)" />
                       <text x="-60" y="-5" className="service-title ui-fill-primary">Development</text>
                       <g className="service-desc-group">
                         <text x="-60" y="10" className="service-desc ui-text-muted">Robust & Scalable</text>
@@ -297,7 +343,7 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
                   </g>
                   <g className="service-card" transform="translate(160, 0)">
                       <rect x="-70" y="-40" width="140" height="90" rx="5" className="ui-bg ui-stroke" strokeWidth="1" />
-                      <path d="M-52 -22 a8 8 0 1 0 16 0 a8 8 0 1 0 -16 0 M-44 -22 l0 -8 l8 4 z" fill="none" className="ui-primary-stroke" strokeWidth="1.2" transform="scale(0.8) translate(-25, -22)" />
+                      <path d="M-52 -22 a8 8 0 1 0 16 0 a8 8 0 1 0 -16 0 M-44 -22 l0 -8 l8 4 z" fill="none" className="ui-primary-stroke" strokeWidth="1.2" transform="scale(0.6) translate(-45, -32)" />
                       <text x="-60" y="-5" className="service-title ui-fill-primary">Branding</text>
                       <g className="service-desc-group">
                         <text x="-60" y="10" className="service-desc ui-text-muted">Unique brand</text>
@@ -311,23 +357,53 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
           <g transform="translate(300, 620)">
             <g ref={projectsUiRef}>
                 <rect x="-225" y="-50" width="210" height="120" rx="5" className="ui-bg ui-stroke" strokeWidth="1"/>
-                <text x="-215" y="-35" className="project-title ui-fill-primary">Project One</text>
+                <g className="project-detail">
+                  <rect x="-215" y="-38" width="80" height="95" rx="3" className="ui-fill-muted" opacity="0.2" />
+                  <path d="M -200 -20 l 15 20 l 25 -15" strokeWidth="2" fill="none" className="ui-fill-muted" opacity="0.5" />
+                  <text x="-125" y="-25" className="project-title ui-fill-primary">Project One</text>
+                  <text x="-125" y="-10" className="project-desc ui-text-muted">E-commerce platform</text>
+                </g>
                 <rect x="15" y="-50" width="210" height="120" rx="5" className="ui-bg ui-stroke" strokeWidth="1"/>
-                <text x="25" y="-35" className="project-title ui-fill-primary">Project Two</text>
-            </g>
-          </g>
-
-          {/* --- Creative --- */}
-          <g transform="translate(300, 780)">
-            <g ref={creativeUiRef}>
-                <circle cx="-60" cy="0" r="50" className="ui-fill-muted" opacity="0.1"/>
-                <path d="M 50 -50 Q 0 0 50 50" fill="none" className="ui-primary-stroke" strokeWidth="2"/>
-                <rect x="-40" y="-40" width="80" height="80" rx="5" fill="none" className="ui-primary-stroke" strokeDasharray="5 5" />
+                <g className="project-detail">
+                  <rect x="25" y="-38" width="80" height="95" rx="3" className="ui-fill-muted" opacity="0.2" />
+                  <path d="M 40 -20 l 15 20 l 25 -15" strokeWidth="2" fill="none" className="ui-fill-muted" opacity="0.5" />
+                  <text x="115" y="-25" className="project-title ui-fill-primary">Project Two</text>
+                  <text x="115" y="-10" className="project-desc ui-text-muted">Mobile application</text>
+                </g>
             </g>
           </g>
           
+          {/* --- Process --- */}
+          <g transform="translate(300, 800)">
+            <g ref={processUiRef}>
+              <path ref={processLine1Ref} d="M -150 0 H -50" fill="none" className="ui-primary-stroke" strokeWidth="1.5" />
+              <path ref={processLine2Ref} d="M -25 0 H 75" fill="none" className="ui-primary-stroke" strokeWidth="1.5" />
+              <path ref={processLine3Ref} d="M 100 0 H 200" fill="none" className="ui-primary-stroke" strokeWidth="1.5" />
+              <g className="process-step" transform="translate(-200, 0)">
+                <circle cx="0" cy="0" r="12" className="ui-bg ui-stroke" strokeWidth="1"/>
+                <text textAnchor="middle" y="4" className="ui-fill-primary" fontSize="12">1</text>
+                <text textAnchor="middle" y="25" className="process-title ui-fill-primary">Discover</text>
+              </g>
+              <g className="process-step" transform="translate(-100, 0)">
+                <circle cx="0" cy="0" r="12" className="ui-bg ui-stroke" strokeWidth="1"/>
+                <text textAnchor="middle" y="4" className="ui-fill-primary" fontSize="12">2</text>
+                <text textAnchor="middle" y="25" className="process-title ui-fill-primary">Design</text>
+              </g>
+              <g className="process-step" transform="translate(25, 0)">
+                <circle cx="0" cy="0" r="12" className="ui-bg ui-stroke" strokeWidth="1"/>
+                <text textAnchor="middle" y="4" className="ui-fill-primary" fontSize="12">3</text>
+                <text textAnchor="middle" y="25" className="process-title ui-fill-primary">Develop</text>
+              </g>
+              <g className="process-step" transform="translate(150, 0)">
+                <circle cx="0" cy="0" r="12" className="ui-bg ui-stroke" strokeWidth="1"/>
+                <text textAnchor="middle" y="4" className="ui-fill-primary" fontSize="12">4</text>
+                <text textAnchor="middle" y="25" className="process-title ui-fill-primary">Deploy</text>
+              </g>
+            </g>
+          </g>
+
           {/* --- Contact --- */}
-          <g transform="translate(300, 920)">
+          <g transform="translate(300, 960)">
             <g ref={contactUiRef}>
               <text y="-35" className="contact-title ui-fill-primary">Let's build together.</text>
               <rect x="-150" y="-15" width="145" height="25" rx="4" className="ui-bg ui-stroke" strokeWidth="1" />
@@ -335,10 +411,17 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
               <rect x="5" y="-15" width="145" height="25" rx="4" className="ui-bg ui-stroke" strokeWidth="1" />
               <text x="15" y="2" className="contact-field-text ui-text-muted">Your Email</text>
               <rect x="-150" y="20" width="300" height="40" rx="4" className="ui-bg ui-stroke" strokeWidth="1" />
-              <text x="-140" y="38" className="contact-field-text ui-text-muted">Your Message</text>
+              <text ref={contactMessageRef} x="-140" y="38" className="contact-field-text ui-text-muted"></text>
+              <path ref={contactCursorRef} d="M -135 30 v 10" strokeWidth="1.2" className="ui-primary-stroke" />
               <rect x="-100" y="75" width="200" height="30" rx="5" className="ui-fill-primary" />
               <text x="0" y="94" className="contact-button-text">Send Message</text>
             </g>
+          </g>
+
+          {/* --- SCROLLING Footer --- */}
+          <g ref={footerUiRef} transform="translate(300, 1150)">
+            <rect x="-280" y="-15" width="560" height="30" className="ui-bg" />
+            <text x="0" y="5" className="footer-title ui-text-muted">&copy; 2024. All rights reserved.</text>
           </g>
         </g>
         
@@ -359,16 +442,6 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
                 <path d="M10 2.5 A5.5 5.5 0 0 1 2.5 10 A4 4 0 0 0 10 2.5z" className="ui-fill-primary"/>
             </g>
           </g>
-        </g>
-        
-        {/* --- FIXED Footer --- */}
-        <g ref={footerUiRef} transform="translate(300, 350)">
-          <rect x="-280" y="-15" width="560" height="30" className="ui-bg" />
-          <text x="-270" y="6" className="logo-text ui-fill-primary">KRYVE</text>
-          <text x="0" y="5" fontSize="8" textAnchor="middle" className="ui-text-muted">&copy; 2024. All rights reserved.</text>
-          <circle cx="240" cy="5" r="6" className="ui-fill-muted" />
-          <circle cx="258" cy="5" r="6" className="ui-fill-muted" />
-          <circle cx="276" cy="5" r="6" className="ui-fill-muted" />
         </g>
       </g>
     </svg>
