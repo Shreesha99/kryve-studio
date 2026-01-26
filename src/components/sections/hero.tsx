@@ -6,6 +6,7 @@ import { gsap } from 'gsap';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { MorphingSvg } from '@/components/common/morphing-svg';
+import { InteractiveOrbs } from '@/components/common/interactive-orbs';
 
 export function Hero() {
   const headlineRef = useRef<HTMLHeadingElement>(null);
@@ -57,10 +58,11 @@ export function Hero() {
 
   return (
     <section id="home" className="relative flex min-h-screen w-full items-center overflow-hidden bg-secondary py-24 md:py-32 lg:py-0">
+      <InteractiveOrbs />
       <div className="container relative z-10 mx-auto px-4 md:px-6">
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-24">
           <div className="text-left">
-            <h1 ref={headlineRef} className="font-headline text-5xl font-semibold tracking-tighter sm:text-6xl md:text-7xl">
+            <h1 ref={headlineRef} className="font-headline text-4xl font-semibold tracking-tighter sm:text-5xl lg:text-7xl">
               <div className="overflow-hidden py-1">
                 <span className="inline-block">
                   Engineering{' '}
