@@ -39,11 +39,14 @@ export function About() {
   const sectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Ensure this runs only on the client
     const aboutSection = sectionRef.current;
-    if (!aboutSection || !svgRef.current) return;
+    if (!aboutSection) return;
 
     const paths = pathRefs.current;
+    const contentElements = gsap.utils.toArray('.principle-content', aboutSection);
+
+    // Set initial state of content to be invisible via GSAP
+    gsap.set(contentElements, { opacity: 0, y: 20 });
 
     const tl = gsap.timeline({
       scrollTrigger: {
@@ -57,21 +60,18 @@ export function About() {
     paths.forEach((path, index) => {
       const length = path.getTotalLength();
       gsap.set(path, { strokeDasharray: length, strokeDashoffset: length });
-
-      const principleContent = path
-        .closest('.principle-item')
-        ?.querySelector('.principle-content');
+      
+      const principleContent = contentElements[index];
         
       if (principleContent) {
         tl.to(
           path,
           { strokeDashoffset: 0, duration: 2, ease: 'power1.inOut' },
-          index * 0.5
-        ).fromTo(
+          index * 0.5 
+        ).to(
           principleContent,
-          { opacity: 0, y: 20 },
           { opacity: 1, y: 0, duration: 1, ease: 'power2.out' },
-          '<'
+          '<' 
         );
       }
     });
@@ -137,7 +137,7 @@ export function About() {
                       strokeWidth={1.5}
                     />
                   </div>
-                  <div className="principle-content opacity-0">
+                  <div className="principle-content">
                     <h3 className="font-headline text-2xl font-bold">
                       {item.title}
                     </h3>
