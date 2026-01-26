@@ -38,7 +38,7 @@ const services = [
           x="300"
           y="110"
           textAnchor="middle"
-          fontSize="30"
+          fontSize="24"
           fontFamily="monospace"
           stroke="none"
           fill="hsl(var(--primary))"
@@ -63,6 +63,12 @@ const services = [
             className="fill-primary pupil"
             stroke="none"
           />
+           <g className="cracks" opacity="0" strokeWidth="1.5" transform="translate(300 100)">
+              <path d="M0 0 l-3 8" />
+              <path d="M0 0 l-6 -5" />
+              <path d="M0 0 l 7 3" />
+              <path d="M0 0 l 5 -6" />
+          </g>
         </g>
       </>
     ),
@@ -75,17 +81,17 @@ const services = [
     svg: (
       <g className="cart-group">
         <g className="speed-lines-group">
-            <path className="speed-line" d="M130 80 L 160 80" opacity="0"/>
-            <path className="speed-line" d="M120 100 L 170 100" opacity="0"/>
-            <path className="speed-line" d="M130 120 L 160 120" opacity="0"/>
+            <path className="speed-line" d="M150 80 L 180 80" opacity="0"/>
+            <path className="speed-line" d="M140 100 L 190 100" opacity="0"/>
+            <path className="speed-line" d="M150 120 L 180 120" opacity="0"/>
         </g>
         
-        <g className="cart-container">
+        <g className="cart-container" transform="translateX(20)">
           <g className="cart-body-group">
-            <path className="cart-body" d="M230 150 L210 70 H 350 L 330 150 Z" />
+            <path className="cart-body" d="M230 150 L210 70 H 330 L 310 150 Z" />
           </g>
           <circle className="cart-wheel" cx="220" cy="170" r="15" />
-          <circle className="cart-wheel" cx="340" cy="170" r="15" />
+          <circle className="cart-wheel" cx="320" cy="170" r="15" />
         </g>
       </g>
     ),
@@ -102,6 +108,7 @@ export function Services() {
   const sectionRef = useRef<HTMLElement>(null);
   const progressTl = useRef<gsap.core.Timeline>();
   const secondaryAnimation = useRef<gsap.core.Timeline | null>(null);
+  const resumeTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -109,8 +116,6 @@ export function Services() {
   }, []);
 
   const runAutoplay = useCallback((index: number) => {
-    if (isTouchDevice) return; 
-
     progressTl.current?.kill();
     const progressBars = gsap.utils.toArray<HTMLDivElement>(
       '.progress-bar-fill',
@@ -128,14 +133,21 @@ export function Services() {
       duration: AUTOPLAY_DURATION,
       ease: 'linear',
     });
-  }, [isTouchDevice]);
+  }, []);
 
   useEffect(() => {
     secondaryAnimation.current?.kill();
     gsap.killTweensOf('.code-tag-text');
 
-    if (!isHovering && !isTouchDevice) {
-      runAutoplay(activeIndex);
+    if (!isHovering) {
+        runAutoplay(activeIndex);
+    } else {
+        progressTl.current?.pause();
+    }
+    
+    // Clear any resume timer when manually hovering
+    if (isHovering && resumeTimerRef.current) {
+        clearTimeout(resumeTimerRef.current);
     }
 
     const ctx = gsap.context(() => {
@@ -165,67 +177,70 @@ export function Services() {
             const currentService = services[activeIndex];
 
             if (currentService.id === 'design') {
-                const blinkTl = gsap.timeline({ repeat: 1, repeatDelay: 1 });
+                const blinkTl = gsap.timeline({ repeat: 1, repeatDelay: 1.5 });
                 blinkTl.to([activeSvg.querySelector('.eye-outline'), activeSvg.querySelector('.pupil')], {
-                    scaleY: 0,
-                    duration: 0.07,
+                    scaleY: 0.05,
+                    duration: 0.1,
                     transformOrigin: 'center',
                     ease: 'power2.inOut'
                 }).to([activeSvg.querySelector('.eye-outline'), activeSvg.querySelector('.pupil')], {
                     scaleY: 1,
-                    duration: 0.07,
+                    duration: 0.1,
                     ease: 'power2.out'
                 });
-                secondaryAnimation.current.add(blinkTl, "+=1.5");
+                blinkTl.repeat(1);
+                secondaryAnimation.current.add(blinkTl, "+=1.0");
             }
 
             if (currentService.id === 'development') {
               const textEl = activeSvg.querySelector('.code-tag-text');
               if (textEl) {
                   gsap.set(textEl, { text: 'a', autoAlpha: 1 });
+                  const tags = ['p', 'h1', 'div', 'a'];
+                  let currentTagIndex = 0;
+                  
                   const textTl = gsap.timeline({
                       repeat: -1,
+                      onRepeat: () => {
+                          currentTagIndex = (currentTagIndex + 1) % tags.length;
+                          gsap.set(textEl, { text: tags[currentTagIndex] });
+                      }
                   });
-                  const tags = ['p', 'h1', 'div', 'a'];
-                  tags.forEach(tag => {
-                      textTl
-                      .to(textEl, {
-                          duration: 0.2,
-                          autoAlpha: 0,
-                          ease: 'power1.in',
-                      }, '+=1.2')
-                      .set(textEl, { text: tag })
-                      .to(textEl, {
-                          duration: 0.2,
-                          autoAlpha: 1,
-                          ease: 'power1.out',
-                      });
-                  });
+
+                  textTl
+                    .to(textEl, { duration: 0.2, autoAlpha: 0, ease: 'power1.in' }, '+=1.2')
+                    .to(textEl, { duration: 0.2, autoAlpha: 1, ease: 'power1.out' });
+
                   secondaryAnimation.current.add(textTl);
               }
             }
             
-            if (currentService.id === 'ecommerce') {
-              const cartBody = activeSvg.querySelector('.cart-body-group');
-              const speedLines = activeSvg.querySelectorAll('.speed-line');
-              
-              const cartMovementTl = gsap.timeline({ repeat: -1 });
-              cartMovementTl
-                .to(cartBody, { y: -2, duration: 0.1, ease: 'power1.out' })
-                .to(cartBody, { y: 0, duration: 0.1, ease: 'power1.in' });
+            if (currentService.id === 'branding') {
+                const crackTl = gsap.timeline();
+                const cracks = activeSvg.querySelector('.cracks');
+                crackTl.fromTo(cracks, { autoAlpha: 0, scale: 0.5, transformOrigin: 'center' }, { autoAlpha: 1, scale: 1, duration: 0.3, ease: 'power2.out' });
+                secondaryAnimation.current.add(crackTl, "+=0.5");
+            }
 
-              const speedLinesTl = gsap.timeline({ repeat: -1 });
-               speedLinesTl.fromTo(speedLines, 
-                  { x: 0, opacity: 1 }, 
-                  { 
-                    x: -30, 
-                    opacity: 0, 
-                    duration: 0.6, 
-                    ease: 'power2.out',
-                    stagger: 0.15,
-                  }
-              );
-              secondaryAnimation.current.add(cartMovementTl, 0).add(speedLinesTl, 0);
+            if (currentService.id === 'ecommerce') {
+                const cartBody = activeSvg.querySelector('.cart-body-group');
+                const speedLines = activeSvg.querySelectorAll('.speed-line');
+                
+                const bounceTl = gsap.timeline({ repeat: -1, yoyo: true });
+                bounceTl.to(cartBody, { y: -3, duration: 0.2, ease: 'power1.inOut' });
+
+                const speedLinesTl = gsap.timeline({ repeat: -1 });
+                 speedLinesTl.fromTo(speedLines, 
+                    { x: 0, opacity: 1 }, 
+                    { 
+                      x: -30, 
+                      opacity: 0, 
+                      duration: 0.6, 
+                      ease: 'power2.out',
+                      stagger: 0.15,
+                    }
+                );
+                secondaryAnimation.current.add(bounceTl, 0).add(speedLinesTl, 0);
             }
           },
         });
@@ -272,19 +287,33 @@ export function Services() {
         }
       }
     }, sectionRef);
-    return () => ctx.revert();
-  }, [activeIndex, isHovering, runAutoplay, isTouchDevice]);
+    return () => {
+        ctx.revert();
+        if (resumeTimerRef.current) {
+            clearTimeout(resumeTimerRef.current);
+        }
+    };
+  }, [activeIndex, isHovering, runAutoplay]);
   
-  const handleClick = (index: number) => {
-    if (isTouchDevice && index !== activeIndex) {
-      setActiveIndex(index);
+  const handleTap = (index: number) => {
+    if (isTouchDevice) {
+        if (index === activeIndex) return;
+
+        progressTl.current?.pause();
+        if (resumeTimerRef.current) {
+            clearTimeout(resumeTimerRef.current);
+        }
+        resumeTimerRef.current = setTimeout(() => {
+            progressTl.current?.play();
+        }, 10000);
+
+        setActiveIndex(index);
     }
   };
 
   const handleMouseEnter = (index: number) => {
     if (isTouchDevice) return;
     setIsHovering(true);
-    progressTl.current?.pause();
     if (index !== activeIndex) {
       setActiveIndex(index);
     }
@@ -293,7 +322,6 @@ export function Services() {
   const handleMouseLeave = () => {
     if (isTouchDevice) return;
     setIsHovering(false);
-    progressTl.current?.play();
   };
 
   return (
@@ -319,13 +347,11 @@ export function Services() {
                   key={service.id}
                   className="relative border-b border-border"
                   onMouseEnter={() => handleMouseEnter(index)}
-                  onClick={() => handleClick(index)}
+                  onClick={() => handleTap(index)}
                 >
-                  {!isTouchDevice && (
-                    <div className="absolute left-0 top-0 h-full w-px bg-border/30">
-                        <div className="progress-bar-fill h-full w-full bg-primary" />
-                    </div>
-                  )}
+                  <div className="absolute left-0 top-0 h-full w-px bg-border/30">
+                      <div className="progress-bar-fill h-full w-full scale-y-0 bg-primary" />
+                  </div>
                   <div
                     className={cn(
                       'group flex w-full cursor-pointer items-center justify-between py-8 pl-6 text-left transition-colors duration-300'

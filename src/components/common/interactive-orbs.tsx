@@ -1,14 +1,22 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTheme } from 'next-themes';
 import { gsap } from 'gsap';
 
 export function InteractiveOrbs() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { resolvedTheme } = useTheme();
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   useEffect(() => {
+    const touch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    setIsTouchDevice(touch);
+  }, []);
+
+  useEffect(() => {
+    if (isTouchDevice) return;
+
     const container = containerRef.current;
     if (!container) return;
     
@@ -48,9 +56,13 @@ export function InteractiveOrbs() {
 
     window.addEventListener('mousemove', onMouseMove);
     return () => window.removeEventListener('mousemove', onMouseMove);
-  }, []);
+  }, [isTouchDevice]);
 
   const orbColor = resolvedTheme === 'dark' ? 'hsl(0 0% 98%)' : 'hsl(240 5.9% 10%)';
+
+  if (isTouchDevice) {
+    return null;
+  }
 
   return (
     <div
