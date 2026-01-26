@@ -1,58 +1,73 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import Image from 'next/image';
 import { gsap } from 'gsap';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { HeroImage } from '@/lib/placeholder-images';
+import { MorphingSvg } from '@/components/common/morphing-svg';
 
 export function Hero() {
-  const leftColRef = useRef<HTMLDivElement>(null);
-  const rightColRef = useRef<HTMLDivElement>(null);
+  const headlineRef = useRef<HTMLHeadingElement>(null);
+  const paragraphRef = useRef<HTMLParagraphElement>(null);
+  const buttonRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!leftColRef.current || !rightColRef.current) return;
+    const tl = gsap.timeline({ defaults: { ease: 'power4.out', duration: 1.2 } });
+
+    // Split text for animation
+    const headlineSpans = gsap.utils.toArray('span', headlineRef.current);
     
-    const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
-    
-    tl.fromTo(leftColRef.current.children, 
-      { opacity: 0, y: 30 },
-      { opacity: 1, y: 0, duration: 1, stagger: 0.2 }
+    tl.fromTo(
+      headlineSpans,
+      { y: 100, opacity: 0 },
+      { y: 0, opacity: 1, stagger: 0.03 }
     )
-    .fromTo(rightColRef.current, 
-      { opacity: 0, clipPath: 'inset(0% 100% 0% 0%)' }, 
-      { opacity: 1, clipPath: 'inset(0% 0% 0% 0%)', duration: 1.4 }, 
-      "-=1"
+    .fromTo(
+      paragraphRef.current,
+      { y: 20, opacity: 0 },
+      { y: 0, opacity: 1, duration: 1 },
+      '-=0.8'
+    )
+    .fromTo(
+      buttonRef.current,
+      { y: 20, opacity: 0 },
+      { y: 0, opacity: 1, duration: 1 },
+      '-=0.8'
+    )
+    .fromTo(
+      svgRef.current,
+      { opacity: 0, scale: 0.8 },
+      { opacity: 1, scale: 1, duration: 1.5, ease: 'elastic.out(1, 0.75)' },
+      '-=1.2'
     );
   }, []);
+
+  const headlineText = "Where Artistry Meets Architecture.".split('');
 
   return (
     <section id="home" className="flex min-h-screen w-full items-center bg-secondary py-24 md:py-32 lg:py-0">
       <div className="container mx-auto px-4 md:px-6">
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-24">
-          <div ref={leftColRef} className="text-left">
-            <h1 className="font-headline text-5xl font-semibold tracking-tighter sm:text-6xl md:text-7xl">
-              Design is Feeling, Made Visual.
+          <div className="text-left">
+            <h1 ref={headlineRef} className="font-headline text-5xl font-semibold tracking-tighter sm:text-6xl md:text-7xl">
+              {headlineText.map((char, index) => (
+                <span key={index} className="inline-block" style={{ whiteSpace: char === ' ' ? 'pre' : 'normal' }}>
+                  {char}
+                </span>
+              ))}
             </h1>
-            <p className="mt-6 max-w-xl text-lg text-muted-foreground md:text-xl">
+            <p ref={paragraphRef} className="mt-6 max-w-xl text-lg text-muted-foreground md:text-xl">
               We don't just build websites; we craft digital spaces where artistry and engineering converge. We believe the best experiences are born from a partnership that values both pixels and performance.
             </p>
-            <div className="mt-8">
+            <div ref={buttonRef} className="mt-8">
               <Button size="lg" asChild>
                 <Link href="#work">Explore Our Work</Link>
               </Button>
             </div>
           </div>
-          <div ref={rightColRef} className="relative aspect-[4/5] w-full max-w-md justify-self-center lg:max-w-none">
-             <Image
-                src={HeroImage.imageUrl}
-                alt={HeroImage.description}
-                fill
-                className="rounded-lg object-cover shadow-2xl"
-                data-ai-hint={HeroImage.imageHint}
-                priority
-              />
+          <div ref={svgRef} className="relative aspect-square w-full max-w-lg justify-self-center lg:max-w-none">
+             <MorphingSvg />
           </div>
         </div>
       </div>

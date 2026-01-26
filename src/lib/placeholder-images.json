@@ -28,11 +28,5 @@
       "imageUrl": "https://picsum.photos/seed/104/800/600",
       "imageHint": "luxury product"
     }
-  ],
-  "hero": {
-    "id": "hero-background",
-    "description": "Abstract, artistic digital sculpture representing creativity and code.",
-    "imageUrl": "https://picsum.photos/seed/hero-new/800/1000",
-    "imageHint": "abstract sculpture"
-  }
+  ]
 }

@@ -9,5 +9,3 @@ export type ImagePlaceholder = {
 };
 
 export const Projects: ImagePlaceholder[] = data.projects;
-
-export const HeroImage: ImagePlaceholder = data.hero;
