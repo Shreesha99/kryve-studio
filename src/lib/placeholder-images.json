@@ -34,5 +34,23 @@
     "description": "A modern office space reflecting collaboration and creativity.",
     "imageUrl": "https://picsum.photos/seed/about-us/800/600",
     "imageHint": "team collaboration"
-  }
+  },
+  "founders": [
+    {
+      "id": "founder-1",
+      "name": "Alex Grant",
+      "title": "Co-founder & Creative Director",
+      "bio": "With a keen eye for aesthetics and a decade of experience in brand strategy, Alex leads our creative vision. He believes that great design is not just about looking good, but about creating a lasting emotional connection.",
+      "imageUrl": "https://picsum.photos/seed/alexgrant/500/500",
+      "imageHint": "creative director portrait"
+    },
+    {
+      "id": "founder-2",
+      "name": "Jordan Lee",
+      "title": "Co-founder & Technical Lead",
+      "bio": "Jordan is the engineering powerhouse behind Kryve. Obsessed with performance and clean code, she architects the robust, scalable, and cutting-edge solutions that bring our creative visions to life.",
+      "imageUrl": "https://picsum.photos/seed/jordanlee/500/500",
+      "imageHint": "developer portrait"
+    }
+  ]
 }

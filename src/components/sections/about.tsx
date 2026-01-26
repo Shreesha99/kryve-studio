@@ -1,41 +1,44 @@
 import Image from 'next/image';
-import { AboutImage } from '@/lib/placeholder-images';
+import { Founders } from '@/lib/placeholder-images';
 import { AnimateOnScroll } from '../common/animate-on-scroll';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 export function About() {
   return (
     <section id="about" className="w-full bg-secondary py-24 md:py-32 lg:py-40">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="grid gap-12 lg:grid-cols-2 lg:gap-24">
-          <div className="flex flex-col justify-center space-y-6">
-            <AnimateOnScroll>
-              <h2 className="font-headline text-4xl font-bold tracking-tight sm:text-5xl">
-                We are Kryve, a digital studio that blends creativity with technology.
-              </h2>
-            </AnimateOnScroll>
-            <AnimateOnScroll delay="200ms">
-              <p className="text-lg text-muted-foreground">
-                Our philosophy is simple: create digital experiences that are not only beautiful but also intuitive and effective. We are a team of designers, developers, and strategists passionate about pushing the boundaries of what's possible on the web.
-              </p>
-            </AnimateOnScroll>
-            <AnimateOnScroll delay="400ms">
-              <p className="text-lg text-muted-foreground">
-                From brand identity to complex web applications, we approach every project with meticulous attention to detail and a commitment to excellence. We believe in collaboration, transparency, and building lasting partnerships with our clients.
-              </p>
-            </AnimateOnScroll>
-          </div>
-          <AnimateOnScroll className="flex items-center justify-center" delay="300ms">
-             <div className="relative h-80 w-full overflow-hidden rounded-lg shadow-2xl lg:h-96">
-                <Image
-                    src={AboutImage.imageUrl}
-                    alt={AboutImage.description}
-                    fill
-                    className="object-cover"
-                    data-ai-hint={AboutImage.imageHint}
-                />
-                <div className="absolute inset-0 bg-primary/30"></div>
-            </div>
-          </AnimateOnScroll>
+        <AnimateOnScroll className="mb-16 text-center">
+            <h2 className="font-headline text-4xl font-bold tracking-tight sm:text-5xl">
+                Meet The Minds Behind Kryve
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+                We are a duo of passionate creators who believe in the power of collaboration to build extraordinary things.
+            </p>
+        </AnimateOnScroll>
+
+        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-12 lg:grid-cols-2">
+            {Founders.map((founder, index) => (
+                <AnimateOnScroll key={founder.id} delay={`${index * 150}ms`}>
+                    <Card className="flex h-full flex-col text-center transition-all hover:shadow-xl hover:-translate-y-1">
+                        <CardHeader className="flex items-center justify-center pt-8">
+                             <div className="relative h-40 w-40">
+                                <Image
+                                    src={founder.imageUrl}
+                                    alt={founder.name}
+                                    fill
+                                    className="rounded-full object-cover shadow-lg"
+                                    data-ai-hint={founder.imageHint}
+                                />
+                            </div>
+                        </CardHeader>
+                        <CardContent className="flex flex-grow flex-col p-6">
+                            <h3 className="font-headline text-2xl font-bold">{founder.name}</h3>
+                            <p className="text-md font-medium text-primary">{founder.title}</p>
+                            <p className="mt-4 text-muted-foreground">{founder.bio}</p>
+                        </CardContent>
+                    </Card>
+                </AnimateOnScroll>
+            ))}
         </div>
       </div>
     </section>
