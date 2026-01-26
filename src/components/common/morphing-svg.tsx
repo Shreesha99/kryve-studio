@@ -86,7 +86,9 @@ export function MorphingSvg() {
         gsap.set(svg.querySelectorAll('.ui-text-muted'), { fill: colors.light.uiTextMuted });
         gsap.set(svg.querySelectorAll('.tag-text'), { fill: colors.light.tagText });
         gsap.set(svg.querySelectorAll('.ui-primary-stroke'), { stroke: colors.light.uiFillPrimary });
-        gsap.set(logoTextRef.current, { fill: 'hsl(var(--primary))' });
+        if (logoTextRef.current) {
+            gsap.set(logoTextRef.current, { fill: 'hsl(var(--primary))' });
+        }
     };
 
     const animateSection = (tagRef: React.RefObject<SVGTextElement>, uiRef: React.RefObject<SVGGElement>) => {
@@ -143,7 +145,7 @@ export function MorphingSvg() {
     // Animate the theme toggle
     const toggleTl = gsap.timeline();
     const svg = svgRef.current;
-    if (svg) {
+    if (svg && logoTextRef.current) {
         toggleTl.to(sunIconRef.current, { scale: 0, rotation: 90, autoAlpha: 0, duration: 0.4, ease: 'power2.in' })
                 .to(moonIconRef.current, { scale: 1, rotation: 0, autoAlpha: 1, duration: 0.4, ease: 'power2.out' }, '>-0.3')
                 .to(svg.querySelectorAll('.ui-bg'), { fill: colors.dark.uiBg, duration: 0.5 }, '<')
@@ -219,7 +221,7 @@ export function MorphingSvg() {
               <text ref={navTagRef} y="15" className="tag-text">&lt;Navbar /&gt;</text>
               <g ref={navUiRef}>
                   <rect x="-210" y="0" width="420" height="30" class="ui-bg" />
-                  <text ref={logoTextRef} x="-200" y="19" fontFamily="Poppins, sans-serif" fontSize="12" fontWeight="bold" fill="hsl(var(--primary))">KRYVE</text>
+                  <text ref={logoTextRef} x="-200" y="19" fontFamily="Poppins, sans-serif" fontSize="12" fontWeight="bold">KRYVE</text>
                   <text x="-50" y="17.5" font-size="9" text-anchor="middle" class="ui-text-muted">About</text>
                   <text ref={servicesLinkRef} x="0" y="17.5" font-size="9" text-anchor="middle" class="ui-text-muted">Services</text>
                   <text x="50" y="17.5" font-size="9" text-anchor="middle" class="ui-text-muted">Work</text>
