@@ -26,7 +26,7 @@ const services = [
     id: 'branding',
     title: 'Identity & Strategy',
     description:
-      'A brand is a story, a feeling, a promise. We help you define and articulate your unique identity, creating a cohesive brand world that resonates with your audience and stands the test of time.',
+      "A brand is a story, a feeling, a promise. We help you define and articulate your unique identity, creating a cohesive brand world that resonates with your audience and stands the test of time.",
     svg: (
       <>
         <circle className="strategy-circle" cx="300" cy="100" r="60" />
@@ -64,6 +64,7 @@ export function Services() {
   const [isHovering, setIsHovering] = useState(false);
 
   const sectionRef = useRef<HTMLElement>(null);
+  const svgContainerRef = useRef<HTMLDivElement>(null);
   const progressTl = useRef<gsap.core.Timeline>();
 
   const runAutoplay = useCallback((index: number) => {
