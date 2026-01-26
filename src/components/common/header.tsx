@@ -55,7 +55,10 @@ export function Header() {
             className="text-lg font-medium text-muted-foreground transition-colors hover:text-primary md:text-sm"
             onClick={(e) => {
               e.preventDefault();
-              document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' });
+              const targetElement = document.querySelector(href);
+              if (targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth' });
+              }
               setIsMobileMenuOpen(false);
             }}
           >
@@ -91,13 +94,13 @@ export function Header() {
   };
 
   return (
-    <header ref={headerRef} className="fixed top-0 z-50 w-full p-2 md:p-4">
+    <header ref={headerRef} className="fixed top-0 z-50 w-full">
       <div
         className={cn(
-          'relative mx-auto flex h-16 max-w-7xl items-center justify-between rounded-full border px-4 shadow-sm transition-all md:px-6',
+          'relative flex h-16 items-center justify-between px-4 transition-all md:mx-auto md:mt-4 md:max-w-7xl md:rounded-full md:border md:px-6 md:shadow-sm',
           isScrolled
-            ? 'border-border bg-background/80 backdrop-blur-sm'
-            : 'border-transparent bg-background/30 backdrop-blur-sm'
+            ? 'border-b border-border bg-background/80 backdrop-blur-sm md:border'
+            : 'border-b border-transparent md:border-transparent md:bg-background/30'
         )}
       >
         {/* Logo on the left */}
