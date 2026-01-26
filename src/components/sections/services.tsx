@@ -20,7 +20,14 @@ const services = [
           className="eye-outline"
           d="M150 100 C 200 25, 400 25, 450 100 C 400 175, 200 175, 150 100 Z"
         />
-        <circle className="pupil" cx="300" cy="100" r="30" fill="hsl(var(--primary))" stroke="none" />
+        <circle
+          className="pupil"
+          cx="300"
+          cy="100"
+          r="30"
+          fill="hsl(var(--primary))"
+          stroke="none"
+        />
       </>
     ),
   },
@@ -63,11 +70,16 @@ const services = [
             className="fill-primary pupil"
             stroke="none"
           />
-           <g className="cracks" opacity="0" strokeWidth="1.5" transform="translate(300 100)">
-              <path d="M0 0 l-3 8" />
-              <path d="M0 0 l-6 -5" />
-              <path d="M0 0 l 7 3" />
-              <path d="M0 0 l 5 -6" />
+          <g
+            className="cracks"
+            opacity="0"
+            strokeWidth="1.5"
+            transform="translate(300 100)"
+          >
+            <path d="M0 0 l-3 8" />
+            <path d="M0 0 l-6 -5" />
+            <path d="M0 0 l 7 3" />
+            <path d="M0 0 l 5 -6" />
           </g>
         </g>
       </>
@@ -81,14 +93,17 @@ const services = [
     svg: (
       <g className="cart-group">
         <g className="speed-lines-group">
-            <path className="speed-line" d="M150 80 L 180 80" opacity="0"/>
-            <path className="speed-line" d="M140 100 L 190 100" opacity="0"/>
-            <path className="speed-line" d="M150 120 L 180 120" opacity="0"/>
+          <path className="speed-line" d="M150 80 L 180 80" opacity="0" />
+          <path className="speed-line" d="M140 100 L 190 100" opacity="0" />
+          <path className="speed-line" d="M150 120 L 180 120" opacity="0" />
         </g>
-        
-        <g className="cart-container" transform="translateX(20)">
+
+        <g className="cart-container" transform="translateX(30)">
           <g className="cart-body-group">
-            <path className="cart-body" d="M230 150 L210 70 H 330 L 310 150 Z" />
+            <path
+              className="cart-body"
+              d="M230 150 L210 70 H 330 L 310 150 Z"
+            />
           </g>
           <circle className="cart-wheel" cx="220" cy="170" r="15" />
           <circle className="cart-wheel" cx="320" cy="170" r="15" />
@@ -116,6 +131,7 @@ export function Services() {
   }, []);
 
   const runAutoplay = useCallback((index: number) => {
+    if (isTouchDevice && isHovering) return; // isHovering is used to signify a manual tap
     progressTl.current?.kill();
     const progressBars = gsap.utils.toArray<HTMLDivElement>(
       '.progress-bar-fill',
@@ -133,20 +149,20 @@ export function Services() {
       duration: AUTOPLAY_DURATION,
       ease: 'linear',
     });
-  }, []);
+  }, [isTouchDevice, isHovering]);
 
   useEffect(() => {
     secondaryAnimation.current?.kill();
     gsap.killTweensOf('.code-tag-text');
 
     if (!isHovering) {
-        runAutoplay(activeIndex);
+      runAutoplay(activeIndex);
     } else {
-        progressTl.current?.pause();
+      progressTl.current?.pause();
     }
-    
+
     if (isHovering && resumeTimerRef.current) {
-        clearTimeout(resumeTimerRef.current);
+      clearTimeout(resumeTimerRef.current);
     }
 
     const ctx = gsap.context(() => {
@@ -171,71 +187,96 @@ export function Services() {
           onComplete: () => {
             secondaryAnimation.current?.kill();
             gsap.killTweensOf('.code-tag-text');
-            secondaryAnimation.current = gsap.timeline({ repeat: -1, repeatDelay: 1.5 });
+            secondaryAnimation.current = gsap.timeline({
+              repeat: -1,
+              repeatDelay: 1,
+            });
 
             const currentService = services[activeIndex];
 
             if (currentService.id === 'design') {
-                const blinkTl = gsap.timeline({ repeat: 1, yoyo: true, repeatDelay: 0.2 });
-                blinkTl.to([activeSvg.querySelector('.eye-outline'), activeSvg.querySelector('.pupil')], {
-                    scaleY: 0.05,
-                    duration: 0.1,
-                    transformOrigin: 'center',
-                    ease: 'power2.inOut'
-                });
-                secondaryAnimation.current.add(blinkTl.repeat(1), "+=1.0");
-            }
-            
-            if (currentService.id === 'branding') {
-              const cracks = activeSvg.querySelector('.cracks');
-              gsap.fromTo(cracks, 
-                  { autoAlpha: 0, scale: 0.5, transformOrigin: 'center center' }, 
-                  { autoAlpha: 1, scale: 1, duration: 0.3, ease: 'power2.out', delay: 0.2 }
+              const blinkTl = gsap.timeline({
+                repeat: 1,
+                yoyo: true,
+                repeatDelay: 0.15,
+              });
+              blinkTl.to(
+                [
+                  activeSvg.querySelector('.eye-outline'),
+                  activeSvg.querySelector('.pupil'),
+                ],
+                {
+                  scaleY: 0.05,
+                  duration: 0.1,
+                  transformOrigin: 'center',
+                  ease: 'power2.inOut',
+                }
               );
+              secondaryAnimation.current.add(blinkTl, '+=1.0');
             }
 
+            if (currentService.id === 'branding') {
+              const cracks = activeSvg.querySelector('.cracks');
+              gsap.fromTo(
+                cracks,
+                { autoAlpha: 0, scale: 0.5, transformOrigin: 'center center' },
+                {
+                  autoAlpha: 1,
+                  scale: 1,
+                  duration: 0.3,
+                  ease: 'power2.out',
+                  delay: 0.2,
+                }
+              );
+            }
+           
             if (currentService.id === 'development') {
               const textEl = activeSvg.querySelector('.code-tag-text');
               if (textEl) {
-                  const tags = ['a', 'p', 'h1', 'div'];
-                  let currentTagIndex = 0;
-                  
-                  const textTl = gsap.timeline({
-                      repeat: -1,
-                      onRepeat: () => {
-                          currentTagIndex = (currentTagIndex + 1) % tags.length;
-                          gsap.set(textEl, { text: tags[currentTagIndex] });
-                      }
-                  });
-
+                gsap.killTweensOf(textEl);
+                const tags = ['a', 'p', 'h1', 'div'];
+                const textTl = gsap.timeline({
+                  delay: 1,
+                });
+                
+                tags.forEach((tag, index) => {
+                  const nextTag = tags[(index + 1) % tags.length];
                   textTl
-                    .to(textEl, { duration: 0.2, autoAlpha: 0, ease: 'power1.in' }, '+=1.2')
-                    .set(textEl, { text: tags[0]})
-                    .to(textEl, { duration: 0.2, autoAlpha: 1, ease: 'power1.out' });
-
-                  secondaryAnimation.current.add(textTl);
+                    .to(textEl, { autoAlpha: 0, duration: 0.3, ease: 'power1.in' }, "+=1.2")
+                    .set(textEl, { text: nextTag })
+                    .to(textEl, { autoAlpha: 1, duration: 0.3, ease: 'power1.out' });
+                });
+                
+                secondaryAnimation.current.add(textTl, 0).repeat(-1);
+                 gsap.set(textEl, { text: tags[0], autoAlpha: 1 });
               }
             }
-            
-            if (currentService.id === 'ecommerce') {
-                const cartBody = activeSvg.querySelector('.cart-body-group');
-                const speedLines = activeSvg.querySelectorAll('.speed-line');
-                
-                const bounceTl = gsap.timeline({ repeat: -1, yoyo: true });
-                bounceTl.to(cartBody, { y: -3, duration: 0.2, ease: 'power1.inOut' });
 
-                const speedLinesTl = gsap.timeline({ repeat: -1 });
-                 speedLinesTl.fromTo(speedLines, 
-                    { x: 0, opacity: 1 }, 
-                    { 
-                      x: -30, 
-                      opacity: 0, 
-                      duration: 0.6, 
-                      ease: 'power2.out',
-                      stagger: 0.15,
-                    }
-                );
-                secondaryAnimation.current.add(bounceTl, 0).add(speedLinesTl, 0);
+
+            if (currentService.id === 'ecommerce') {
+              const cartBody = activeSvg.querySelector('.cart-body-group');
+              const speedLines = activeSvg.querySelectorAll('.speed-line');
+
+              const bounceTl = gsap.timeline({ repeat: -1, yoyo: true });
+              bounceTl.to(cartBody, {
+                y: -3,
+                duration: 0.2,
+                ease: 'power1.inOut',
+              });
+
+              const speedLinesTl = gsap.timeline({ repeat: -1 });
+              speedLinesTl.fromTo(
+                speedLines,
+                { x: 0, opacity: 1 },
+                {
+                  x: -30,
+                  opacity: 0,
+                  duration: 0.6,
+                  ease: 'power2.out',
+                  stagger: 0.15,
+                }
+              );
+              secondaryAnimation.current.add(bounceTl, 0).add(speedLinesTl, 0);
             }
           },
         });
@@ -245,7 +286,7 @@ export function Services() {
           { autoAlpha: 0 },
           { autoAlpha: 1, duration: 0.4 }
         );
-        
+
         const paths = gsap.utils.toArray<SVGPathElement>(
           '.bracket, .eye-outline, .cart-body',
           activeSvg
@@ -253,12 +294,15 @@ export function Services() {
         if (paths.length > 0) {
           mainDrawTl.fromTo(
             paths,
-            { strokeDasharray: (i, el) => el.getTotalLength(), strokeDashoffset: (i, el) => el.getTotalLength() },
+            {
+              strokeDasharray: (i, el) => el.getTotalLength(),
+              strokeDashoffset: (i, el) => el.getTotalLength(),
+            },
             {
               strokeDashoffset: 0,
               duration: 1,
               ease: 'power2.inOut',
-              stagger: 0.2
+              stagger: 0.2,
             },
             '<'
           );
@@ -283,27 +327,30 @@ export function Services() {
       }
     }, sectionRef);
     return () => {
-        ctx.revert();
-        if (resumeTimerRef.current) {
-            clearTimeout(resumeTimerRef.current);
-        }
+      ctx.revert();
+      if (resumeTimerRef.current) {
+        clearTimeout(resumeTimerRef.current);
+      }
     };
   }, [activeIndex, isHovering, runAutoplay]);
-  
+
   const handleTap = (index: number) => {
-    if (isTouchDevice) {
-        if (index === activeIndex) return;
+    if (!isTouchDevice) return;
+    
+    if (index === activeIndex && isHovering) return;
 
-        progressTl.current?.pause();
-        if (resumeTimerRef.current) {
-            clearTimeout(resumeTimerRef.current);
-        }
-        resumeTimerRef.current = setTimeout(() => {
-          runAutoplay(index);
-        }, 10000);
-
-        setActiveIndex(index);
+    progressTl.current?.pause();
+    setIsHovering(true); // use isHovering state to signify a manual tap
+    
+    if (resumeTimerRef.current) {
+      clearTimeout(resumeTimerRef.current);
     }
+    resumeTimerRef.current = setTimeout(() => {
+      setIsHovering(false);
+      runAutoplay(index);
+    }, 10000);
+
+    setActiveIndex(index);
   };
 
   const handleMouseEnter = (index: number) => {
@@ -345,7 +392,7 @@ export function Services() {
                   onClick={() => handleTap(index)}
                 >
                   <div className="absolute left-0 top-0 h-full w-px bg-border/30">
-                      <div className="progress-bar-fill h-full w-full scale-y-0 bg-primary" />
+                    <div className="progress-bar-fill h-full w-full scale-y-0 bg-primary" />
                   </div>
                   <div
                     className={cn(
