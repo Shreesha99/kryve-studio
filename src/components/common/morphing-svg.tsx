@@ -9,7 +9,6 @@ export function MorphingSvg() {
   // Main container refs
   const scrollGroupRef = useRef<SVGGElement>(null);
   const cursorRef = useRef<SVGGElement>(null);
-  const clipPathRectRef = useRef<SVGRectElement>(null);
 
   // Tag refs
   const navTagRef = useRef<SVGTextElement>(null);
@@ -40,11 +39,10 @@ export function MorphingSvg() {
     
     const masterTl = gsap.timeline({
       repeat: -1,
-      repeatDelay: 2,
-      defaults: { ease: 'power2.out', duration: 0.8 }
+      repeatDelay: 3,
+      defaults: { ease: 'power2.out', duration: 0.6 }
     });
 
-    // --- INITIAL STATE ---
     const setup = () => {
         gsap.set(uis.map(r => r.current), { autoAlpha: 0 });
         gsap.set(tags.map(r => r.current), { autoAlpha: 1 });
@@ -56,29 +54,29 @@ export function MorphingSvg() {
 
     const animateSection = (tagRef: React.RefObject<SVGTextElement>, uiRef: React.RefObject<SVGGElement>) => {
       const tl = gsap.timeline();
-      tl.to(tagRef.current, { autoAlpha: 0, duration: 0.4 })
-        .to(uiRef.current, { autoAlpha: 1, duration: 0.6 }, '<');
+      tl.to(tagRef.current, { autoAlpha: 0, duration: 0.3 })
+        .to(uiRef.current, { autoAlpha: 1, duration: 0.5 }, '<');
       return tl;
     };
 
     // --- ANIMATION SEQUENCE ---
     masterTl.add(setup);
 
-    masterTl.add(animateSection(navTagRef, navUiRef), "+=0.5");
-    masterTl.add(animateSection(heroTagRef, heroUiRef), "-=0.2");
+    masterTl.add(animateSection(navTagRef, navUiRef), "+=1");
+    masterTl.add(animateSection(heroTagRef, heroUiRef), "+=0.2");
     
     // Hero text typing animation
-    masterTl.to(heroHeadlineRef.current, { scaleX: 1, duration: 1, ease: 'power2.inOut' });
-    masterTl.to(heroSubtitleRef.current, { scaleX: 1, duration: 1, ease: 'power2.inOut' }, "-=0.7");
+    masterTl.to(heroHeadlineRef.current, { scaleX: 1, duration: 0.8, ease: 'power2.inOut' }, "+=0.2");
+    masterTl.to(heroSubtitleRef.current, { scaleX: 1, duration: 0.8, ease: 'power2.inOut' }, "-=0.6");
     
-    masterTl.add(animateSection(aboutTagRef, aboutUiRef), "-=0.2");
-    masterTl.add(animateSection(servicesTagRef, servicesUiRef), "-=0.2");
-    masterTl.add(animateSection(contactTagRef, contactUiRef), "-=0.2");
+    masterTl.add(animateSection(aboutTagRef, aboutUiRef), "+=0.2");
+    masterTl.add(animateSection(servicesTagRef, servicesUiRef), "+=0.2");
+    masterTl.add(animateSection(contactTagRef, contactUiRef), "+=0.2");
     
     // Interaction phase
-    masterTl.addLabel('interact', "+=1");
+    masterTl.addLabel('interact', "+=1.5");
 
-    // 1. Click theme toggle
+    // 1. Show cursor and move to theme toggle
     const themeToggleBBox = themeToggleRef.current!.getBBox();
     masterTl.to(cursorRef.current, { 
       autoAlpha: 1, 
@@ -95,18 +93,18 @@ export function MorphingSvg() {
       y: servicesLinkBBox.y + servicesLinkBBox.height / 2,
       duration: 0.7
     }, '+=0.5');
-    masterTl.to(servicesLinkRef.current, { scale: 0.9, yoyo: true, repeat: 1, duration: 0.1, transformOrigin: 'center' });
+    masterTl.to(servicesLinkRef.current, { scale: 0.9, yoyo: true, repeat: 1, duration: 0.15, transformOrigin: 'center' });
     
     // 3. Scroll to services section
     const servicesUiBBox = servicesUiRef.current!.getBBox();
     const servicesY = servicesUiBBox.y;
-    masterTl.to(scrollGroupRef.current, { y: -servicesY + 60, duration: 1.5, ease: 'power3.inOut' }, '+=0.2');
+    masterTl.to(scrollGroupRef.current, { y: -servicesY + 60, duration: 1.5, ease: 'power3.inOut' }, '+=0.3');
 
     // 4. Scroll back to top
     masterTl.to(scrollGroupRef.current, { y: 0, duration: 1.5, ease: 'power3.inOut' }, '+=1.5');
 
     // Fade out for reset
-    masterTl.to([cursorRef.current, ...uis.map(r => r.current)], { autoAlpha: 0, duration: 1 }, '+=1');
+    masterTl.to([cursorRef.current, ...uis.map(r => r.current)], { autoAlpha: 0, duration: 0.8 }, '+=1');
 
     return () => {
       masterTl.kill();
@@ -127,16 +125,15 @@ export function MorphingSvg() {
             }
             .ui-bg { fill: hsl(var(--secondary)); }
             .ui-stroke { stroke: hsl(var(--border)); stroke-width: 1.5; }
-            .ui-fill { fill: hsl(var(--muted-foreground)); }
+            .ui-fill-muted { fill: hsl(var(--muted-foreground)); }
             .ui-fill-primary { fill: hsl(var(--primary)); }
-            .ui-text { fill: hsl(var(--foreground)); font-family: sans-serif; }
             .ui-text-muted { fill: hsl(var(--muted-foreground)); font-family: sans-serif; }
           `}
         </style>
         <clipPath id="mainClip">
-          <rect ref={clipPathRectRef} x="20" y="20" width="460" height="460" rx="10" />
+          <rect x="20" y="20" width="460" height="460" rx="10" />
         </clipPath>
-        <g id="cursor" ref={cursorRef}>
+        <g id="cursor" ref={cursorRef} transform="scale(1.5)">
             <path fill="hsl(var(--foreground))" d="M11.22,9.45,3.95,2.18A1.07,1.07,0,0,0,2.44,2.18L2.18,2.44a1.07,1.07,0,0,0,0,1.51l7.27,7.27-2.3,6.89a1.06,1.06,0,0,0,1,1.33,1,1,0,0,0,.32-.06l7.15-2.4a1.07,1.07,0,0,0,.68-1Z"/>
         </g>
       </defs>
@@ -150,12 +147,11 @@ export function MorphingSvg() {
               <g ref={navUiRef}>
                   <rect x="-210" y="0" width="420" height="30" class="ui-bg" />
                   <rect x="-200" y="8" width="50" height="14" rx="3" class="ui-fill-primary"/>
-                  <rect x="-50" y="12" width="20" height="6" rx="2" class="ui-fill"/>
-                  <rect x="-20" y="12" width="30" height="6" rx="2" class="ui-fill"/>
-                  <text ref={servicesLinkRef} x="25" y="17.5" font-size="9" class="ui-text-muted">Services</text>
-                  <rect x="70" y="12" width="25" height="6" rx="2" class="ui-fill"/>
+                  <text x="-50" y="17.5" font-size="9" text-anchor="middle" class="ui-text-muted">About</text>
+                  <text ref={servicesLinkRef} x="0" y="17.5" font-size="9" text-anchor="middle" class="ui-text-muted">Services</text>
+                  <text x="50" y="17.5" font-size="9" text-anchor="middle" class="ui-text-muted">Work</text>
                   <g ref={themeToggleRef} transform="translate(185, 8)">
-                    <rect width="14" height="14" rx="7" class="ui-fill" />
+                    <circle cx="7" cy="7" r="7" class="ui-fill-muted" />
                     <path ref={themeToggleIconRef} d="M 7 2 L 7 12 M 2 7 L 12 7" stroke="hsl(var(--secondary))" stroke-width="1.5" stroke-linecap="round"/>
                   </g>
               </g>
@@ -165,7 +161,7 @@ export function MorphingSvg() {
             <g transform="translate(250, 130)">
               <text ref={heroTagRef} className="tag-text">&lt;Hero /&gt;</text>
               <g ref={heroUiRef}>
-                <rect ref={heroHeadlineRef} x="-140" y="-15" width="280" height="18" rx="4" class="ui-fill" />
+                <rect ref={heroHeadlineRef} x="-140" y="-15" width="280" height="18" rx="4" class="ui-fill-muted" />
                 <rect ref={heroSubtitleRef} x="-180" y="15" width="360" height="8" rx="3" class="ui-fill-primary" opacity="0.6"/>
               </g>
             </g>
@@ -174,10 +170,10 @@ export function MorphingSvg() {
             <g transform="translate(250, 220)">
               <text ref={aboutTagRef} className="tag-text">&lt;About /&gt;</text>
               <g ref={aboutUiRef}>
-                <rect x="-100" y="-20" width="200" height="12" rx="3" class="ui-fill" />
-                <rect x="-150" y="2" width="120" height="6" rx="2" class="ui-fill" opacity="0.4"/>
-                <rect x="-150" y="12" width="180" height="6" rx="2" class="ui-fill" opacity="0.4"/>
-                <rect x="20" y="-10" width="100" height="40" rx="4" class="ui-fill-primary" opacity="0.2"/>
+                <rect x="-100" y="-20" width="200" height="12" rx="3" class="ui-fill-muted" />
+                <rect x="-150" y="2" width="120" height="6" rx="2" class="ui-fill-muted" opacity="0.4"/>
+                <rect x="-150" y="12" width="180" height="6" rx="2" class="ui-fill-muted" opacity="0.4"/>
+                <rect x="50" y="-10" width="100" height="40" rx="4" class="ui-fill-primary" opacity="0.2"/>
               </g>
             </g>
 
@@ -187,18 +183,18 @@ export function MorphingSvg() {
               <g ref={servicesUiRef}>
                   <rect x="-180" y="-10" width="100" height="50" rx="5" class="ui-bg" stroke="hsl(var(--border))" stroke-width="1" />
                   <rect x="-170" y="0" width="20" height="8" rx="2" class="ui-fill-primary" />
-                  <rect x="-170" y="12" width="80" height="4" rx="2" class="ui-fill" opacity="0.3" />
-                  <rect x="-170" y="20" width="60" height="4" rx="2" class="ui-fill" opacity="0.3" />
+                  <rect x="-170" y="12" width="80" height="4" rx="2" class="ui-fill-muted" opacity="0.3" />
+                  <rect x="-170" y="20" width="60" height="4" rx="2" class="ui-fill-muted" opacity="0.3" />
                   
                   <rect x="-70" y="-10" width="100" height="50" rx="5" class="ui-bg" stroke="hsl(var(--border))" stroke-width="1" />
                   <rect x="-60" y="0" width="20" height="8" rx="2" class="ui-fill-primary" />
-                  <rect x="-60" y="12" width="80" height="4" rx="2" class="ui-fill" opacity="0.3" />
-                  <rect x="-60" y="20" width="60" height="4" rx="2" class="ui-fill" opacity="0.3" />
+                  <rect x="-60" y="12" width="80" height="4" rx="2" class="ui-fill-muted" opacity="0.3" />
+                  <rect x="-60" y="20" width="60" height="4" rx="2" class="ui-fill-muted" opacity="0.3" />
 
                   <rect x="40" y="-10" width="100" height="50" rx="5" class="ui-bg" stroke="hsl(var(--border))" stroke-width="1" />
                   <rect x="50" y="0" width="20" height="8" rx="2" class="ui-fill-primary" />
-                  <rect x="50" y="12" width="80" height="4" rx="2" class="ui-fill" opacity="0.3" />
-                  <rect x="50" y="20" width="60" height="4" rx="2" class="ui-fill" opacity="0.3" />
+                  <rect x="50" y="12" width="80" height="4" rx="2" class="ui-fill-muted" opacity="0.3" />
+                  <rect x="50" y="20" width="60" height="4" rx="2" class="ui-fill-muted" opacity="0.3" />
               </g>
             </g>
             
@@ -206,7 +202,7 @@ export function MorphingSvg() {
             <g transform="translate(250, 410)">
               <text ref={contactTagRef} className="tag-text">&lt;Contact /&gt;</text>
               <g ref={contactUiRef}>
-                <rect x="-120" y="-25" width="240" height="12" rx="3" class="ui-fill" />
+                <rect x="-120" y="-25" width="240" height="12" rx="3" class="ui-fill-muted" />
                 <rect x="-150" y="0" width="145" height="20" rx="4" class="ui-bg" stroke="hsl(var(--border))" stroke-width="1" />
                 <rect x="5" y="0" width="145" height="20" rx="4" class="ui-bg" stroke="hsl(var(--border))" stroke-width="1" />
                 <rect x="-80" y="30" width="160" height="25" rx="5" class="ui-fill-primary" />
