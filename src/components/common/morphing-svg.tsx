@@ -27,6 +27,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
   const heroSubtitleRef = useRef<SVGTextElement>(null);
   const servicesLinkRef = useRef<SVGTextElement>(null);
   const logoTextRef = useRef<SVGTextElement>(null);
+  const themeToggleRef = useRef<SVGGElement>(null);
 
   useEffect(() => {
     const svg = svgRef.current;
@@ -57,7 +58,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
 
     const masterTl = gsap.timeline({
       repeat: -1,
-      defaults: { ease: 'power2.out', duration: 0.4 }
+      defaults: { ease: 'power2.out', duration: 0.3 }
     });
 
     const setup = () => {
@@ -118,12 +119,12 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
     // --- ANIMATION SEQUENCE ---
     masterTl.add(setup);
 
-    masterTl.to(svgRef.current, { opacity: 1, scale: 1, y: 0, duration: 0.8, ease: 'power3.out' });
+    masterTl.to(svgRef.current, { opacity: 1, scale: 1, y: 0, duration: 0.6, ease: 'power3.out' });
 
-    masterTl.add(animateSection(navUiRef), "-=0.5");
-    masterTl.add(animateSection(heroUiRef), "+=0.2");
-    masterTl.add(typeText(heroHeadlineRef, headlineText, 0.8), "+=0.2");
-    masterTl.add(typeText(heroSubtitleRef, subtitleText, 0.8), "+=0.1");
+    masterTl.add(animateSection(navUiRef), "-=0.4");
+    masterTl.add(animateSection(heroUiRef), "+=0.1");
+    masterTl.add(typeText(heroHeadlineRef, headlineText, 0.6), "+=0.1");
+    masterTl.add(typeText(heroSubtitleRef, subtitleText, 0.6), "+=0.1");
 
     const aboutTl = gsap.timeline();
     if (aboutUiRef.current) {
@@ -131,51 +132,51 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
         const textLines = aboutUiRef.current.querySelectorAll('.about-text-line');
         aboutTl.add(animateSection(aboutUiRef));
         if (image && textLines) {
-            aboutTl.fromTo(image, { autoAlpha: 0, scale: 0.9 }, { autoAlpha: 1, scale: 1, ease: 'power2.out' }, '>-0.3');
-            aboutTl.fromTo(textLines, { autoAlpha: 0, x: -10 }, { autoAlpha: 1, x: 0, stagger: 0.08, ease: 'power2.out' }, '>-0.2');
+            aboutTl.fromTo(image, { autoAlpha: 0, scale: 0.9 }, { autoAlpha: 1, scale: 1, ease: 'power2.out' }, '>-0.2');
+            aboutTl.fromTo(textLines, { autoAlpha: 0, x: -10 }, { autoAlpha: 1, x: 0, stagger: 0.06, ease: 'power2.out' }, '>-0.1');
         }
     }
-    masterTl.add(aboutTl, '+=0.3');
+    masterTl.add(aboutTl, '+=0.2');
 
     const servicesTl = gsap.timeline();
     if (servicesUiRef.current) {
         const cards = servicesUiRef.current.querySelectorAll('.service-card');
         servicesTl.add(animateSection(servicesUiRef));
         if (cards.length > 0) {
-            servicesTl.fromTo(cards, { autoAlpha: 0, y: 15 }, { autoAlpha: 1, y: 0, stagger: 0.1, ease: 'power2.out' }, '>-0.3');
+            servicesTl.fromTo(cards, { autoAlpha: 0, y: 15 }, { autoAlpha: 1, y: 0, stagger: 0.08, ease: 'power2.out' }, '>-0.2');
         }
     }
-    masterTl.add(servicesTl, '+=0.3');
+    masterTl.add(servicesTl, '+=0.2');
 
     const projectsTl = gsap.timeline();
     if (projectsUiRef.current) {
         const projectCards = projectsUiRef.current.querySelectorAll('.project-card');
         projectsTl.add(animateSection(projectsUiRef));
         if (projectCards.length > 0) {
-            projectsTl.fromTo(projectCards, { autoAlpha: 0, y: 15 }, { autoAlpha: 1, y: 0, stagger: 0.1, ease: 'power2.out' }, '>-0.3' );
+            projectsTl.fromTo(projectCards, { autoAlpha: 0, y: 15 }, { autoAlpha: 1, y: 0, stagger: 0.08, ease: 'power2.out' }, '>-0.2' );
         }
     }
-    masterTl.add(projectsTl, "+=0.3");
+    masterTl.add(projectsTl, "+=0.2");
     
     const creativeTl = gsap.timeline();
     if (creativeUiRef.current) {
         creativeTl.add(animateSection(creativeUiRef));
-        creativeTl.from(creativeUiRef.current.children, { scale: 0.8, autoAlpha: 0, stagger: 0.1, transformOrigin: 'center' }, '>-0.3');
+        creativeTl.from(creativeUiRef.current.children, { scale: 0.8, autoAlpha: 0, stagger: 0.08, transformOrigin: 'center' }, '>-0.2');
     }
-    masterTl.add(creativeTl, "+=0.3");
+    masterTl.add(creativeTl, "+=0.2");
 
     const contactTl = gsap.timeline();
     if (contactUiRef.current) {
         const fields = contactUiRef.current.querySelectorAll('.contact-field');
         const button = contactUiRef.current.querySelector('.contact-button');
         contactTl.add(animateSection(contactUiRef));
-        contactTl.from(fields, { autoAlpha: 0, x: -10, stagger: 0.1 }, '>-0.3');
-        contactTl.from(button, { autoAlpha: 0, scale: 0.8 }, '>-0.2');
+        contactTl.from(fields, { autoAlpha: 0, x: -10, stagger: 0.08 }, '>-0.2');
+        contactTl.from(button, { autoAlpha: 0, scale: 0.8 }, '>-0.1');
     }
-    masterTl.add(contactTl, "+=0.3");
-    masterTl.add(animateSection(footerUiRef), "+=0.2");
+    masterTl.add(contactTl, "+=0.2");
+    masterTl.add(animateSection(footerUiRef), "+=0.1");
     
-    masterTl.addLabel('interact', "+=0.6");
+    masterTl.addLabel('interact', "+=0.5");
 
     const toggleTl = gsap.timeline();
     const startTheme = theme === 'dark' ? 'dark' : 'light';
@@ -189,7 +190,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
             [sunState, moonState].forEach(s => { [s.scale, s.autoAlpha] = [s.autoAlpha, s.scale]; s.rotation = -s.rotation; });
         }
         toggleTl.to(sunIconRef.current, { scale: moonState.scale, rotation: moonState.rotation, autoAlpha: moonState.autoAlpha, ease: 'power2.in' })
-                .to(moonIconRef.current, { scale: sunState.scale, rotation: sunState.rotation, autoAlpha: sunState.autoAlpha, ease: 'power2.out' }, '>-0.25');
+                .to(moonIconRef.current, { scale: sunState.scale, rotation: sunState.rotation, autoAlpha: sunState.autoAlpha, ease: 'power2.out' }, '>-0.2');
     }
 
     toggleTl.to(svg.querySelectorAll('.main-bg'), { fill: toColors.bg }, '<')
@@ -211,24 +212,24 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
         const activeColor = toColors.uiFillPrimary;
         servicesClickTl.to(servicesLinkRef.current, { fill: activeColor, scale: 1.05, transformOrigin: 'center middle', duration: 0.1, yoyo: true, repeat: 1, repeatDelay: 0.1 });
     }
-    masterTl.add(servicesClickTl, 'interact+=0.4');
+    masterTl.add(servicesClickTl, 'interact+=0.3');
     
     if (scrollGroupRef.current) {
-        masterTl.to(scrollGroupRef.current, { y: -350, duration: 1, ease: 'power3.inOut' }, 'interact+=0.6');
-        masterTl.fromTo(svg.querySelectorAll('.service-desc-group'), { autoAlpha: 0, y: 5 }, { autoAlpha: 1, y: 0, stagger: 0.1, ease: 'power2.out' }, '>-0.5');
+        masterTl.to(scrollGroupRef.current, { y: -350, duration: 0.8, ease: 'power3.inOut' }, 'interact+=0.4');
+        masterTl.fromTo(svg.querySelectorAll('.service-desc-group'), { autoAlpha: 0, y: 5 }, { autoAlpha: 1, y: 0, stagger: 0.08, ease: 'power2.out' }, '>-0.4');
     }
 
     const resetTl = gsap.timeline();
     const allUiElements = uis.map(r => r.current).filter(Boolean);
 
     if (scrollGroupRef.current) {
-        resetTl.to(scrollGroupRef.current, { y: 0, duration: 1.2, ease: 'power2.inOut' });
+        resetTl.to(scrollGroupRef.current, { y: 0, duration: 1, ease: 'power2.inOut' });
     }
     if (allUiElements.length > 0) {
-        resetTl.to(allUiElements, { autoAlpha: 0, duration: 0.4 }, '<0.2');
+        resetTl.to(allUiElements, { autoAlpha: 0, duration: 0.3 }, '<0.2');
     }
     
-    masterTl.add(resetTl, "+=0.8");
+    masterTl.add(resetTl, "+=0.6");
 
 
     return () => {
@@ -262,25 +263,6 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
 
       <rect x="20" y="20" width="560" height="1160" rx="10" className="main-bg ui-stroke" stroke-width="2"/>
       <g clipPath="url(#mainClip)">
-        {/* --- FIXED UI --- */}
-        <g ref={navUiRef} transform="translate(300, 50)">
-              <rect x="-280" y="-15" width="560" height="30" className="ui-bg" />
-              <text ref={logoTextRef} x="-270" y="6" className="logo-text">KRYVE</text>
-              <text x="-50" y="5.5" className="nav-link ui-text-muted">About</text>
-              <text ref={servicesLinkRef} x="20" y="5.5" className="nav-link ui-text-muted">Services</text>
-              <text x="90" y="5.5" className="nav-link ui-text-muted">Work</text>
-              <g ref={themeToggleRef} transform="translate(235, -7)" style={{ cursor: 'pointer' }}>
-                <g ref={sunIconRef}>
-                    <circle cx="7" cy="7" r="2.5" fill="none" className="ui-primary-stroke" stroke-width="1.2"/>
-                    <path d="M7 1V3 M7 11V13 M2.64 2.64L3.35 3.35 M10.65 10.65L11.36 11.36 M1 7H3 M11 7H13 M2.64 11.36L3.35 10.65 M10.65 3.35L11.36 2.64"
-                          className="ui-primary-stroke" stroke-width="1.2" stroke-linecap="round" />
-                </g>
-                <g ref={moonIconRef}>
-                    <path d="M10 2.5 A5.5 5.5 0 0 1 2.5 10 A4 4 0 0 0 10 2.5z" className="ui-fill-primary"/>
-                </g>
-              </g>
-        </g>
-        
         <g ref={scrollGroupRef}>
             {/* --- Hero --- */}
             <g transform="translate(300, 150)">
@@ -313,7 +295,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
                 <g ref={servicesUiRef}>
                     <g className="service-card" transform="translate(-160, 0)">
                         <rect x="-70" y="-40" width="140" height="90" rx="5" className="ui-bg ui-stroke" stroke-width="1" />
-                        <path d="M-57 -22 h18 v9 h-18z" fill="none" className="ui-primary-stroke" stroke-width="1.5" />
+                        <path d="M-57 -22 h18 v9 h-18z" fill="none" className="ui-primary-stroke" stroke-width="1" transform="scale(0.8) translate(-10, -5)"/>
                         <text x="-60" y="-5" className="service-title ui-fill-primary">Web Design</text>
                         <g className="service-desc-group">
                           <text x="-60" y="10" className="service-desc ui-text-muted">Visually stunning</text>
@@ -322,7 +304,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
                     </g>
                     <g className="service-card" transform="translate(0, 0)">
                         <rect x="-70" y="-40" width="140" height="90" rx="5" className="ui-bg ui-stroke" stroke-width="1" />
-                        <path d="M-54 -22 l-8 5 l8 5 M-46 -22 l8 5 l-8 5" fill="none" className="ui-primary-stroke" stroke-width="1.5" stroke-linecap="round" />
+                        <path d="M-54 -22 l-8 5 l8 5 M-46 -22 l8 5 l-8 5" fill="none" className="ui-primary-stroke" stroke-width="1" stroke-linecap="round" transform="scale(0.8) translate(-10, -5)"/>
                         <text x="-60" y="-5" className="service-title ui-fill-primary">Development</text>
                         <g className="service-desc-group">
                           <text x="-60" y="10" className="service-desc ui-text-muted">Robust & Scalable</text>
@@ -331,7 +313,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
                     </g>
                     <g className="service-card" transform="translate(160, 0)">
                         <rect x="-70" y="-40" width="140" height="90" rx="5" className="ui-bg ui-stroke" stroke-width="1" />
-                        <circle cx="-48" cy="-19" r="6" fill="none" className="ui-primary-stroke" stroke-width="1.5" />
+                        <circle cx="-48" cy="-19" r="5" fill="none" className="ui-primary-stroke" stroke-width="1" transform="scale(0.8) translate(-10, -5)"/>
                         <text x="-60" y="-5" className="service-title ui-fill-primary">Branding</text>
                         <g className="service-desc-group">
                           <text x="-60" y="10" className="service-desc ui-text-muted">Unique brand</text>
@@ -382,6 +364,24 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
             </g>
         </g>
         
+        {/* --- FIXED UI --- */}
+        <g ref={navUiRef} transform="translate(300, 50)">
+              <rect x="-280" y="-15" width="560" height="30" className="ui-bg" />
+              <text ref={logoTextRef} x="-270" y="6" className="logo-text">KRYVE</text>
+              <text x="-50" y="5.5" className="nav-link ui-text-muted">About</text>
+              <text ref={servicesLinkRef} x="20" y="5.5" className="nav-link ui-text-muted">Services</text>
+              <text x="90" y="5.5" className="nav-link ui-text-muted">Work</text>
+              <g ref={themeToggleRef} transform="translate(235, -7)" style={{ cursor: 'pointer' }}>
+                <g ref={sunIconRef}>
+                    <circle cx="7" cy="7" r="2.5" fill="none" className="ui-primary-stroke" stroke-width="1.2"/>
+                    <path d="M7 1V3 M7 11V13 M2.64 2.64L3.35 3.35 M10.65 10.65L11.36 11.36 M1 7H3 M11 7H13 M2.64 11.36L3.35 10.65 M10.65 3.35L11.36 2.64"
+                          className="ui-primary-stroke" stroke-width="1.2" stroke-linecap="round" />
+                </g>
+                <g ref={moonIconRef}>
+                    <path d="M10 2.5 A5.5 5.5 0 0 1 2.5 10 A4 4 0 0 0 10 2.5z" className="ui-fill-primary"/>
+                </g>
+              </g>
+        </g>
         <g ref={footerUiRef} transform="translate(300, 1150)">
               <rect x="-280" y="-15" width="560" height="30" className="ui-bg" />
               <text x="-270" y="6" className="logo-text ui-fill-primary">KRYVE</text>
@@ -394,3 +394,5 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
     </svg>
   );
 }
+
+    
