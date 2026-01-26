@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { useTheme } from 'next-themes';
 import { gsap } from 'gsap';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -11,6 +12,7 @@ export function Hero() {
   const paragraphRef = useRef<HTMLParagraphElement>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<HTMLDivElement>(null);
+  const { resolvedTheme } = useTheme();
 
   useEffect(() => {
     const tl = gsap.timeline({ defaults: { ease: 'power4.out', duration: 1.2 } });
@@ -67,7 +69,7 @@ export function Hero() {
             </div>
           </div>
           <div ref={svgRef} className="relative aspect-square w-full max-w-lg justify-self-center lg:max-w-none">
-             <MorphingSvg />
+             <MorphingSvg theme={resolvedTheme} />
           </div>
         </div>
       </div>
