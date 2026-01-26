@@ -76,7 +76,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
 
     const masterTl = gsap.timeline({
       repeat: -1,
-      repeatDelay: 1.5,
+      repeatDelay: 0,
       defaults: { ease: 'power2.out', duration: 0.6 }
     });
 
@@ -113,6 +113,9 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
         gsap.set(svg.querySelectorAll('.ui-primary-stroke'), { stroke: startTheme.uiFillPrimary });
         if (logoTextRef.current) {
             gsap.set(logoTextRef.current, { fill: startTheme.primary });
+        }
+        if (cursorRef.current) {
+            gsap.set(cursorRef.current, { color: startTheme.primary });
         }
     };
 
@@ -221,7 +224,6 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
     const currentTheme = theme === 'dark' ? 'dark' : 'light';
     const targetTheme = currentTheme === 'dark' ? 'light' : 'dark';
 
-    const fromColors = colors[currentTheme];
     const toColors = colors[targetTheme];
     
     if (sunIconRef.current && moonIconRef.current) {
@@ -238,6 +240,9 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
             .to(svg.querySelectorAll('.tag-text'), { fill: toColors.tagText, duration: 0.5 }, '<')
             .to(svg.querySelectorAll('.ui-primary-stroke'), { stroke: toColors.uiFillPrimary, duration: 0.5 }, '<')
             .to(logoTextRef.current, { fill: toColors.primary, duration: 0.5}, '<');
+    if (cursorRef.current) {
+        toggleTl.to(cursorRef.current, { color: toColors.primary, duration: 0.5 }, '<');
+    }
 
     masterTl.add(toggleTl, '+=0.2');
 
@@ -267,18 +272,17 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
         }
     }
 
-    // 4. Scroll back to top
-    if (scrollGroupRef.current) {
-        masterTl.to(scrollGroupRef.current, { y: 0, duration: 1.5, ease: 'power3.inOut' }, '+=1.5');
-    }
+    // 4. Scroll back to top and fade out gracefully
+    const endTl = gsap.timeline();
+    const allFadeElements = [...uis.map(r => r.current).filter(Boolean), cursorRef.current];
 
-    // Fade out for reset
-    const allUiElements = uis.map(r => r.current).filter(Boolean);
-    if(cursorRef.current) {
-      masterTl.to([cursorRef.current, ...allUiElements], { autoAlpha: 0, duration: 0.8, ease: 'power2.in' }, '>-0.8');
-    } else {
-      masterTl.to(allUiElements, { autoAlpha: 0, duration: 0.8, ease: 'power2.in' }, '>-0.8');
+    if (scrollGroupRef.current) {
+        endTl.to(scrollGroupRef.current, { y: 0, duration: 1.5, ease: 'power3.inOut' });
     }
+    if (allFadeElements.length > 0) {
+        endTl.to(allFadeElements, { autoAlpha: 0, duration: 0.8, ease: 'power2.in' }, '<0.7');
+    }
+    masterTl.add(endTl, "+=1.5");
 
     return () => {
       masterTl.kill();
@@ -316,9 +320,6 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
         <clipPath id="mainClip">
           <rect x="20" y="20" width="560" height="1010" rx="10" />
         </clipPath>
-        <g id="cursor" ref={cursorRef} transform="scale(1.5)">
-            <path fill="hsl(var(--foreground))" d="M11.22,9.45,3.95,2.18A1.07,1.07,0,0,0,2.44,2.18L2.18,2.44a1.07,1.07,0,0,0,0,1.51l7.27,7.27-2.3,6.89a1.06,1.06,0,0,0,1,1.33,1,1,0,0,0,.32-.06l7.15-2.4a1.07,1.07,0,0,0,.68-1Z"/>
-        </g>
       </defs>
 
       <rect x="20" y="20" width="560" height="1010" rx="10" class="main-bg ui-stroke" stroke-width="2"/>
@@ -474,6 +475,10 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
               </g>
             </g>
         </g>
+      </g>
+      
+      <g ref={cursorRef} transform="scale(1.5)">
+        <path fill="currentColor" d="M11.22,9.45,3.95,2.18A1.07,1.07,0,0,0,2.44,2.18L2.18,2.44a1.07,1.07,0,0,0,0,1.51l7.27,7.27-2.3,6.89a1.06,1.06,0,0,0,1,1.33,1,1,0,0,0,.32-.06l7.15-2.4a1.07,1.07,0,0,0,.68-1Z"/>
       </g>
     </svg>
   );
