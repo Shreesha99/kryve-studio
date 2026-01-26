@@ -52,7 +52,7 @@ const services = [
     description:
       'A brand is a story, a feeling, a promise. We help you define and articulate your unique identity, creating a cohesive brand world that resonates with your audience and stands the test of time.',
     svg: (
-       <>
+      <>
         <g className="target-group">
           <circle className="strategy-circle" cx="300" cy="100" r="80" />
           <circle className="strategy-circle" cx="300" cy="100" r="50" />
@@ -145,7 +145,6 @@ export function Services() {
         progressTl.current?.pause();
     }
     
-    // Clear any resume timer when manually hovering
     if (isHovering && resumeTimerRef.current) {
         clearTimeout(resumeTimerRef.current);
     }
@@ -177,26 +176,28 @@ export function Services() {
             const currentService = services[activeIndex];
 
             if (currentService.id === 'design') {
-                const blinkTl = gsap.timeline({ repeat: 1, repeatDelay: 1.5 });
+                const blinkTl = gsap.timeline({ repeat: 1, yoyo: true, repeatDelay: 0.2 });
                 blinkTl.to([activeSvg.querySelector('.eye-outline'), activeSvg.querySelector('.pupil')], {
                     scaleY: 0.05,
                     duration: 0.1,
                     transformOrigin: 'center',
                     ease: 'power2.inOut'
-                }).to([activeSvg.querySelector('.eye-outline'), activeSvg.querySelector('.pupil')], {
-                    scaleY: 1,
-                    duration: 0.1,
-                    ease: 'power2.out'
                 });
-                blinkTl.repeat(1);
-                secondaryAnimation.current.add(blinkTl, "+=1.0");
+                secondaryAnimation.current.add(blinkTl.repeat(1), "+=1.0");
+            }
+            
+            if (currentService.id === 'branding') {
+              const cracks = activeSvg.querySelector('.cracks');
+              gsap.fromTo(cracks, 
+                  { autoAlpha: 0, scale: 0.5, transformOrigin: 'center center' }, 
+                  { autoAlpha: 1, scale: 1, duration: 0.3, ease: 'power2.out', delay: 0.2 }
+              );
             }
 
             if (currentService.id === 'development') {
               const textEl = activeSvg.querySelector('.code-tag-text');
               if (textEl) {
-                  gsap.set(textEl, { text: 'a', autoAlpha: 1 });
-                  const tags = ['p', 'h1', 'div', 'a'];
+                  const tags = ['a', 'p', 'h1', 'div'];
                   let currentTagIndex = 0;
                   
                   const textTl = gsap.timeline({
@@ -209,19 +210,13 @@ export function Services() {
 
                   textTl
                     .to(textEl, { duration: 0.2, autoAlpha: 0, ease: 'power1.in' }, '+=1.2')
+                    .set(textEl, { text: tags[0]})
                     .to(textEl, { duration: 0.2, autoAlpha: 1, ease: 'power1.out' });
 
                   secondaryAnimation.current.add(textTl);
               }
             }
             
-            if (currentService.id === 'branding') {
-                const crackTl = gsap.timeline();
-                const cracks = activeSvg.querySelector('.cracks');
-                crackTl.fromTo(cracks, { autoAlpha: 0, scale: 0.5, transformOrigin: 'center' }, { autoAlpha: 1, scale: 1, duration: 0.3, ease: 'power2.out' });
-                secondaryAnimation.current.add(crackTl, "+=0.5");
-            }
-
             if (currentService.id === 'ecommerce') {
                 const cartBody = activeSvg.querySelector('.cart-body-group');
                 const speedLines = activeSvg.querySelectorAll('.speed-line');
@@ -304,7 +299,7 @@ export function Services() {
             clearTimeout(resumeTimerRef.current);
         }
         resumeTimerRef.current = setTimeout(() => {
-            progressTl.current?.play();
+          runAutoplay(index);
         }, 10000);
 
         setActiveIndex(index);
