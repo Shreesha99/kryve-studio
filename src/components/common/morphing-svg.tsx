@@ -41,8 +41,6 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
     const svg = svgRef.current;
     if (!svg) return;
     
-    const isInitiallyDark = theme === 'dark';
-
     const tagGroups = [navTagGroupRef, heroTagGroupRef, aboutTagGroupRef, servicesTagGroupRef, contactTagGroupRef];
     const uis = [navUiRef, heroUiRef, aboutUiRef, servicesUiRef, contactUiRef];
     
@@ -76,16 +74,11 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
     });
 
     const setup = () => {
-        const initialColors = isInitiallyDark ? colors.dark : colors.light;
         const validUis = uis.map(r => r.current).filter(Boolean);
-        const validTagGroups = tagGroups.map(r => r.current).filter(Boolean);
 
         gsap.set(validUis, { autoAlpha: 0 });
-        validTagGroups.forEach(group => {
-            const parts = group.querySelectorAll('.tag-open, .tag-close');
-            gsap.set(parts, { autoAlpha: 1, x: 0 });
-        });
-
+        gsap.set(tagGroups.map(r => r.current).filter(Boolean), { autoAlpha: 1 });
+        
         if (scrollGroupRef.current) gsap.set(scrollGroupRef.current, { y: 0 });
         if (cursorRef.current) gsap.set(cursorRef.current, { autoAlpha: 0, x: 250, y: 100 });
         
@@ -93,35 +86,27 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
         if (heroSubtitleRef.current) heroSubtitleRef.current.textContent = '';
 
         if (sunIconRef.current && moonIconRef.current) {
-          gsap.set(sunIconRef.current, { autoAlpha: isInitiallyDark ? 0 : 1, scale: isInitiallyDark ? 0 : 1, rotation: isInitiallyDark ? -90 : 0 });
-          gsap.set(moonIconRef.current, { autoAlpha: isInitiallyDark ? 1 : 0, scale: isInitiallyDark ? 1 : 0, rotation: isInitiallyDark ? 0 : 90 });
+          gsap.set(sunIconRef.current, { autoAlpha: 1, scale: 1, rotation: 0 });
+          gsap.set(moonIconRef.current, { autoAlpha: 0, scale: 0, rotation: 90 });
         }
         
-        gsap.set(svg.querySelectorAll('.main-bg'), { fill: initialColors.bg });
-        gsap.set(svg.querySelectorAll('.ui-bg'), { fill: initialColors.uiBg });
-        gsap.set(svg.querySelectorAll('.ui-stroke'), { fill: 'none', stroke: initialColors.uiStroke });
-        gsap.set(svg.querySelectorAll('.ui-fill-muted'), { fill: initialColors.uiFillMuted });
-        gsap.set(svg.querySelectorAll('.ui-fill-primary'), { fill: initialColors.uiFillPrimary });
-        gsap.set(svg.querySelectorAll('.ui-text-muted'), { fill: initialColors.uiTextMuted });
-        gsap.set(svg.querySelectorAll('.tag-text'), { fill: initialColors.tagText });
-        gsap.set(svg.querySelectorAll('.ui-primary-stroke'), { stroke: initialColors.uiFillPrimary });
+        gsap.set(svg.querySelectorAll('.main-bg'), { fill: colors.light.bg });
+        gsap.set(svg.querySelectorAll('.ui-bg'), { fill: colors.light.uiBg });
+        gsap.set(svg.querySelectorAll('.ui-stroke'), { fill: 'none', stroke: colors.light.uiStroke });
+        gsap.set(svg.querySelectorAll('.ui-fill-muted'), { fill: colors.light.uiFillMuted });
+        gsap.set(svg.querySelectorAll('.ui-fill-primary'), { fill: colors.light.uiFillPrimary });
+        gsap.set(svg.querySelectorAll('.ui-text-muted'), { fill: colors.light.uiTextMuted });
+        gsap.set(svg.querySelectorAll('.tag-text'), { fill: colors.light.tagText });
+        gsap.set(svg.querySelectorAll('.ui-primary-stroke'), { stroke: colors.light.uiFillPrimary });
         if (logoTextRef.current) {
-            gsap.set(logoTextRef.current, { fill: initialColors.primary });
+            gsap.set(logoTextRef.current, { fill: colors.light.primary });
         }
     };
 
     const animateSection = (tagGroupRef: React.RefObject<SVGGElement>, uiRef: React.RefObject<SVGGElement>) => {
       const tl = gsap.timeline();
       if (tagGroupRef.current && uiRef.current) {
-        const openTag = tagGroupRef.current.querySelector('.tag-open');
-        const closeTag = tagGroupRef.current.querySelector('.tag-close');
-
-        tl.to([openTag, closeTag], { 
-            autoAlpha: 0, 
-            duration: 0.4, 
-            ease: 'power2.in',
-            x: (i) => i === 0 ? '-=30' : '+=30' 
-          })
+        tl.to(tagGroupRef.current, { autoAlpha: 0, duration: 0.3 })
           .to(uiRef.current, { autoAlpha: 1, duration: 0.5 }, '<0.1');
       }
       return tl;
@@ -159,18 +144,10 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
     // --- About Section Custom Animation ---
     const aboutTl = gsap.timeline();
     if (aboutTagGroupRef.current && aboutUiRef.current) {
-        const openTag = aboutTagGroupRef.current.querySelector('.tag-open');
-        const closeTag = aboutTagGroupRef.current.querySelector('.tag-close');
         const image = aboutUiRef.current.querySelector('.about-image');
         const textLines = aboutUiRef.current.querySelectorAll('.about-text-line');
-
-        aboutTl.to([openTag, closeTag], {
-          autoAlpha: 0,
-          duration: 0.4,
-          ease: 'power2.in',
-          x: (i) => (i === 0 ? '-=30' : '+=30'),
-        });
         
+        aboutTl.to(aboutTagGroupRef.current, { autoAlpha: 0, duration: 0.3 });
         aboutTl.to(aboutUiRef.current, { autoAlpha: 1, duration: 0.01 }, '<0.1');
 
         if (image) {
@@ -221,33 +198,17 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
         logo: logoTextRef.current,
     };
     
-    if (isInitiallyDark) {
-        // Dark to Light
-        toggleTl.to(moonIconRef.current, { scale: 0, rotation: 0, autoAlpha: 0, duration: 0.4, ease: 'power2.in' })
-                .to(sunIconRef.current, { scale: 1, rotation: 0, autoAlpha: 1, duration: 0.4, ease: 'power2.out' }, '>-0.3')
-                .to(allAnimatedElements.mainBg, { fill: colors.light.bg, duration: 0.5 }, '<')
-                .to(allAnimatedElements.uiBg, { fill: colors.light.uiBg, duration: 0.5 }, '<')
-                .to(allAnimatedElements.uiStroke, { stroke: colors.light.uiStroke, duration: 0.5 }, '<')
-                .to(allAnimatedElements.uiFillMuted, { fill: colors.light.uiFillMuted, duration: 0.5 }, '<')
-                .to(allAnimatedElements.uiFillPrimary, { fill: colors.light.uiFillPrimary, duration: 0.5 }, '<')
-                .to(allAnimatedElements.uiTextMuted, { fill: colors.light.uiTextMuted, duration: 0.5 }, '<')
-                .to(allAnimatedElements.tagText, { fill: colors.light.tagText, duration: 0.5 }, '<')
-                .to(allAnimatedElements.uiPrimaryStroke, { stroke: colors.light.uiFillPrimary, duration: 0.5 }, '<')
-                .to(allAnimatedElements.logo, { fill: colors.light.primary, duration: 0.5}, '<');
-    } else {
-        // Light to Dark
-        toggleTl.to(sunIconRef.current, { scale: 0, rotation: 90, autoAlpha: 0, duration: 0.4, ease: 'power2.in' })
-                .to(moonIconRef.current, { scale: 1, rotation: 0, autoAlpha: 1, duration: 0.4, ease: 'power2.out' }, '>-0.3')
-                .to(allAnimatedElements.mainBg, { fill: colors.dark.bg, duration: 0.5 }, '<')
-                .to(allAnimatedElements.uiBg, { fill: colors.dark.uiBg, duration: 0.5 }, '<')
-                .to(allAnimatedElements.uiStroke, { stroke: colors.dark.uiStroke, duration: 0.5 }, '<')
-                .to(allAnimatedElements.uiFillMuted, { fill: colors.dark.uiFillMuted, duration: 0.5 }, '<')
-                .to(allAnimatedElements.uiFillPrimary, { fill: colors.dark.uiFillPrimary, duration: 0.5 }, '<')
-                .to(allAnimatedElements.uiTextMuted, { fill: colors.dark.uiTextMuted, duration: 0.5 }, '<')
-                .to(allAnimatedElements.tagText, { fill: colors.dark.tagText, duration: 0.5 }, '<')
-                .to(allAnimatedElements.uiPrimaryStroke, { stroke: colors.dark.uiFillPrimary, duration: 0.5 }, '<')
-                .to(allAnimatedElements.logo, { fill: colors.dark.primary, duration: 0.5}, '<');
-    }
+    toggleTl.to(sunIconRef.current, { scale: 0, rotation: 90, autoAlpha: 0, duration: 0.4, ease: 'power2.in' })
+            .to(moonIconRef.current, { scale: 1, rotation: 0, autoAlpha: 1, duration: 0.4, ease: 'power2.out' }, '>-0.3')
+            .to(allAnimatedElements.mainBg, { fill: colors.dark.bg, duration: 0.5 }, '<')
+            .to(allAnimatedElements.uiBg, { fill: colors.dark.uiBg, duration: 0.5 }, '<')
+            .to(allAnimatedElements.uiStroke, { stroke: colors.dark.uiStroke, duration: 0.5 }, '<')
+            .to(allAnimatedElements.uiFillMuted, { fill: colors.dark.uiFillMuted, duration: 0.5 }, '<')
+            .to(allAnimatedElements.uiFillPrimary, { fill: colors.dark.uiFillPrimary, duration: 0.5 }, '<')
+            .to(allAnimatedElements.uiTextMuted, { fill: colors.dark.uiTextMuted, duration: 0.5 }, '<')
+            .to(allAnimatedElements.tagText, { fill: colors.dark.tagText, duration: 0.5 }, '<')
+            .to(allAnimatedElements.uiPrimaryStroke, { stroke: colors.dark.uiFillPrimary, duration: 0.5 }, '<')
+            .to(allAnimatedElements.logo, { fill: colors.dark.primary, duration: 0.5}, '<');
 
     masterTl.add(toggleTl, '+=0.2');
 
@@ -325,8 +286,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
             {/* --- Navbar --- */}
             <g transform="translate(250, 50)">
               <g ref={navTagGroupRef}>
-                <text className="tag-text tag-open" text-anchor="end" x="-35" y="15">&lt;Navbar </text>
-                <text className="tag-text tag-close" text-anchor="start" x="-25" y="15">/&gt;</text>
+                <text className="tag-text" text-anchor="middle">&lt;Navbar /&gt;</text>
               </g>
               <g ref={navUiRef}>
                   <rect x="-210" y="0" width="420" height="30" class="ui-bg" />
@@ -350,8 +310,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
             {/* --- Hero --- */}
             <g transform="translate(250, 130)">
               <g ref={heroTagGroupRef}>
-                <text className="tag-text tag-open" text-anchor="end" x="-25" y="0">&lt;Hero </text>
-                <text className="tag-text tag-close" text-anchor="start" x="-15" y="0">/&gt;</text>
+                <text className="tag-text" text-anchor="middle">&lt;Hero /&gt;</text>
               </g>
               <g ref={heroUiRef}>
                 <text ref={heroHeadlineRef} y="0" className="hero-headline ui-fill-primary"></text>
@@ -362,8 +321,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
             {/* --- About --- */}
             <g transform="translate(250, 220)">
                 <g ref={aboutTagGroupRef}>
-                    <text className="tag-text tag-open" text-anchor="end" x="-28" y="0">&lt;About </text>
-                    <text className="tag-text tag-close" text-anchor="start" x="-18" y="0">/&gt;</text>
+                    <text className="tag-text" text-anchor="middle">&lt;About /&gt;</text>
                 </g>
                 <g ref={aboutUiRef}>
                     <g className="about-image">
@@ -384,8 +342,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
             {/* --- Services --- */}
             <g transform="translate(250, 310)">
               <g ref={servicesTagGroupRef}>
-                <text className="tag-text tag-open" text-anchor="end" x="-40" y="0">&lt;Services </text>
-                <text className="tag-text tag-close" text-anchor="start" x="-30" y="0">/&gt;</text>
+                <text className="tag-text" text-anchor="middle">&lt;Services /&gt;</text>
               </g>
               <g ref={servicesUiRef}>
                   <rect x="-180" y="-10" width="100" height="50" rx="5" class="ui-bg ui-stroke" stroke-width="1" />
@@ -408,8 +365,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
             {/* --- Contact --- */}
             <g transform="translate(250, 410)">
               <g ref={contactTagGroupRef}>
-                <text className="tag-text tag-open" text-anchor="end" x="-38" y="0">&lt;Contact </text>
-                <text className="tag-text tag-close" text-anchor="start" x="-28" y="0">/&gt;</text>
+                <text className="tag-text" text-anchor="middle">&lt;Contact /&gt;</text>
               </g>
               <g ref={contactUiRef}>
                 <rect x="-120" y="-25" width="240" height="12" rx="3" class="ui-fill-muted" />
