@@ -75,8 +75,8 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
 
     const masterTl = gsap.timeline({
       repeat: -1,
-      repeatDelay: 0.5,
-      defaults: { ease: 'power2.out', duration: 0.6 }
+      repeatDelay: 0.2,
+      defaults: { ease: 'power2.out', duration: 0.5 }
     });
 
     const setup = () => {
@@ -118,7 +118,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
       const tl = gsap.timeline();
       if (tagGroupRef.current && uiRef.current) {
         tl.to(tagGroupRef.current, { autoAlpha: 0, duration: 0.3 })
-          .to(uiRef.current, { autoAlpha: 1, duration: 0.5 }, '<0.1');
+          .to(uiRef.current, { autoAlpha: 1, duration: 0.4 }, '<0.1');
       }
       return tl;
     };
@@ -146,11 +146,11 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
     // --- ANIMATION SEQUENCE ---
     masterTl.add(setup);
 
-    masterTl.add(animateSection(navTagGroupRef, navUiRef), "+=1");
-    masterTl.add(animateSection(heroTagGroupRef, heroUiRef), "+=0.2");
+    masterTl.add(animateSection(navTagGroupRef, navUiRef), "+=0.8");
+    masterTl.add(animateSection(heroTagGroupRef, heroUiRef), "+=0.15");
     
-    masterTl.add(typeText(heroHeadlineRef, headlineText, 1.2), "+=0.5");
-    masterTl.add(typeText(heroSubtitleRef, subtitleText, 1.2), "+=0.2");
+    masterTl.add(typeText(heroHeadlineRef, headlineText, 1.0), "+=0.4");
+    masterTl.add(typeText(heroSubtitleRef, subtitleText, 1.0), "+=0.15");
 
     // --- About Section Custom Animation ---
     const aboutTl = gsap.timeline();
@@ -164,16 +164,16 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
             aboutTl.fromTo(image, 
                 { autoAlpha: 0, scale: 0.9 },
                 { autoAlpha: 1, scale: 1, duration: 0.4, ease: 'power2.out' }, 
-                '>-0.5'
+                '>-0.4'
             );
             aboutTl.fromTo(textLines, 
                 { autoAlpha: 0, x: -15 },
-                { autoAlpha: 1, x: 0, stagger: 0.1, duration: 0.4, ease: 'power2.out' }, 
-                '>-0.3'
+                { autoAlpha: 1, x: 0, stagger: 0.08, duration: 0.4, ease: 'power2.out' }, 
+                '>-0.25'
             );
         }
     }
-    masterTl.add(aboutTl, '+=0.5');
+    masterTl.add(aboutTl, '+=0.4');
 
     // --- Services Section Custom Animation ---
     const servicesTl = gsap.timeline();
@@ -185,20 +185,20 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
         if (cards.length > 0) {
             servicesTl.fromTo(cards, 
                 { autoAlpha: 0, y: 20 },
-                { autoAlpha: 1, y: 0, stagger: 0.15, duration: 0.4, ease: 'power2.out' }, 
-                '>-0.5'
+                { autoAlpha: 1, y: 0, stagger: 0.1, duration: 0.4, ease: 'power2.out' }, 
+                '>-0.4'
             );
         }
     }
-    masterTl.add(servicesTl, '+=0.5');
+    masterTl.add(servicesTl, '+=0.4');
 
-    masterTl.add(animateSection(projectsTagGroupRef, projectsUiRef), "+=0.2");
-    masterTl.add(animateSection(creativeTagGroupRef, creativeUiRef), "+=0.2");
-    masterTl.add(animateSection(contactTagGroupRef, contactUiRef), "+=0.2");
-    masterTl.add(animateSection(footerTagGroupRef, footerUiRef), "+=0.2");
+    masterTl.add(animateSection(projectsTagGroupRef, projectsUiRef), "+=0.15");
+    masterTl.add(animateSection(creativeTagGroupRef, creativeUiRef), "+=0.15");
+    masterTl.add(animateSection(contactTagGroupRef, contactUiRef), "+=0.15");
+    masterTl.add(animateSection(footerTagGroupRef, footerUiRef), "+=0.15");
     
     // Interaction phase
-    masterTl.addLabel('interact', "+=1.5");
+    masterTl.addLabel('interact', "+=1.2");
 
     // Animate the theme toggle
     const toggleTl = gsap.timeline();
@@ -226,7 +226,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
       toggleTl.to(logoTextRef.current, { fill: toColors.primary, duration: 0.5}, '<');
     }
 
-    masterTl.add(toggleTl, '+=0.2');
+    masterTl.add(toggleTl, 'interact');
 
     // 2. Animate 'Services' nav link click
     if (navUiRef.current) {
@@ -238,35 +238,33 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
         duration: 0.2,
         transformOrigin: 'center'
       });
-      masterTl.add(navPulseTl, '+=0.5');
+      masterTl.add(navPulseTl, '+=0.4');
     }
     
     // 3. Scroll to services section and animate content
     if (scrollGroupRef.current && servicesUiRef.current) {
         const serviceDescGroups = svg.querySelectorAll('.service-desc-group');
         
-        masterTl.to(scrollGroupRef.current, { y: -350, duration: 1.5, ease: 'power3.inOut' }, '+=0.3');
+        masterTl.to(scrollGroupRef.current, { y: -350, duration: 1.2, ease: 'power3.inOut' }, '+=0.2');
         
         if (serviceDescGroups.length > 0) {
             masterTl.fromTo(serviceDescGroups,
                 { autoAlpha: 0, y: 10 },
-                { autoAlpha: 1, y: 0, stagger: 0.2, duration: 0.5, ease: 'power2.out' },
-                '>-0.8'
+                { autoAlpha: 1, y: 0, stagger: 0.15, duration: 0.4, ease: 'power2.out' },
+                '>-0.6'
             );
         }
     }
 
-    // 4. Scroll back to top and fade out gracefully
-    const endTl = gsap.timeline();
+    // 4. Scroll back to top and fade out gracefully for smooth loop
+    masterTl.addLabel('resetting', "+=1.0");
     const allFadeElements = uis.map(r => r.current).filter(Boolean);
-
     if (scrollGroupRef.current) {
-        endTl.to(scrollGroupRef.current, { y: 0, duration: 1.5, ease: 'power3.inOut' });
+        masterTl.to(scrollGroupRef.current, { y: 0, duration: 1.2, ease: 'power3.inOut' }, 'resetting');
     }
     if (allFadeElements.length > 0) {
-        endTl.to(allFadeElements, { autoAlpha: 0, duration: 0.8 }, '<0.7');
+        masterTl.to(allFadeElements, { autoAlpha: 0, duration: 0.5 }, 'resetting+=0.5');
     }
-    masterTl.add(endTl, "+=1.5");
 
     return () => {
       masterTl.kill();
@@ -308,29 +306,6 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
 
       <rect x="20" y="20" width="560" height="1160" rx="10" class="main-bg ui-stroke" stroke-width="2"/>
       <g clipPath="url(#mainClip)">
-        {/* --- FIXED Navbar --- */}
-        <g transform="translate(300, 50)">
-          <g ref={navTagGroupRef}>
-            <text className="tag-text" text-anchor="middle">&lt;Navbar /&gt;</text>
-          </g>
-          <g ref={navUiRef}>
-              <rect x="-280" y="-15" width="560" height="30" class="ui-bg" />
-              <text ref={logoTextRef} x="-270" y="6" className="logo-text">KRYVE</text>
-              <text x="-50" y="5.5" className="nav-link ui-text-muted">About</text>
-              <text ref={servicesLinkRef} x="20" y="5.5" className="nav-link ui-text-muted">Services</text>
-              <text x="90" y="5.5" className="nav-link ui-text-muted">Work</text>
-              <g ref={themeToggleRef} transform="translate(235, -7)" style={{ cursor: 'pointer' }}>
-                <g ref={sunIconRef}>
-                    <circle cx="7" cy="7" r="2.5" fill="none" className="ui-primary-stroke" stroke-width="1.2"/>
-                    <path d="M7 1V3 M7 11V13 M2.64 2.64L3.35 3.35 M10.65 10.65L11.36 11.36 M1 7H3 M11 7H13 M2.64 11.36L3.35 10.65 M10.65 3.35L11.36 2.64"
-                          className="ui-primary-stroke" stroke-width="1.2" stroke-linecap="round" />
-                </g>
-                <g ref={moonIconRef}>
-                    <path d="M10 2.5 A5.5 5.5 0 0 1 2.5 10 A4 4 0 0 0 10 2.5z" className="ui-fill-primary"/>
-                </g>
-              </g>
-          </g>
-        </g>
         
         {/* --- SCROLLING CONTENT --- */}
         <g ref={scrollGroupRef}>
@@ -386,7 +361,7 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
                         <rect x="-60" y="-30" width="24" height="12" rx="3" class="ui-fill-primary" />
                         <text x="-60" y="-5" className="service-title ui-fill-primary">Development</text>
                         <g className="service-desc-group">
-                          <text x="-60" y="10" className="service-desc ui-text-muted">Robust &amp; Scalable</text>
+                          <text x="-60" y="10" className="service-desc ui-text-muted">Robust & Scalable</text>
                           <text x="-60" y="20" className="service-desc ui-text-muted">solutions.</text>
                         </g>
                     </g>
@@ -445,6 +420,30 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
               </g>
             </g>
         </g>
+
+        {/* --- FIXED Navbar --- */}
+        <g transform="translate(300, 50)">
+          <g ref={navTagGroupRef}>
+            <text className="tag-text" text-anchor="middle">&lt;Navbar /&gt;</text>
+          </g>
+          <g ref={navUiRef}>
+              <rect x="-280" y="-15" width="560" height="30" class="ui-bg" />
+              <text ref={logoTextRef} x="-270" y="6" className="logo-text">KRYVE</text>
+              <text x="-50" y="5.5" className="nav-link ui-text-muted">About</text>
+              <text ref={servicesLinkRef} x="20" y="5.5" className="nav-link ui-text-muted">Services</text>
+              <text x="90" y="5.5" className="nav-link ui-text-muted">Work</text>
+              <g ref={themeToggleRef} transform="translate(235, -7)" style={{ cursor: 'pointer' }}>
+                <g ref={sunIconRef}>
+                    <circle cx="7" cy="7" r="2.5" fill="none" className="ui-primary-stroke" stroke-width="1.2"/>
+                    <path d="M7 1V3 M7 11V13 M2.64 2.64L3.35 3.35 M10.65 10.65L11.36 11.36 M1 7H3 M11 7H13 M2.64 11.36L3.35 10.65 M10.65 3.35L11.36 2.64"
+                          className="ui-primary-stroke" stroke-width="1.2" stroke-linecap="round" />
+                </g>
+                <g ref={moonIconRef}>
+                    <path d="M10 2.5 A5.5 5.5 0 0 1 2.5 10 A4 4 0 0 0 10 2.5z" className="ui-fill-primary"/>
+                </g>
+              </g>
+          </g>
+        </g>
         
         {/* --- FIXED Footer --- */}
         <g transform="translate(300, 1150)">
@@ -464,3 +463,5 @@ export function MorphingSvg({ theme }: MorphingSvgProps) {
     </svg>
   );
 }
+
+    
