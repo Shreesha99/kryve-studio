@@ -371,12 +371,12 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
 
     const sequenceTl = gsap.timeline();
     sequenceTl
-      .add(animateSection(servicesUiRef), '+=0.8')
+      .add(animateSection(servicesUiRef), '+=0.2')
       .add(animateSection(projectsUiRef), '>-0.4')
       .add(animateSection(processUiRef), '>-0.2')
       .add(animateSection(contactUiRef), '>-0.2');
 
-    masterTl.add(sequenceTl);
+    masterTl.add(sequenceTl, '>-0.5');
 
     masterTl.add(processAnimationTl, '>-1.5');
 
@@ -393,7 +393,7 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
       '>-4.0'
     );
 
-    masterTl.addLabel('interact', '+=0.5'); // Reduced pause
+    masterTl.addLabel('interact', '+=0.5'); 
     masterTl.add(servicesClickTl, 'interact');
 
     if (scrollGroupRef.current) {
@@ -419,8 +419,7 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
     masterTl.add(contactTypingTl, '+=1.0');
     masterTl.add(animateSection(footerUiRef), "+=1.0");
 
-
-    masterTl.to({}, { duration: 4.0 });
+    masterTl.to({}, { duration: 2.0 });
 
     return () => {
       if (masterTlRef.current) {
