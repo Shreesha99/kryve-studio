@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { AppProviders } from '@/components/common/app-providers';
 import { cn } from '@/lib/utils';
+import { ScrollToTop } from '@/components/common/scroll-to-top';
 
 export const metadata: Metadata = {
   title: {
@@ -79,7 +80,10 @@ export default function RootLayout({
         />
       </head>
       <body className={cn('font-body antialiased')}>
-        <AppProviders>{children}</AppProviders>
+        <AppProviders>
+          {children}
+          <ScrollToTop />
+        </AppProviders>
       </body>
     </html>
   );

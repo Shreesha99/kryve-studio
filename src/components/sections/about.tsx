@@ -1,20 +1,24 @@
 import { AnimateOnScroll } from '../common/animate-on-scroll';
+import { PenTool, CodeXml, Users } from 'lucide-react';
 
 const principles = [
   {
-    icon: "draw",
-    title: "Design with Intent",
-    description: "We believe design is more than aesthetics; it's a strategic tool. Every pixel, transition, and layout is crafted with purpose to guide users and tell a compelling story."
+    icon: PenTool,
+    title: 'Purposeful Design',
+    description: "Beyond aesthetics, we craft intuitive experiences that tell a compelling story and guide users with purpose.",
+    svgPath: "M20,50 Q40,20 60,50 T100,50",
   },
   {
-    icon: "integration_instructions",
-    title: "Engineer with Precision",
-    description: "Our code is as clean as our designs. We build robust, scalable, and performant applications using modern technologies, ensuring a seamless experience on any device."
+    icon: CodeXml,
+    title: 'Precision Engineering',
+    description: "Our code is as clean as our designs. We build robust, scalable, and performant applications for a seamless experience.",
+    svgPath: "M20,50 L40,30 L60,70 L80,30 L100,50",
   },
   {
-    icon: "groups",
-    title: "Partner in Creation",
-    description: "We're not just a service provider; we're your creative partner. We collaborate closely with you at every step, transforming your vision into a digital reality together."
+    icon: Users,
+    title: 'Creative Partnership',
+    description: "We are your creative partner, collaborating closely to transform your vision into a digital reality.",
+    svgPath: "M30,70 C30,30 90,30 90,70",
   }
 ]
 
@@ -33,10 +37,25 @@ export function About() {
 
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-16 md:grid-cols-3">
             {principles.map((item, index) => (
-                <AnimateOnScroll key={item.title} delay={`${index * 150}ms`} className="text-center">
+                <AnimateOnScroll key={item.title} delay={`${index * 150}ms`} className="relative text-center">
+                    <div className="absolute inset-0 -z-10 flex items-center justify-center overflow-visible opacity-5 dark:opacity-10" aria-hidden="true">
+                        <svg viewBox="0 0 120 100" className="h-full w-full scale-150 transform">
+                            <path 
+                                d={item.svgPath}
+                                stroke="hsl(var(--primary))" 
+                                fill="none" 
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeDasharray="500"
+                                strokeDashoffset="500"
+                                className="animate-path-draw"
+                            />
+                        </svg>
+                    </div>
                     <div className="mb-6 flex justify-center">
-                      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-primary">
-                        <span className="material-symbols-outlined text-4xl">{item.icon}</span>
+                      <div className="relative flex h-24 w-24 items-center justify-center rounded-full border-2 border-primary/10 bg-primary/5 p-4 backdrop-blur-sm">
+                        <div className="absolute inset-0 scale-90 rounded-full border-2 border-primary/10"></div>
+                        <item.icon className="h-10 w-10 text-primary" strokeWidth={1.5} />
                       </div>
                     </div>
                     <h3 className="font-headline text-2xl font-bold">{item.title}</h3>
