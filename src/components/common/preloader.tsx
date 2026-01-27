@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
-import { AnimatedGradient } from './animated-gradient';
 
 interface PreloaderProps {
   onAnimationComplete: () => void;
@@ -11,45 +10,43 @@ interface PreloaderProps {
 export function Preloader({ onAnimationComplete }: PreloaderProps) {
   const preloaderRef = useRef<HTMLDivElement>(null);
   const logoRef = useRef<HTMLHeadingElement>(null);
+  const progressBarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const tl = gsap.timeline({
       onComplete: () => {
-        // A short delay before calling the completion handler to ensure the fade-out is smooth
-        setTimeout(onAnimationComplete, 300);
+        if (preloaderRef.current) {
+            gsap.to(preloaderRef.current, {
+                opacity: 0,
+                duration: 0.5,
+                onComplete: () => {
+                    if (preloaderRef.current) {
+                        preloaderRef.current.style.display = 'none';
+                    }
+                    onAnimationComplete();
+                }
+            });
+        }
       },
     });
 
     gsap.set(preloaderRef.current, { perspective: 800 });
-    gsap.set(logoRef.current, { opacity: 0, y: 50, rotationX: -90 });
+    gsap.set(logoRef.current, { opacity: 0, y: 30 });
+    if(progressBarRef.current) {
+      gsap.set(progressBarRef.current, { scaleX: 0 });
+    }
 
     tl.to(logoRef.current, {
       opacity: 1,
       y: 0,
-      rotationX: 0,
-      duration: 1.2,
+      duration: 1.0,
       ease: 'power3.out',
-    })
-      .to(
-        logoRef.current,
-        {
-          opacity: 0,
-          y: -50,
-          duration: 0.8,
-          ease: 'power3.in',
-        },
-        '+=0.8'
-      )
-      .to(preloaderRef.current, {
-        opacity: 0,
-        duration: 0.4,
-        onComplete: () => {
-          if (preloaderRef.current) {
-            preloaderRef.current.style.display = 'none';
-          }
-          onAnimationComplete();
-        },
-      });
+    }, 0.5)
+      .to(progressBarRef.current, {
+          scaleX: 1,
+          duration: 1.5,
+          ease: 'power2.inOut'
+      }, "<0.2");
   }, [onAnimationComplete]);
 
   return (
@@ -59,10 +56,13 @@ export function Preloader({ onAnimationComplete }: PreloaderProps) {
     >
       <h1
         ref={logoRef}
-        className="animated-gradient bg-clip-text font-headline text-5xl font-bold tracking-widest text-transparent"
+        className="font-headline text-5xl font-bold tracking-widest text-foreground"
       >
         ELYSIUM
       </h1>
+      <div className="mt-4 h-1 w-48 overflow-hidden rounded-full bg-muted">
+        <div ref={progressBarRef} className="h-full w-full origin-left bg-primary" />
+      </div>
     </div>
   );
 }
