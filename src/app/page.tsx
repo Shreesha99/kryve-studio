@@ -9,17 +9,17 @@ import { Contact } from '@/components/sections/contact';
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'ProfessionalService',
-  name: 'Zenith Studio',
-  url: 'https://zenith-studio.example.com',
-  logo: 'https://zenith-studio.example.com/logo.png', // User should replace with actual logo URL
+  name: 'The Elysium Project',
+  url: 'https://elysium-project.example.com',
+  logo: 'https://elysium-project.example.com/logo.png', // User should replace with actual logo URL
   description: 'A premium digital studio that blends visionary design with precision engineering to create web experiences that are beautiful and brilliant.',
   address: {
     '@type': 'PostalAddress',
-    streetAddress: '123 Digital Avenue',
-    addressLocality: 'San Diego',
-    addressRegion: 'CA',
-    postalCode: '92101',
-    addressCountry: 'US',
+    streetAddress: '100, MG Road',
+    addressLocality: 'Bengaluru',
+    addressRegion: 'KA',
+    postalCode: '560001',
+    addressCountry: 'IN',
   },
   contactPoint: {
     '@type': 'ContactPoint',

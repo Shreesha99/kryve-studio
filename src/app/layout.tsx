@@ -7,24 +7,24 @@ import { CustomCursor } from "@/components/common/custom-cursor";
 
 export const metadata: Metadata = {
   title: {
-    default: "Zenith Studio | Engineering Elegance. Designing Impact.",
-    template: "%s | Zenith Studio",
+    default: "The Elysium Project | Engineering Elegance. Designing Impact.",
+    template: "%s | The Elysium Project",
   },
   description:
     "A premium digital studio that blends visionary design with precision engineering to create web experiences that are beautiful, brilliant, and drive results.",
-  metadataBase: new URL("https://zenith-studio.example.com"),
+  metadataBase: new URL("https://elysium-project.example.com"),
   openGraph: {
-    title: "Zenith Studio",
+    title: "The Elysium Project",
     description:
       "A premium digital studio that blends visionary design with precision engineering to create web experiences that are beautiful and brilliant.",
-    url: "https://zenith-studio.example.com",
-    siteName: "Zenith Studio",
+    url: "https://elysium-project.example.com",
+    siteName: "The Elysium Project",
     images: [
       {
-        url: "https://picsum.photos/seed/zenith-og/1200/630",
+        url: "https://picsum.photos/seed/elysium-og/1200/630",
         width: 1200,
         height: 630,
-        alt: "Zenith Studio Hero Image",
+        alt: "The Elysium Project Hero Image",
       },
     ],
     locale: "en_US",
@@ -32,10 +32,10 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Zenith Studio",
+    title: "The Elysium Project",
     description:
       "A premium digital studio that blends visionary design with precision engineering to create web experiences that are beautiful and brilliant.",
-    images: ["https://picsum.photos/seed/zenith-og/1200/630"],
+    images: ["https://picsum.photos/seed/elysium-og/1200/630"],
   },
   robots: {
     index: true,
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
   },
 };
 
-const faviconSvg = `<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><style>text{font-family:sans-serif;font-weight:bold;font-size:24px;text-anchor:middle;dominant-baseline:central;fill:hsl(240 10% 3.9%)}@media (prefers-color-scheme:dark){text{fill:hsl(0 0% 98%)}}</style><text x="50%" y="53%">Z</text></svg>`;
+const faviconSvg = `<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><style>text{font-family:sans-serif;font-weight:bold;font-size:24px;text-anchor:middle;dominant-baseline:central;fill:hsl(240 10% 3.9%)}@media (prefers-color-scheme:dark){text{fill:hsl(0 0% 98%)}}</style><text x="50%" y="53%">E</text></svg>`;
 const faviconDataUri = `data:image/svg+xml,${encodeURIComponent(faviconSvg)}`;
 
 export default function RootLayout({

@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { NewsletterForm } from "./newsletter-form";
+import { AnimatedGradient } from "./animated-gradient";
 
 export function Footer() {
   return (
     <footer className="relative min-h-screen overflow-hidden bg-foreground py-20 text-background md:min-h-0 md:py-32">
+      <AnimatedGradient className="opacity-10 dark:opacity-15" />
       <div className="container relative z-10 mx-auto px-4 md:px-6">
         <div className="grid gap-16 md:grid-cols-2 lg:grid-cols-4">
           <div className="flex flex-col justify-between space-y-12 md:col-span-2 lg:col-span-2">
@@ -14,10 +16,10 @@ export function Footer() {
               <div className="space-y-3">
                 <h4 className="text-sm text-background/70">New Business:</h4>
                 <a
-                  href="mailto:hello@zenith.com"
+                  href="mailto:hello@elysium.com"
                   className="text-lg transition-colors hover:text-background/80"
                 >
-                  hello@zenith.com
+                  hello@elysium.com
                 </a>
               </div>
               <NewsletterForm />
@@ -99,15 +101,14 @@ export function Footer() {
             <div className="mt-12">
               <h4 className="mb-4 text-sm text-background/70">Location</h4>
               <ul className="space-y-2 text-lg">
-                <li>San Diego—USA</li>
-                <li>Paris—France</li>
+                <li>Bengaluru—India</li>
               </ul>
             </div>
           </div>
         </div>
 
         <div className="mt-24 flex flex-col justify-between gap-4 border-t border-background/20 pt-8 text-sm text-background/70 sm:flex-row">
-          <p>&copy; {new Date().getFullYear()} Zenith Studio</p>
+          <p>&copy; {new Date().getFullYear()} The Elysium Project</p>
           <Link href="#" className="transition-colors hover:text-background/80">
             Terms of Use
           </Link>
@@ -123,7 +124,7 @@ export function Footer() {
           lineHeight: "0.85",
         }}
       >
-        ZENITH
+        ELYSIUM
       </div>
     </footer>
   );

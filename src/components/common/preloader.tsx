@@ -69,7 +69,7 @@ export function Preloader({ onAnimationComplete }: PreloaderProps) {
         ref={logoRef}
         className="font-headline text-5xl font-bold tracking-widest text-foreground"
       >
-        ZENITH
+        ELYSIUM
       </h1>
       <div
         ref={progressContainerRef}

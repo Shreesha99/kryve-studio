@@ -1,6 +1,6 @@
-# Zenith Studio - A Next.js Starter
+# The Elysium Project - A Next.js Starter
 
-Welcome to Zenith Studio, a premium, minimal starter for a digital studio website. This project is built with a modern tech stack and is designed to be easily customizable. It includes a variety of pre-built components, a blog, and a contact form, all styled with a sleek and professional design.
+Welcome to The Elysium Project, a premium, minimal starter for a digital studio website. This project is built with a modern tech stack and is designed to be easily customizable. It includes a variety of pre-built components, a blog, and a contact form, all styled with a sleek and professional design.
 
 ## Features
 
@@ -23,8 +23,8 @@ Welcome to Zenith Studio, a premium, minimal starter for a digital studio websit
 
 1.  Clone the repository:
     ```bash
-    git clone https://github.com/your-repo/zenith-studio.git
-    cd zenith-studio
+    git clone https://github.com/your-repo/elysium-project.git
+    cd elysium-project
     ```
 
 2.  Install the dependencies:

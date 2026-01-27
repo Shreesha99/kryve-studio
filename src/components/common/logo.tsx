@@ -4,13 +4,13 @@ import Link from 'next/link';
 import { useLayoutEffect, useRef, useState } from 'react';
 
 export function Logo() {
-  const zenithRef = useRef<HTMLSpanElement>(null);
+  const elysiumRef = useRef<HTMLSpanElement>(null);
   const [width, setWidth] = useState(0);
 
   useLayoutEffect(() => {
     const updateWidth = () => {
-      if (zenithRef.current) {
-        setWidth(zenithRef.current.offsetWidth);
+      if (elysiumRef.current) {
+        setWidth(elysiumRef.current.offsetWidth);
       }
     };
 
@@ -26,14 +26,14 @@ export function Logo() {
 
   return (
     <Link href="/" className="flex flex-col items-center leading-none">
-      <span ref={zenithRef} className="font-headline text-2xl font-bold">
-        ZENITH
+      <span ref={elysiumRef} className="font-headline text-2xl font-bold">
+        ELYSIUM
       </span>
       <span
         style={{ width: width > 0 ? `${width}px` : 'auto' }}
         className="flex justify-between text-[0.5rem] font-light uppercase"
       >
-        {'STUDIOS'.split('').map((char, i) => (
+        {'PROJECT'.split('').map((char, i) => (
           <span key={i}>{char}</span>
         ))}
       </span>

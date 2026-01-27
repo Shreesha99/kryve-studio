@@ -162,13 +162,13 @@ export default function BlogPage() {
               ref={titleRef}
               className="font-headline text-4xl font-semibold tracking-tighter sm:text-5xl md:text-6xl"
             >
-                From the Studio
+                From The Project
             </h1>
             <p
               ref={paragraphRef}
               className="mx-auto max-w-2xl text-muted-foreground md:text-xl"
             >
-              News, insights, and stories from the team at Zenith.
+              News, insights, and stories from the team at The Elysium Project.
             </p>
           </div>
 

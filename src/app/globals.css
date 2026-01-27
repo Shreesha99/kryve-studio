@@ -87,3 +87,45 @@
 .custom-cursor-path {
   fill: hsl(var(--foreground));
 }
+
+@layer utilities {
+  .animated-gradient {
+    --gradient-color-1: #a0c2e8; /* Light Blue */
+    --gradient-color-2: #c4b5fd; /* Lavender */
+    --gradient-color-3: #f5d0fe; /* Pink */
+    --gradient-color-4: #a7f3d0; /* Mint */
+
+    --mouse-x: 50%;
+    --mouse-y: 50%;
+
+    background: radial-gradient(
+      circle at var(--mouse-x) var(--mouse-y),
+      var(--gradient-color-1),
+      var(--gradient-color-2),
+      var(--gradient-color-3),
+      var(--gradient-color-4)
+    );
+    background-size: 300% 300%;
+    animation: gradient-animation 15s ease infinite;
+    will-change: background-position, background;
+  }
+
+  .dark .animated-gradient {
+    --gradient-color-1: #2563eb; /* Blue */
+    --gradient-color-2: #7c3aed; /* Purple */
+    --gradient-color-3: #be185d; /* Pink */
+    --gradient-color-4: #059669; /* Green */
+  }
+}
+
+@keyframes gradient-animation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}

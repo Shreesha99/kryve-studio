@@ -36,7 +36,7 @@ const prompt = ai.definePrompt({
   name: 'generateBlogPostPrompt',
   input: {schema: GenerateBlogPostInputSchema},
   output: {schema: GenerateBlogPostOutputSchema},
-  system: `You are an expert blog post writer for a creative digital agency called Zenith Studio.
+  system: `You are an expert blog post writer for a creative digital agency called The Elysium Project.
 Your tone should be professional, insightful, and slightly informal.
 You write content that is engaging and well-structured, formatted as a single string of HTML paragraphs.`,
   prompt: `Generate a blog post about the following topic: {{{topic}}}.`,
