@@ -3,7 +3,6 @@
 import { useFormState, useFormStatus } from 'react-dom';
 import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
-import { MotionPathPlugin } from 'gsap/dist/MotionPathPlugin';
 import { sendEmail, type ContactFormState } from '@/actions/send-email';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,8 +10,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Check, X, Send, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AnimateOnScroll } from '../common/animate-on-scroll';
-
-gsap.registerPlugin(MotionPathPlugin);
 
 function SubmitButton({ status }: { status: 'idle' | 'success' | 'error' }) {
   const { pending } = useFormStatus();
@@ -69,33 +66,92 @@ export function Contact() {
   const initialState: ContactFormState = { success: false, message: '' };
   const [state, formAction] = useFormState(sendEmail, initialState);
   const formRef = useRef<HTMLFormElement>(null);
+  
+  const svgRef = useRef<SVGSVGElement>(null);
   const planeRef = useRef<SVGPathElement>(null);
+  const trailGroupRef = useRef<SVGGElement>(null);
 
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   useEffect(() => {
+    const svg = svgRef.current;
     const plane = planeRef.current;
-    if (!plane) return;
+    const trailGroup = trailGroupRef.current;
+    if (!svg || !plane || !trailGroup) return;
 
-    gsap.set(plane, { opacity: 1 });
+    // Use viewBox dimensions for a consistent coordinate system
+    const viewBox = svg.viewBox.baseVal;
+    const width = viewBox.width;
+    const height = viewBox.height;
 
-    const tl = gsap.timeline({
-      repeat: -1,
-      defaults: { ease: 'none' },
-    });
-
-    tl.to(plane, {
-      motionPath: {
-        path: '#motion-path',
-        align: '#motion-path',
-        alignOrigin: [0.5, 0.5],
-        autoRotate: 90,
-      },
-      duration: 25,
-    });
+    const trailSegments: SVGPathElement[] = [];
+    const maxSegments = 10;
     
+    gsap.set(plane, { x: width / 2, y: height / 2, opacity: 1, transformOrigin: 'center center' });
+
+    let animation: gsap.core.Tween | null = null;
+
+    function fly() {
+      const oldX = gsap.getProperty(plane, "x") as number;
+      const oldY = gsap.getProperty(plane, "y") as number;
+
+      // Define boundaries for flight
+      const padding = 50;
+      const newX = gsap.utils.random(padding, width - padding);
+      const newY = gsap.utils.random(padding, height - padding);
+      const duration = gsap.utils.random(3, 5);
+      
+      // Calculate angle for rotation
+      const angle = Math.atan2(newY - oldY, newX - oldX) * (180 / Math.PI);
+
+      // Create and animate the trail
+      const trail = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      trail.setAttribute("d", `M${oldX},${oldY} L${oldX},${oldY}`); // Start as a point
+      trail.setAttribute("fill", "none");
+      trail.setAttribute("stroke", "hsl(var(--primary))");
+      trail.setAttribute("stroke-width", "1");
+      trail.setAttribute("stroke-dasharray", "3 7");
+      trail.setAttribute("opacity", "0.5");
+      trailGroup.appendChild(trail);
+      
+      gsap.to(trail, {
+        attr: { d: `M${oldX},${oldY} L${newX},${newY}` },
+        duration: duration,
+        ease: "linear",
+      });
+
+      trailSegments.push(trail);
+
+      // Remove the oldest trail segment if we exceed the max
+      if (trailSegments.length > maxSegments) {
+        const oldSegment = trailSegments.shift();
+        if (oldSegment) {
+          gsap.to(oldSegment, {
+            opacity: 0,
+            duration: 1,
+            onComplete: () => oldSegment.remove(),
+          });
+        }
+      }
+      
+      // Animate the plane
+      animation = gsap.to(plane, {
+        x: newX,
+        y: newY,
+        rotation: angle,
+        duration: duration,
+        ease: "power1.inOut",
+        onComplete: fly,
+      });
+    }
+
+    fly(); // Start the animation loop
+
     return () => {
-      tl.kill();
+      // Cleanup function to kill all animations and remove elements on component unmount
+      animation?.kill();
+      gsap.killTweensOf([plane, ...trailSegments]);
+      if(trailGroup) trailGroup.innerHTML = '';
     }
   }, []);
 
@@ -124,23 +180,16 @@ export function Contact() {
       className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-background py-24 md:py-32"
     >
       <svg
+        ref={svgRef}
         viewBox="0 0 1200 800"
-        className="pointer-events-none absolute inset-0 z-0 h-full w-full opacity-30 dark:opacity-20"
+        className="pointer-events-none absolute inset-0 z-0 h-full w-full opacity-20 dark:opacity-10"
         preserveAspectRatio="xMidYMid slice"
       >
-        <path
-          id="motion-path"
-          d="M-100 600 C 200 800, 400 400, 600 600 S 1000 800, 1300 600 V 200 C 1000 0, 800 400, 600 200 S 200 0, -100 200 Z"
-          fill="none"
-          stroke="hsl(var(--primary))"
-          strokeWidth="1"
-          strokeDasharray="4 8"
-        />
+        <g ref={trailGroupRef} />
         <path
           ref={planeRef}
-          d="M2.1,0.4L20.5,9.6c1.6,0.8,2.3,2.7,1.5,4.3c-0.8,1.6-2.7,2.3-4.3,1.5L-0.2,6.2C-1.8,5.4-2.5,3.5-1.7,1.9C-0.9,0.3,1, -0.4,2.1,0.4z M17.7-6.2L-0.7-15.4c-1.6-0.8-3.5-0.1-4.3,1.5s-0.1,3.5,1.5,4.3l18.4,9.2c1.6,0.8,3.5,0.1,4.3-1.5S19.3-5.4,17.7-6.2z"
+          d="M-15 -10 L20 0 L-15 10 L-5 0 Z"
           fill="hsl(var(--primary))"
-          transform="scale(1.2)"
           opacity="0"
         />
       </svg>
