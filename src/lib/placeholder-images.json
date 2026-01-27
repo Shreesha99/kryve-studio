@@ -4,29 +4,37 @@
       "id": "project-1",
       "title": "Aura Branding",
       "description": "A branding project for a modern tech company, focusing on a clean and futuristic aesthetic.",
-      "imageUrl": "https://picsum.photos/seed/101/800/600",
-      "imageHint": "abstract tech"
+      "imageUrl": "https://picsum.photos/seed/101/1200/900",
+      "imageHint": "abstract tech",
+      "client": "TechCorp",
+      "testimonial": "Zenith Studio transformed our brand identity. Their work is both visionary and meticulously executed. The result was beyond our expectations."
     },
     {
       "id": "project-2",
       "title": "Flow E-commerce",
       "description": "E-commerce platform with a clean user interface designed for a seamless shopping experience.",
-      "imageUrl": "https://picsum.photos/seed/102/800/600",
-      "imageHint": "minimalist website"
+      "imageUrl": "https://picsum.photos/seed/102/1200/900",
+      "imageHint": "minimalist website",
+      "client": "Flow Retail",
+      "testimonial": "The new e-commerce site is a game-changer. Sales are up 40% and customer feedback has been overwhelmingly positive. A flawless execution."
     },
     {
       "id": "project-3",
       "title": "Connect Mobile App",
       "description": "Mobile app design for a creative startup aimed at connecting artists and collaborators.",
-      "imageUrl": "https://picsum.photos/seed/103/800/600",
-      "imageHint": "mobile app"
+      "imageUrl": "https://picsum.photos/seed/103/1200/900",
+      "imageHint": "mobile app",
+      "client": "Connective Inc.",
+      "testimonial": "Working with Zenith was a true partnership. They understood our vision for 'Connect' and brought it to life with an intuitive and beautiful app."
     },
     {
       "id": "project-4",
       "title": "Luxe Digital Strategy",
       "description": "A comprehensive digital strategy for a luxury brand to enhance its online presence.",
-      "imageUrl": "https://picsum.photos/seed/104/800/600",
-      "imageHint": "luxury product"
+      "imageUrl": "https://picsum.photos/seed/104/1200/900",
+      "imageHint": "luxury product",
+      "client": "Luxe Goods",
+      "testimonial": "Their strategic insights were invaluable. Zenith helped us navigate the digital landscape and positioned our brand perfectly for the modern consumer."
     }
   ]
 }
