@@ -96,11 +96,13 @@ export function Work() {
     gsap.to(activeImage, { opacity: 1, duration: 0.5, ease: 'power2.inOut' });
 
     // Ken Burns effect
-    imageAnimation.current = gsap.fromTo(
-      activeImage.querySelector('img'),
-      { scale: 1.05, y: '2%' },
-      { scale: 1, y: '0%', duration: AUTOPLAY_DURATION + 2, ease: 'linear' }
-    );
+    if (activeImage) {
+      imageAnimation.current = gsap.fromTo(
+        activeImage.querySelector('img'),
+        { scale: 1.05, y: '2%' },
+        { scale: 1, y: '0%', duration: AUTOPLAY_DURATION + 2, ease: 'linear' }
+      );
+    }
 
     // Update titles style
     allTitles.forEach((title, index) => {
@@ -153,11 +155,13 @@ export function Work() {
       '.progress-bar-inner',
       listRef.current
     );
-    gsap.to(allProgressBars[activeIndex], {
-      scaleX: 1,
-      duration: AUTOPLAY_DURATION,
-      ease: 'linear',
-    });
+    if (allProgressBars[activeIndex]) {
+      gsap.to(allProgressBars[activeIndex], {
+        scaleX: 1,
+        duration: AUTOPLAY_DURATION,
+        ease: 'linear',
+      });
+    }
 
     return () => {
       autoplayTl.current?.kill();
@@ -226,7 +230,7 @@ export function Work() {
               {projects.map((project, index) => (
                 <li
                   key={project.id}
-                  className="group relative cursor-pointer border-t border-border transition-colors last:border-b"
+                  className="group relative cursor-pointer border-t border-border last:border-b"
                   onMouseEnter={() => handleMouseEnter(index)}
                   onClick={() => handleProjectClick(project)}
                 >
