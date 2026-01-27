@@ -265,34 +265,38 @@ export function Services() {
 
             if (currentService.id === "development") {
               const textEl = activeSvg.querySelector(".code-tag-text");
-              if (textEl) {
-                const tags = ["a", "p", "h1", "div"];
-                const textTl = gsap.timeline();
+              if (!textEl) return;
 
-                tags.forEach((tag) => {
-                  textTl
-                    .to(textEl, {
-                      autoAlpha: 0,
-                      duration: 0.3,
-                      ease: "power1.in",
-                      onComplete: () => {
-                        gsap.set(textEl, { text: tag });
-                      },
-                    })
-                    .to(
-                      textEl,
-                      {
-                        autoAlpha: 1,
-                        duration: 0.3,
-                        ease: "power1.out",
-                      },
-                      "+=1.2"
-                    );
+              const tags = ["a", "p", "h1", "div"];
+              let index = 0;
+
+              // set visual state ONCE
+              gsap.set(textEl, {
+                text: tags[0],
+                autoAlpha: 1,
+                scale: 2,
+                transformOrigin: "center",
+              });
+
+              const textTl = gsap.timeline({ repeat: -1 });
+
+              textTl
+                .to(
+                  textEl,
+                  { autoAlpha: 0, duration: 0.3, ease: "power1.in" },
+                  "+=1.4"
+                )
+                .call(() => {
+                  index = (index + 1) % tags.length;
+                  textEl.textContent = tags[index];
+                })
+                .to(textEl, {
+                  autoAlpha: 1,
+                  duration: 0.3,
+                  ease: "power1.out",
                 });
 
-                secondaryAnimation.current.add(textTl, 0).repeat(-1);
-                gsap.set(textEl, { text: tags[0], autoAlpha: 1 });
-              }
+              secondaryAnimation.current.add(textTl, 0);
             }
 
             if (currentService.id === "ecommerce") {
