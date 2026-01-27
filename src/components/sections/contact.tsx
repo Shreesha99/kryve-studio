@@ -67,7 +67,7 @@ export function Contact() {
   useEffect(() => {
     gsap.registerPlugin(MotionPathPlugin);
     const plane = planeRef.current;
-    const container = container.current;
+    const container = containerRef.current;
     if (!plane || !container) return;
 
     let isCancelled = false;
