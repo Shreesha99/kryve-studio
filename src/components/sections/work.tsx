@@ -4,10 +4,11 @@ import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
+import { ScrollToPlugin } from 'gsap/dist/ScrollToPlugin';
 import { Projects, type ImagePlaceholder } from '@/lib/placeholder-images';
 import { ArrowRight } from 'lucide-react';
 
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
 export function Work() {
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -126,9 +127,7 @@ export function Work() {
             const targetTime = (mainTl.current.labels[nextLabel] + endTime) / 2;
 
             gsap.to(window, {
-              scrollTo: {
-                y: mainSt.current.start + (targetTime / mainTl.current.duration()) * (mainSt.current.end - mainSt.current.start),
-              },
+              scrollTo: mainSt.current.start + (targetTime / mainTl.current.duration()) * (mainSt.current.end - mainSt.current.start),
               duration: 0.8,
               ease: 'power3.inOut',
               onComplete: () => {
