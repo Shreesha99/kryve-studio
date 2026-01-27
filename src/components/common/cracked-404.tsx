@@ -44,17 +44,6 @@ export function Cracked404() {
     >
       <title id="cracked-404-title">404 Error</title>
       <defs>
-        <text
-          id="text404"
-          x="250"
-          y="150"
-          textAnchor="middle"
-          className="font-headline fill-current text-primary"
-          style={{ fontSize: '150px' }}
-        >
-          404
-        </text>
-
         <clipPath id="clip-left">
           <polygon points="0,0 248,0 250,40 246,80 252,120 247,160 250,200 0,200" />
         </clipPath>
@@ -73,11 +62,27 @@ export function Cracked404() {
       />
 
       <g ref={leftPartRef} clipPath="url(#clip-left)">
-        <use href="#text404" />
+        <text
+          x="250"
+          y="150"
+          textAnchor="middle"
+          className="font-headline fill-current text-primary"
+          style={{ fontSize: '150px' }}
+        >
+          404
+        </text>
       </g>
 
       <g ref={rightPartRef} clipPath="url(#clip-right)">
-        <use href="#text404" />
+        <text
+          x="250"
+          y="150"
+          textAnchor="middle"
+          className="font-headline fill-current text-primary"
+          style={{ fontSize: '150px' }}
+        >
+          404
+        </text>
       </g>
     </svg>
   );
