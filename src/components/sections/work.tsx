@@ -79,7 +79,7 @@ export function Work() {
       '.project-image',
       imageContainerRef.current
     );
-    const allTitles = gsap.utils.toArray<HTMLLIElement>('li', listRef.current);
+    const allListItems = gsap.utils.toArray<HTMLLIElement>('li', listRef.current);
     const allProgressBars = gsap.utils.toArray<HTMLDivElement>(
       '.progress-bar-inner',
       listRef.current
@@ -105,14 +105,17 @@ export function Work() {
     }
 
     // Update titles style
-    allTitles.forEach((title, index) => {
-      gsap.to(title, {
-        color:
-          index === activeIndex
-            ? 'hsl(var(--primary))'
-            : 'hsl(var(--muted-foreground))',
-        duration: 0.5,
-      });
+    allListItems.forEach((listItem, index) => {
+      const title = listItem.querySelector('h3');
+      if (title) {
+        gsap.to(title, {
+          color:
+            index === activeIndex
+              ? 'hsl(var(--primary))'
+              : 'hsl(var(--muted-foreground))',
+          duration: 0.5,
+        });
+      }
     });
 
     // Reset and start progress bar for the active item
@@ -239,7 +242,7 @@ export function Work() {
                       <span className="font-mono text-sm text-muted-foreground">
                         {String(index + 1).padStart(2, '0')}
                       </span>
-                      <h3 className="font-headline text-3xl font-medium sm:text-4xl">
+                      <h3 className="font-headline text-3xl font-medium text-muted-foreground sm:text-4xl">
                         {project.title}
                       </h3>
                     </div>
