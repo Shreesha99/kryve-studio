@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { NewsletterForm } from "./newsletter-form";
 
 export function Footer() {
   return (
@@ -19,27 +20,7 @@ export function Footer() {
                   hello@zenith.com
                 </a>
               </div>
-              <div className="max-w-xs space-y-3">
-                <h4 className="text-sm text-background/70">
-                  Sign up for our newsletter (No spam)
-                </h4>
-                <form className="flex items-center border-b border-background/50 py-1 transition-colors focus-within:border-background">
-                  <input
-                    type="email"
-                    placeholder="Email"
-                    className="w-full bg-transparent text-lg placeholder:text-background/50 focus:outline-none"
-                  />
-                  <button
-                    type="submit"
-                    aria-label="Submit email for newsletter"
-                    className="transition-transform hover:translate-x-1"
-                  >
-                    <span className="material-symbols-outlined text-2xl">
-                      arrow_forward
-                    </span>
-                  </button>
-                </form>
-              </div>
+              <NewsletterForm />
             </div>
           </div>
 

@@ -19,14 +19,20 @@ import {
 } from '@/components/ui/card';
 import { AnimateOnScroll } from '@/components/common/animate-on-scroll';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+import { ArrowRight } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
+
+// The featured post is the most recent one
+const featuredPost = posts[0];
+const otherPosts = posts.slice(1);
 
 function PostCard({ post, index }: { post: Post; index: number }) {
   return (
     <AnimateOnScroll delay={`${index * 150}ms`}>
       <Link href={`/blog/${post.slug}`} className="group block h-full">
-        <Card className="flex h-full flex-col overflow-hidden transition-all group-hover:shadow-xl">
+        <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
           <CardHeader className="p-0">
             <div className="aspect-video w-full overflow-hidden">
               <Image
@@ -41,16 +47,11 @@ function PostCard({ post, index }: { post: Post; index: number }) {
           </CardHeader>
           <CardContent className="flex-grow p-6">
             <CardTitle className="font-headline text-2xl">{post.title}</CardTitle>
-            <CardDescription className="mt-2 text-base">{post.excerpt}</CardDescription>
+            <CardDescription className="mt-2 text-base line-clamp-3">{post.excerpt}</CardDescription>
           </CardContent>
           <CardFooter className="p-6 pt-0 text-sm text-muted-foreground">
             <p>
-              {post.author} &bull;{' '}
-              {new Date(post.date).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
+              By {post.author}
             </p>
           </CardFooter>
         </Card>
@@ -59,45 +60,97 @@ function PostCard({ post, index }: { post: Post; index: number }) {
   );
 }
 
+function FeaturedPostCard({ post }: { post: Post }) {
+    const cardRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const card = cardRef.current;
+        if (!card) return;
+
+        const image = card.querySelector('img');
+        if (!image) return;
+
+        // Parallax effect for the image
+        gsap.to(image, {
+            yPercent: -15,
+            ease: 'none',
+            scrollTrigger: {
+                trigger: card,
+                start: 'top bottom',
+                end: 'bottom top',
+                scrub: true,
+            }
+        });
+    }, []);
+
+  return (
+    <AnimateOnScroll>
+        <Link href={`/blog/${post.slug}`} className="group block">
+            <Card ref={cardRef} className="overflow-hidden md:grid md:grid-cols-2 md:items-center transition-all duration-300 hover:shadow-2xl">
+                <CardHeader className="p-0 h-80 md:h-full">
+                    <div className="w-full h-full overflow-hidden">
+                        <Image
+                        src={post.imageUrl}
+                        alt={post.title}
+                        width={800}
+                        height={600}
+                        className="h-full w-full object-cover"
+                        data-ai-hint={post.imageHint}
+                        priority
+                        />
+                    </div>
+                </CardHeader>
+                <div className="p-8 md:p-12">
+                    <CardContent className="p-0">
+                        <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-primary">Featured Article</p>
+                        <CardTitle className="font-headline text-3xl md:text-4xl">{post.title}</CardTitle>
+                        <CardDescription className="mt-4 text-lg text-muted-foreground line-clamp-4">{post.excerpt}</CardDescription>
+                    </CardContent>
+                    <CardFooter className="p-0 pt-6">
+                        <div className="w-full">
+                            <div className="flex items-center justify-between text-sm text-muted-foreground">
+                                <span>By {post.author}</span>
+                                <span>{new Date(post.date).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                })}</span>
+                            </div>
+                            <Button variant="link" className="group/link p-0 mt-4 h-auto text-lg text-primary">
+                                Read More <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover/link:translate-x-1" />
+                            </Button>
+                        </div>
+                    </CardFooter>
+                </div>
+            </Card>
+      </Link>
+    </AnimateOnScroll>
+  );
+}
+
 export default function BlogPage() {
+  const sectionRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const paragraphRef = useRef<HTMLParagraphElement>(null);
-  const sectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const contentTl = gsap.timeline({
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: 'top 80%',
-        toggleActions: 'play none none none',
-      },
+    const tl = gsap.timeline({
+      delay: 0.2
     });
 
-    if (titleRef.current) {
-      const titleSpans = gsap.utils.toArray('span', titleRef.current);
-      contentTl.fromTo(
-        titleSpans,
-        { yPercent: 120 },
-        { yPercent: 0, stagger: 0.1, duration: 1.2, ease: 'power3.out' }
-      );
-    }
-    if (paragraphRef.current) {
-      contentTl.fromTo(
-        paragraphRef.current,
-        { y: 20, opacity: 0 },
-        { y: 0, opacity: 1, duration: 1 },
-        '-=0.8'
-      );
+    if (titleRef.current && paragraphRef.current) {
+        tl.from(titleRef.current, { y: 30, opacity: 0, duration: 1, ease: 'power3.out' })
+          .from(paragraphRef.current, { y: 20, opacity: 0, duration: 0.8, ease: 'power3.out' }, '-=0.7');
     }
 
     return () => {
-      contentTl.kill();
+      tl.kill();
       ScrollTrigger.getAll().forEach((t) => t.kill());
     };
   }, []);
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-secondary/30">
       <Header />
       <main className="flex-1">
         <section
@@ -109,22 +162,29 @@ export default function BlogPage() {
               ref={titleRef}
               className="font-headline text-4xl font-semibold tracking-tighter sm:text-5xl md:text-6xl"
             >
-              <div className="overflow-hidden py-1">
-                <span className="inline-block">From the Studio</span>
-              </div>
+                From the Studio
             </h1>
             <p
               ref={paragraphRef}
-              className="mx-auto max-w-2xl text-muted-foreground opacity-0 md:text-xl"
+              className="mx-auto max-w-2xl text-muted-foreground md:text-xl"
             >
               News, insights, and stories from the team at Zenith.
             </p>
           </div>
 
-          <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 lg:gap-12">
-            {posts.map((post, index) => (
-              <PostCard key={post.slug} post={post} index={index} />
-            ))}
+          <div className="mt-16 space-y-16">
+              {featuredPost && <FeaturedPostCard post={featuredPost} />}
+
+              {otherPosts.length > 0 && (
+                <>
+                    <h2 className="font-headline text-3xl font-semibold tracking-tight">More Articles</h2>
+                    <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 lg:gap-12">
+                        {otherPosts.map((post, index) => (
+                        <PostCard key={post.slug} post={post} index={index} />
+                        ))}
+                    </div>
+                </>
+              )}
           </div>
         </section>
         <div className="container mx-auto max-w-4xl">
