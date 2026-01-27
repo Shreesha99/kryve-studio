@@ -112,26 +112,28 @@ export function Work() {
             {Projects.map((project, i) => (
               <div
                 key={project.id}
-                className="project-panel absolute inset-0 h-full w-full"
-                onClick={() => handleProjectClick(project)}
+                className="project-panel absolute inset-0 flex h-full w-full items-center justify-center p-4 md:p-8"
               >
-                <div className="group relative h-full w-full cursor-pointer">
+                <div
+                  className="group relative h-[80vh] w-full max-w-6xl cursor-pointer overflow-hidden rounded-xl shadow-2xl"
+                  onClick={() => handleProjectClick(project)}
+                >
                   <Image
                     src={project.imageUrl}
                     alt={project.title || "Project image"}
                     fill
-                    className="object-cover"
+                    className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
                     data-ai-hint={project.imageHint}
                     priority={i === 0}
-                    sizes="100vw"
+                    sizes="(min-width: 1280px) 1152px, 90vw"
                   />
-                  <div className="absolute inset-0 bg-black/40" />
+                  <div className="absolute inset-0 bg-black/40 transition-colors duration-300 group-hover:bg-black/30" />
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="relative flex items-center gap-4">
-                      <h3 className="font-headline text-5xl font-bold text-white sm:text-6xl md:text-7xl">
+                      <h3 className="font-headline text-5xl font-bold text-white drop-shadow-md sm:text-6xl md:text-7xl">
                         {project.title}
                       </h3>
-                      <ArrowRight className="h-10 w-10 text-white transition-transform duration-300 ease-in-out group-hover:rotate-45" />
+                      <ArrowRight className="h-10 w-10 text-white drop-shadow-md transition-transform duration-300 ease-in-out group-hover:rotate-45" />
                       <div className="absolute -bottom-2 left-0 h-1 w-full origin-left scale-x-0 bg-white transition-transform duration-300 ease-in-out group-hover:scale-x-100" />
                     </div>
                   </div>
