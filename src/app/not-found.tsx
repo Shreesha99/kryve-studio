@@ -6,66 +6,80 @@ import { gsap } from 'gsap';
 import { Header } from '@/components/common/header';
 import { Button } from '@/components/ui/button';
 
-function NotFoundBackground() {
-  const svgRef = useRef<SVGSVGElement>(null);
+function ConfusedAvatar() {
+  const avatarRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
-    if (!svgRef.current) return;
-    const groups = gsap.utils.toArray<SVGGElement>('.morph-group', svgRef.current);
-    
-    groups.forEach((group, index) => {
-      const shape = group.querySelector('.morph-shape') as SVGPathElement;
-      if (!shape) return;
+    const avatar = avatarRef.current;
+    if (!avatar) return;
 
-      const morphTarget = shape.getAttribute('data-morph-target');
-      if (!morphTarget) return;
-      
-      const morphTl = gsap.timeline({
-        repeat: -1,
-        yoyo: true,
-        delay: index * 1.5,
-      });
+    const face = avatar.querySelector('.face');
+    const questionMark = avatar.querySelector('.question-mark');
 
-      morphTl.to(shape, {
-        attr: { d: morphTarget },
-        duration: 8,
-        ease: 'sine.inOut'
+    gsap.set(avatar, { autoAlpha: 0, y: 50, scale: 0.9 });
+    if (questionMark) {
+      gsap.set(questionMark, {
+        autoAlpha: 0,
+        scale: 0,
+        transformOrigin: 'bottom center',
       });
-      
-      // Animate the group for position and rotation
-      gsap.to(group, {
-        x: `random(-50, 50, true)`,
-        y: `random(-50, 50, true)`,
-        rotation: `random(-60, 60, true)`,
-        transformOrigin: '50% 50%',
-        duration: 20,
-        ease: 'sine.inOut',
-        repeat: -1,
-        yoyo: true,
-        delay: index
-      })
+    }
+
+    const tl = gsap.timeline({
+      delay: 0.8,
+      defaults: { ease: 'power3.out' },
     });
-    
+
+    tl.to(avatar, { autoAlpha: 1, y: 0, scale: 1, duration: 1 });
+    if (questionMark) {
+      tl.to(
+        questionMark,
+        { autoAlpha: 1, scale: 1, duration: 0.8, ease: 'elastic.out(1, 0.5)' },
+        '-=0.5'
+      );
+    }
+    if (face) {
+      tl.to(
+        face,
+        {
+          rotation: 5,
+          transformOrigin: 'center',
+          duration: 2,
+          ease: 'sine.inOut',
+          repeat: -1,
+          yoyo: true,
+        },
+        0
+      );
+    }
   }, []);
 
   return (
-    <div className="pointer-events-none absolute inset-0 z-0 h-full w-full overflow-hidden opacity-5">
-      <svg ref={svgRef} width="100%" height="100%" preserveAspectRatio="xMidYMid slice" viewBox="0 0 800 600">
-        <g className="morph-group" transform="translate(200 150) scale(1.5)">
+    <div className="relative z-0 mb-8">
+      <svg ref={avatarRef} width="200" height="200" viewBox="0 0 200 200">
+        <g className="face">
+          <circle cx="100" cy="100" r="80" fill="hsl(var(--muted))" />
+          <circle cx="80" cy="90" r="8" fill="hsl(var(--foreground))" />
+          <circle cx="120" cy="90" r="8" fill="hsl(var(--foreground))" />
           <path
-            className="morph-shape"
-            fill="hsl(var(--primary))"
-            d="M107.4,22.6C128.2,43.4,128.2,77.4,107.4,98.2C86.6,119,52.6,119,31.8,98.2C11,77.4,11,43.4,31.8,22.6C52.6,1.8,86.6,1.8,107.4,22.6Z"
-            data-morph-target="M112.5,43.3C122.8,66.5,112.3,94,91.9,104.5C71.5,115,41.9,108.5,21.5,91.8C1.1,75.1,-9.4,48.5,10.9,31.8C31.3,15.1,61.9,8.5,82.3,18.8C102.7,29.1,102.1,19.9,112.5,43.3Z"
+            d="M 90 130 Q 100 120 110 130"
+            stroke="hsl(var(--foreground))"
+            strokeWidth="4"
+            fill="none"
           />
         </g>
-        <g className="morph-group" transform="translate(700 500) scale(1.2)">
-          <path
-            className="morph-shape"
+        <g className="question-mark">
+          <text
+            x="100"
+            y="50"
+            fontFamily="Poppins, sans-serif"
+            fontSize="80"
+            fontWeight="bold"
+            textAnchor="middle"
             fill="hsl(var(--primary))"
-            d="M21,0 L79,0 L100,21 L100,79 L79,100 L21,100 L0,79 L0,21 Z"
-            data-morph-target="M36.3,4.3L82.6,21.8L93.3,71.2L50.8,95.7L5.7,76.5L2.8,26.8L36.3,4.3Z"
-          />
+          >
+            ?
+          </text>
         </g>
       </svg>
     </div>
@@ -108,7 +122,7 @@ export default function NotFound() {
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
       <main className="relative flex flex-1 flex-col items-center justify-center overflow-hidden px-4 text-center">
-        <NotFoundBackground />
+        <ConfusedAvatar />
         <div className="relative z-10">
           <h1
             ref={titleRef}
