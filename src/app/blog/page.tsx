@@ -21,6 +21,7 @@ import { AnimateOnScroll } from '@/components/common/animate-on-scroll';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
+import { AnimatedGradient } from '@/components/common/animated-gradient';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -150,9 +151,10 @@ export default function BlogPage() {
   }, []);
 
   return (
-    <div className="flex min-h-screen flex-col bg-secondary/30">
+    <div className="relative flex min-h-screen flex-col bg-secondary/30">
+      <AnimatedGradient className="opacity-20 dark:opacity-10" />
       <Header />
-      <main className="flex-1">
+      <main className="relative z-10 flex-1">
         <section
           ref={sectionRef}
           className="container mx-auto max-w-7xl px-4 py-16 pt-32 md:px-6 md:py-24 md:pt-48"

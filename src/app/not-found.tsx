@@ -6,6 +6,7 @@ import { gsap } from 'gsap';
 import { Header } from '@/components/common/header';
 import { Button } from '@/components/ui/button';
 import { Cracked404 } from '@/components/common/cracked-404';
+import { AnimatedGradient } from '@/components/common/animated-gradient';
 
 const messages = [
   "Oops! This page must have been abducted by aliens. Let's beam you back to safety.",
@@ -72,6 +73,7 @@ export default function NotFound() {
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
       <main className="relative flex flex-1 flex-col items-center justify-center overflow-hidden px-4 text-center">
+        <AnimatedGradient className="opacity-20 dark:opacity-10" />
         <div className="relative z-10 w-full">
           <Cracked404 />
 

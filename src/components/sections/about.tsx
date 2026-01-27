@@ -5,6 +5,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
 import { AnimateOnScroll } from '../common/animate-on-scroll';
 import { PenTool, CodeXml, Users } from 'lucide-react';
+import { AnimatedGradient } from '../common/animated-gradient';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -139,6 +140,7 @@ export function About() {
       ref={sectionRef}
       className="relative flex min-h-screen w-full items-center overflow-hidden bg-background py-24 md:py-32"
     >
+      <AnimatedGradient className="opacity-15 dark:opacity-[0.07]" />
       <div className="pointer-events-none absolute inset-0 z-0 opacity-10 dark:opacity-5">
         <svg ref={bgSvgRef} width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 800 400">
           {bgPaths.map((path, i) => (
@@ -164,7 +166,7 @@ export function About() {
                 </div>
             </h2>
           <p ref={paragraphRef} className="mx-auto mt-6 text-lg text-muted-foreground opacity-0">
-            At Zenith, we believe a digital presence should be more than a URL. It should be a destination. We merge bold design with flawless engineering to create unforgettable online experiences that stand the test of time.
+            At The Elysium Project, we believe a digital presence should be more than a URL. It should be a destination. We merge bold design with flawless engineering to create unforgettable online experiences that stand the test of time.
           </p>
         </div>
         
