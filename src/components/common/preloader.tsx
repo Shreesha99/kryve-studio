@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
+import { AnimatedGradient } from './animated-gradient';
 
 interface PreloaderProps {
   onAnimationComplete: () => void;
@@ -67,7 +68,7 @@ export function Preloader({ onAnimationComplete }: PreloaderProps) {
     >
       <h1
         ref={logoRef}
-        className="font-headline text-5xl font-bold tracking-widest text-foreground"
+        className="animated-gradient bg-clip-text font-headline text-5xl font-bold tracking-widest text-transparent"
       >
         ELYSIUM
       </h1>

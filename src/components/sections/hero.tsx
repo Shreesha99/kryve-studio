@@ -68,7 +68,7 @@ export function Hero() {
       id="home"
       className="relative flex min-h-screen w-full items-center overflow-hidden bg-secondary py-24 md:py-32 lg:py-0"
     >
-      <AnimatedGradient className="opacity-15 dark:opacity-20" />
+      <AnimatedGradient className="opacity-30 dark:opacity-15" />
       <div className="container relative z-10 mx-auto px-4 md:px-6">
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-24">
           <div className="text-left">

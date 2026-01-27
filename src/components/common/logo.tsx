@@ -26,6 +26,9 @@ export function Logo() {
 
   return (
     <Link href="/" className="flex flex-col items-center leading-none">
+      <span className="-mb-1 text-[0.6rem] font-light tracking-[0.3em] text-muted-foreground">
+        THE
+      </span>
       <span ref={elysiumRef} className="font-headline text-2xl font-bold">
         ELYSIUM
       </span>

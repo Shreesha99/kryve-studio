@@ -9,6 +9,7 @@ import { ThemeToggle } from './theme-toggle';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+import { useLenis } from './smooth-scroll-provider';
 
 const navLinks = [
   { href: '#home', label: 'Home' },
@@ -25,6 +26,7 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
+  const lenis = useLenis();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -92,9 +94,8 @@ export function Header() {
             )}
             onClick={(e) => {
               e.preventDefault();
-              const targetElement = document.querySelector(href);
-              if (targetElement) {
-                targetElement.scrollIntoView({ behavior: 'smooth' });
+              if (lenis) {
+                lenis.scrollTo(href);
               }
               setIsMobileMenuOpen(false);
             }}
