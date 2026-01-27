@@ -53,7 +53,7 @@ export default function NotFound() {
             ref={paragraphRef}
             className="mt-4 text-lg text-muted-foreground md:text-xl"
           >
-            Oops! The page you are looking for has been lost in space.
+            Oops! This page must have been abducted by aliens. Let's beam you back to safety.
           </p>
           <div ref={buttonRef} className="mt-8">
             <Button asChild size="lg">
