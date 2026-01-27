@@ -38,6 +38,12 @@ export function Work() {
 
   // Animate the section title and paragraph on scroll
   useEffect(() => {
+    const section = sectionRef.current;
+    const title = titleRef.current;
+    const paragraph = paragraphRef.current;
+
+    if (!section || !title || !paragraph) return;
+
     const contentTl = gsap.timeline({
       scrollTrigger: {
         trigger: sectionRef.current,
@@ -65,9 +71,9 @@ export function Work() {
 
     return () => {
       contentTl.kill();
-      gsap
-        .getTweensOf([titleRef.current, paragraphRef.current])
-        .forEach((t) => t.kill());
+      // Use the variables captured at the start of the effect for safe cleanup
+      if (title) gsap.getTweensOf(title).forEach((t) => t.kill());
+      if (paragraph) gsap.getTweensOf(paragraph).forEach((t) => t.kill());
     };
   }, []);
 
