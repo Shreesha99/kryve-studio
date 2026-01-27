@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { ThemeProvider } from '@/components/common/theme-provider';
-import { Toaster } from '@/components/ui/toaster';
 import { Preloader } from '@/components/common/preloader';
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
@@ -34,7 +33,6 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
       ) : (
         <>
           {children}
-          <Toaster />
         </>
       )}
     </ThemeProvider>
