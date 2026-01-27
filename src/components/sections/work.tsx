@@ -2,147 +2,154 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { gsap } from "gsap";
+import gsap from "gsap";
 import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 import { Projects, type ImagePlaceholder } from "@/lib/placeholder-images";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { AnimateOnScroll } from "../common/animate-on-scroll";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export function Work() {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLDivElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
+  const cardsRef = useRef<HTMLDivElement[]>([]);
 
-  const [activeProject, setActiveProject] = useState<ImagePlaceholder | null>(null);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [activeProject, setActiveProject] = useState<ImagePlaceholder | null>(
+    null
+  );
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      const track = trackRef.current;
-      const trigger = triggerRef.current;
-      if (!track || !trigger) return;
+      const cards = cardsRef.current;
 
-      // Use a timeout to ensure all images are loaded and dimensions are correct
-      const timeoutId = setTimeout(() => {
-        if (!track || !trigger) return;
-        
-        const scrollAmount = track.scrollWidth - window.innerWidth;
-        
-        if (scrollAmount > 0) {
-            gsap.to(track, {
-                x: -scrollAmount,
-                ease: "none",
-                scrollTrigger: {
-                    trigger: trigger,
-                    start: "top top",
-                    end: () => `+=${scrollAmount}`,
-                    pin: true,
-                    scrub: 1,
-                    invalidateOnRefresh: true,
-                },
-            });
-        }
-      }, 500);
+      gsap.set(cards, {
+        opacity: 0,
+        scale: 0.85,
+        y: 120,
+      });
 
-      return () => {
-          clearTimeout(timeoutId);
-          ScrollTrigger.getAll().forEach(t => t.kill());
-      };
-
+      cards.forEach((card, i) => {
+        gsap
+          .timeline({
+            scrollTrigger: {
+              trigger: card,
+              start: "top center+=100",
+              end: "bottom center",
+              scrub: true,
+            },
+          })
+          .to(card, {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            ease: "power3.out",
+          })
+          .to(
+            card,
+            {
+              opacity: 0.2,
+              scale: 0.9,
+              y: -120,
+              ease: "power3.in",
+            },
+            "+=0.2"
+          );
+      });
     }, sectionRef);
 
     return () => ctx.revert();
   }, []);
 
-  const handleProjectClick = (project: ImagePlaceholder) => {
-    setActiveProject(project);
-    setIsDetailOpen(true);
-  };
-
   return (
     <>
-      <section id="work" ref={sectionRef} className="relative w-full bg-background">
-        <div className="container mx-auto flex h-auto min-h-[20vh] items-center px-4 py-16 md:px-6">
-            <AnimateOnScroll>
-                <div className="text-left">
-                    <h2 className="font-headline text-4xl font-semibold tracking-tight sm:text-5xl">
-                    Curated Craft
-                    </h2>
-                    <p className="mt-4 max-w-2xl text-lg text-muted-foreground">
-                    A portfolio of partnerships where design and technology converge
-                    to create value.
-                    </p>
-                </div>
-            </AnimateOnScroll>
+      <section
+        ref={sectionRef}
+        id="work"
+        className="relative min-h-screen bg-background py-32"
+      >
+        {/* Header */}
+        <div className="container mx-auto mb-32 px-4">
+          <h2 className="font-headline text-5xl font-semibold tracking-tight">
+            Curated Craft
+          </h2>
+          <p className="mt-4 max-w-xl text-lg text-muted-foreground">
+            Selected partnerships where design, motion, and engineering collide.
+          </p>
         </div>
 
-        <div ref={triggerRef} className="relative h-screen w-full">
-            {/* This div is the sticky container for the animation */}
-            <div className="absolute top-0 left-0 flex h-full w-full items-center overflow-hidden">
-                <div ref={trackRef} className="flex h-full items-center gap-12 px-[5vw]">
-                    {Projects.map((project) => (
-                    <div
-                        key={project.id}
-                        className="group relative h-[75vh] w-[60vw] shrink-0 cursor-pointer overflow-hidden rounded-xl shadow-2xl md:w-[40vw]"
-                        onClick={() => handleProjectClick(project)}
-                    >
-                        <Image
-                            src={project.imageUrl}
-                            alt={project.title || "Project image"}
-                            fill
-                            className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
-                            data-ai-hint={project.imageHint}
-                            sizes="(min-width: 768px) 40vw, 60vw"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10" />
-                        <div className="absolute bottom-0 left-0 p-8">
-                            <h3 className="font-headline text-4xl font-bold text-white opacity-0 drop-shadow-md transition-all duration-300 group-hover:opacity-100 -translate-y-4 group-hover:translate-y-0">
-                                {project.title}
-                            </h3>
-                        </div>
-                    </div>
-                    ))}
+        {/* Projects */}
+        <div className="relative flex flex-col gap-[30vh]">
+          {Projects.map((project, i) => (
+            <div
+              key={project.id}
+              ref={(el) => {
+                if (el) cardsRef.current[i] = el;
+              }}
+              className="relative mx-auto w-[90vw] max-w-6xl cursor-pointer"
+              onClick={() => {
+                setActiveProject(project);
+                setOpen(true);
+              }}
+            >
+              <div className="group relative aspect-[16/9] overflow-hidden rounded-2xl shadow-[0_40px_120px_-20px_rgba(0,0,0,0.6)]">
+                <Image
+                  src={project.imageUrl}
+                  alt={project.title ?? "Project"}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  sizes="(min-width: 1024px) 960px, 90vw"
+                />
+
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+
+                {/* Title */}
+                <div className="absolute bottom-0 left-0 p-8">
+                  <h3 className="font-headline text-4xl font-bold text-white">
+                    {project.title}
+                  </h3>
+                  <p className="mt-2 max-w-md text-sm text-white/70">
+                    {project.subtitle}
+                  </p>
                 </div>
+              </div>
             </div>
+          ))}
         </div>
       </section>
 
-      <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <DialogContent className="max-w-3xl bg-background/90 backdrop-blur-md">
-            {activeProject && (
-            <div className="space-y-6 text-center">
-                <div className="relative aspect-video w-full overflow-hidden rounded-lg">
+      {/* Modal */}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-4xl overflow-hidden bg-background/95 backdrop-blur-xl">
+          {activeProject && (
+            <div className="space-y-6">
+              <div className="relative aspect-video overflow-hidden rounded-xl">
                 <Image
-                    src={activeProject.imageUrl}
-                    alt={activeProject.title || 'Project image'}
-                    fill
-                    className="object-cover"
-                    sizes="(min-width: 768px) 720px, 100vw"
+                  src={activeProject.imageUrl}
+                  alt={activeProject.title ?? ""}
+                  fill
+                  className="object-cover"
                 />
-                </div>
+              </div>
 
-                <h2 className="font-headline text-4xl font-bold">
+              <h2 className="font-headline text-4xl font-bold">
                 {activeProject.title}
-                </h2>
+              </h2>
 
-                <p className="text-lg text-muted-foreground">
+              <p className="text-muted-foreground text-lg">
                 {activeProject.description}
-                </p>
+              </p>
 
-                {activeProject.testimonial && (
-                <blockquote className="border-l-4 border-primary pl-6 text-left">
-                    <p className="text-xl italic">
-                    "{activeProject.testimonial}"
-                    </p>
-                    <footer className="mt-2 font-semibold text-primary">
+              {activeProject.testimonial && (
+                <blockquote className="border-l-4 border-primary pl-6 italic">
+                  “{activeProject.testimonial}”
+                  <footer className="mt-2 font-semibold">
                     — {activeProject.client}
-                    </footer>
+                  </footer>
                 </blockquote>
-                )}
+              )}
             </div>
-            )}
+          )}
         </DialogContent>
       </Dialog>
     </>
