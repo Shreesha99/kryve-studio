@@ -12,8 +12,6 @@ import { Check, X, Send, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AnimateOnScroll } from "../common/animate-on-scroll";
 
-gsap.registerPlugin(MotionPathPlugin);
-
 function SubmitButton({ status }: { status: "idle" | "success" | "error" }) {
   const { pending } = useFormStatus();
 
@@ -52,140 +50,151 @@ function SubmitButton({ status }: { status: "idle" | "success" | "error" }) {
 }
 
 export function Contact() {
-  const initialState: ContactFormState = { success: false, message: "" };
+  const initialState: ContactFormState = {
+    success: false,
+    message: "",
+    errors: {},
+  };
   const [state, formAction] = useFormState(sendEmail, initialState);
   const formRef = useRef<HTMLFormElement>(null);
-
+  const containerRef = useRef<HTMLElement>(null);
   const planeRef = useRef<SVGGElement>(null);
-  const motionPathRef = useRef<SVGPathElement>(null);
-  const trailPathRef = useRef<SVGPathElement>(null);
 
   const [submitStatus, setSubmitStatus] = useState<
     "idle" | "success" | "error"
   >("idle");
 
-  // ✈️ CORRECT plane motion
   useEffect(() => {
+    gsap.registerPlugin(MotionPathPlugin);
     const plane = planeRef.current;
-    const motionPath = motionPathRef.current;
-    const trailPath = trailPathRef.current;
+    const container = container.current;
+    if (!plane || !container) return;
 
-    if (!plane || !motionPath || !trailPath) return;
+    let isCancelled = false;
+    let currentTl: gsap.core.Timeline | null = null;
 
-    const length = motionPath.getTotalLength();
+    const fly = () => {
+      if (isCancelled) return;
 
-    // trail hidden
-    gsap.set(trailPath, {
-      strokeDasharray: length,
-      strokeDashoffset: length,
-      opacity: 0.6,
-    });
+      const bounds = container.getBoundingClientRect();
+      const x = gsap.utils.random(0, bounds.width);
+      const y = gsap.utils.random(0, bounds.height);
 
-    // plane setup
-    gsap.set(plane, {
-      scale: 1.8,
-      transformOrigin: "50% 50%",
-    });
+      const currentPos = gsap.getProperty(plane, ["x", "y"]) as [number, number];
 
-    const proxy = { progress: 0 };
+      const path = [
+        { x: currentPos[0], y: currentPos[1] },
+        { x: x, y: y },
+      ];
 
-    gsap.to(proxy, {
-      progress: 1,
-      duration: 10,
-      repeat: -1,
-      ease: "none",
-      onUpdate: () => {
-        const p = proxy.progress;
+      const trail = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "path"
+      );
+      trail.setAttribute("class", "paper-trail");
+      trail.setAttribute(
+        "d",
+        `M ${path[0].x} ${path[0].y} L ${path[1].x} ${path[1].y}`
+      );
+      container.querySelector("svg")?.prepend(trail);
 
-        // position
-        const point = motionPath.getPointAtLength(p * length);
-        const next = motionPath.getPointAtLength(
-          Math.min(p * length + 1, length)
+      const trailLength = trail.getTotalLength();
+      gsap.set(trail, {
+        strokeDasharray: trailLength,
+        strokeDashoffset: trailLength,
+        opacity: 1,
+      });
+
+      currentTl = gsap.timeline({
+        onComplete: fly,
+      });
+
+      currentTl
+        .to(plane, {
+          motionPath: {
+            path: path,
+            align: "relative",
+            autoRotate: true,
+            alignOrigin: [0.5, 0.5],
+          },
+          duration: gsap.utils.random(3, 5),
+          ease: "power2.inOut",
+        })
+        .to(
+          trail,
+          {
+            strokeDashoffset: 0,
+            duration: currentTl.duration() * 0.7,
+            ease: "power1.out",
+          },
+          "<"
+        )
+        .to(
+          trail,
+          {
+            opacity: 0,
+            duration: 1.5,
+            onComplete: () => trail.remove(),
+          },
+          ">-1"
         );
+    };
 
-        // rotation from tangent
-        const angle =
-          Math.atan2(next.y - point.y, next.x - point.x) * (180 / Math.PI);
-
-        gsap.set(plane, {
-          x: point.x,
-          y: point.y,
-          rotation: angle + 45,
-        });
-
-        // reveal trail BEHIND plane
-        gsap.set(trailPath, {
-          strokeDashoffset: length - p * length,
-        });
-      },
+    const initialBounds = container.getBoundingClientRect();
+    gsap.set(plane, {
+      x: initialBounds.width / 2,
+      y: initialBounds.height / 2,
     });
+
+    fly();
 
     return () => {
-      gsap.killTweensOf(proxy);
+      isCancelled = true;
+      if (currentTl) {
+        currentTl.kill();
+      }
+      gsap.killTweensOf(plane);
+      container.querySelectorAll('.paper-trail').forEach(el => el.remove());
     };
   }, []);
 
-  // form state
   useEffect(() => {
-    if (!state.message) return;
+    if (state.message || state.errors) {
+      if (state.success) {
+        setSubmitStatus("success");
+        formRef.current?.reset();
+      } else {
+        setSubmitStatus("error");
+      }
 
-    if (state.success) {
-      setSubmitStatus("success");
-      formRef.current?.reset();
-    } else if (!state.errors) {
-      setSubmitStatus("error");
+      const timer = setTimeout(() => {
+        setSubmitStatus("idle");
+      }, 5000);
+
+      return () => clearTimeout(timer);
     }
-
-    const timer = setTimeout(() => setSubmitStatus("idle"), 4000);
-    return () => clearTimeout(timer);
   }, [state]);
 
   return (
     <section
       id="contact"
+      ref={containerRef}
       className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-background py-24 md:py-32"
     >
-      {/* Background animation */}
-      <svg
-        viewBox="0 0 1200 800"
-        className="pointer-events-none absolute inset-0 z-0 h-full w-full opacity-20"
-      >
-        {/* invisible motion path */}
-        <path
-          ref={motionPathRef}
-          d="
-            M -200 400
-            C 200 200, 500 200, 700 400
-            S 1000 600, 1200 300
-            C 1400 100, 1600 500, 1800 400
-          "
-          fill="none"
-          stroke="none"
-        />
-
-        {/* visible trail */}
-        <path
-          ref={trailPathRef}
-          d="
-            M -200 400
-            C 200 200, 500 200, 700 400
-            S 1000 600, 1200 300
-            C 1400 100, 1600 500, 1800 400
-          "
-          fill="none"
-          stroke="hsl(var(--primary))"
-          strokeWidth="3"
-        />
-
-        {/* plane */}
+      <style jsx>{`
+        .paper-trail {
+          stroke: hsl(var(--primary));
+          stroke-width: 2;
+          stroke-dasharray: 5 10;
+          fill: none;
+        }
+      `}</style>
+      <svg className="pointer-events-none absolute inset-0 z-0 h-full w-full opacity-30">
         <g ref={planeRef}>
-          <foreignObject x="-14" y="-14" width="28" height="28">
-            <Send className="h-7 w-7 text-primary" strokeWidth={2} />
-          </foreignObject>
+          <Send className="h-7 w-7 text-primary" strokeWidth={1} />
         </g>
       </svg>
 
-      {/* content */}
       <div className="container relative z-10 mx-auto px-4 md:px-6">
         <div className="mx-auto max-w-3xl text-center">
           <AnimateOnScroll>
@@ -202,24 +211,55 @@ export function Contact() {
 
         <AnimateOnScroll delay="300ms" className="mx-auto mt-12 max-w-xl">
           <div className="rounded-xl border bg-card/50 p-6 shadow-2xl backdrop-blur-sm sm:p-8">
-            <form ref={formRef} action={formAction} className="space-y-6">
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <Input name="name" placeholder="Your Name" required />
-                <Input
-                  name="email"
-                  type="email"
-                  placeholder="Your Email"
-                  required
-                />
-              </div>
-              <Textarea
-                name="message"
-                placeholder="Your Message"
-                rows={5}
-                required
-              />
-              <div className="text-center">
-                <SubmitButton status={submitStatus} />
+            <form ref={formRef} action={formAction} className="space-y-4">
+              {!state.success && state.message && (
+                <div
+                  className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-center text-sm text-destructive"
+                  role="alert"
+                >
+                  {state.message}
+                </div>
+              )}
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                  <div className="space-y-1">
+                    <Input name="name" placeholder="Your Name" required />
+                    {state.errors?.name && (
+                      <p className="text-xs text-destructive">
+                        {state.errors.name[0]}
+                      </p>
+                    )}
+                  </div>
+                  <div className="space-y-1">
+                    <Input
+                      name="email"
+                      type="email"
+                      placeholder="Your Email"
+                      required
+                    />
+                    {state.errors?.email && (
+                      <p className="text-xs text-destructive">
+                        {state.errors.email[0]}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Textarea
+                    name="message"
+                    placeholder="Your Message"
+                    rows={5}
+                    required
+                  />
+                  {state.errors?.message && (
+                    <p className="text-xs text-destructive">
+                      {state.errors.message[0]}
+                    </p>
+                  )}
+                </div>
+                <div className="text-center">
+                  <SubmitButton status={submitStatus} />
+                </div>
               </div>
             </form>
           </div>

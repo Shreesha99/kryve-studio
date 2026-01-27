@@ -56,6 +56,10 @@ export function Hero() {
         },
         '-=1.0'
       );
+
+    return () => {
+      tl.kill();
+    };
   }, []);
 
   return (
