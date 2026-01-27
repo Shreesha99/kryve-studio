@@ -256,7 +256,7 @@ export function Work() {
               {activeProject.testimonial && (
                  <blockquote className="border-l-4 border-primary pl-6">
                  <p className="text-xl italic">
-                   "{active.testimonial}"
+                   "{activeProject.testimonial}"
                  </p>
                  <footer className="mt-2 text-base font-semibold text-primary">
                    — {activeProject.client}
