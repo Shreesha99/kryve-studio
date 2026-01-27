@@ -18,11 +18,17 @@ export type GenerateBlogPostInput = z.infer<typeof GenerateBlogPostInputSchema>;
 
 const GenerateBlogPostOutputSchema = z.object({
   title: z.string().describe('The title of the blog post.'),
-  content: z.string().describe('The content of the blog post.'),
+  content: z
+    .string()
+    .describe(
+      'The content of the blog post, formatted as a single string of HTML paragraphs. For example: <p>First paragraph.</p><p>Second paragraph.</p>'
+    ),
 });
 export type GenerateBlogPostOutput = z.infer<typeof GenerateBlogPostOutputSchema>;
 
-export async function generateBlogPost(input: GenerateBlogPostInput): Promise<GenerateBlogPostOutput> {
+export async function generateBlogPost(
+  input: GenerateBlogPostInput
+): Promise<GenerateBlogPostOutput> {
   return generateBlogPostFlow(input);
 }
 
@@ -30,7 +36,13 @@ const prompt = ai.definePrompt({
   name: 'generateBlogPostPrompt',
   input: {schema: GenerateBlogPostInputSchema},
   output: {schema: GenerateBlogPostOutputSchema},
-  prompt: `You are an expert blog post writer specializing in company news. Write a blog post about the following topic:\n\nTopic: {{{topic}}}`,
+  prompt: `You are an expert blog post writer specializing in company news. Write a comprehensive blog post about the following topic.
+
+The content should be multiple paragraphs long and formatted as a single string of HTML paragraphs.
+
+Topic: {{{topic}}}
+
+Respond with a JSON object that conforms to the output schema. Do not include any markdown like \`\`\`json.`,
 });
 
 const generateBlogPostFlow = ai.defineFlow(

@@ -110,13 +110,9 @@ export function BlogGenerator() {
         <article className="mx-auto mt-12 max-w-none rounded-lg border bg-card p-8 text-card-foreground shadow-sm">
           <h3 className="font-headline text-3xl mb-4">{generatedPost.title}</h3>
           <div
-            className="space-y-4 text-muted-foreground"
+            className="prose prose-lg dark:prose-invert mx-auto max-w-none [&_p]:mb-4 [&_p]:text-lg [&_p]:leading-relaxed"
             dangerouslySetInnerHTML={{
-              __html: generatedPost.content
-                .split('\n')
-                .filter((p) => p.trim())
-                .map((p) => `<p>${p}</p>`)
-                .join(''),
+              __html: generatedPost.content,
             }}
           />
         </article>
