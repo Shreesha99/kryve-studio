@@ -48,16 +48,14 @@ export function Work() {
       mainSt.current = mainTl.current.scrollTrigger;
 
       panels.forEach((panel, i) => {
+        mainTl.current!.addLabel(`project${i}`);
         if (i > 0) {
-          mainTl.current!.from(panel, { autoAlpha: 0 }, `project${i}`);
+          mainTl.current!.from(panel, { autoAlpha: 0 });
         }
         if (i < panels.length - 1) {
-          mainTl.current!.to(
-            panel,
-            { autoAlpha: 0 },
-            `project${i}-end`
-          );
+          mainTl.current!.to(panel, { autoAlpha: 0 });
         }
+        mainTl.current!.addLabel(`project${i}-end`);
       });
     }, sectionRef);
 
@@ -86,11 +84,14 @@ export function Work() {
 
       const openTl = gsap.timeline({
         onComplete: () => {
-          detailSt.current = ScrollTrigger.create({
-            trigger: 'body',
-            start: 'top top-=1',
-            once: true,
-            onEnter: () => setIsDetailOpen(false),
+          // Add a small delay to avoid scroll momentum from instantly closing the overlay
+          gsap.delayedCall(0.1, () => {
+            detailSt.current = ScrollTrigger.create({
+              trigger: 'body',
+              start: 'top top-=1', // Close on the slightest scroll down
+              once: true,
+              onEnter: () => setIsDetailOpen(false),
+            });
           });
         },
       });
@@ -119,23 +120,24 @@ export function Work() {
       const closeTl = gsap.timeline({
         onComplete: () => {
           gsap.set(detailViewRef.current, { display: 'none' });
-          const nextIndex = (detailViewIndex + 1) % Projects.length;
-          
-          if (mainTl.current && mainSt.current) {
-            const nextLabel = `project${nextIndex}`;
-            const endTime = mainTl.current.labels[`project${nextIndex}-end`] ?? mainTl.current.duration();
-            const targetTime = (mainTl.current.labels[nextLabel] + endTime) / 2;
 
+          if (mainSt.current && detailViewIndex !== null) {
+            const nextIndex = (detailViewIndex + 1) % Projects.length;
+            const targetScroll = mainSt.current.labelToScroll(`project${nextIndex}`);
+
+            // Scroll to the next project, then re-enable the main scroll trigger
             gsap.to(window, {
-              scrollTo: mainSt.current.start + (targetTime / mainTl.current.duration()) * (mainSt.current.end - mainSt.current.start),
-              duration: 0.8,
+              duration: 1,
+              scrollTo: targetScroll,
               ease: 'power3.inOut',
               onComplete: () => {
-                 mainSt.current?.enable();
-              }
+                mainSt.current?.enable();
+                // It's good practice to refresh ScrollTrigger after animations and enabling
+                ScrollTrigger.refresh();
+              },
             });
           } else {
-             mainSt.current?.enable();
+            mainSt.current?.enable();
           }
 
           setActiveProject(null);
@@ -207,6 +209,7 @@ export function Work() {
                     className="object-cover"
                     data-ai-hint={project.imageHint}
                     priority={i === 0}
+                    sizes="100vw"
                   />
                   <div className="absolute inset-0 bg-black/40" />
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -228,7 +231,7 @@ export function Work() {
       {/* Detail View */}
       <div
         ref={detailViewRef}
-        className="fixed inset-0 z-50 hidden overflow-hidden"
+        className="fixed inset-0 z-[60] hidden overflow-hidden"
       >
         <div
           ref={detailTopPaneRef}
@@ -253,7 +256,7 @@ export function Work() {
               {activeProject.testimonial && (
                  <blockquote className="border-l-4 border-primary pl-6">
                  <p className="text-xl italic">
-                   "{activeProject.testimonial}"
+                   "{active.testimonial}"
                  </p>
                  <footer className="mt-2 text-base font-semibold text-primary">
                    — {activeProject.client}
