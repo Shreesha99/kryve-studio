@@ -1,49 +1,62 @@
 'use client';
 
 import Image from 'next/image';
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
-import { Projects } from '@/lib/placeholder-images';
+import { Projects, type ImagePlaceholder } from '@/lib/placeholder-images';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { cn } from '@/lib/utils';
-import { ArrowUpRight } from 'lucide-react';
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { AnimateOnScroll } from '@/components/common/animate-on-scroll';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const AUTOPLAY_DURATION = 5; // seconds
+function ProjectCard({
+  project,
+  index,
+}: {
+  project: ImagePlaceholder;
+  index: number;
+}) {
+  return (
+    <AnimateOnScroll delay={`${index * 150}ms`} className="group">
+      <Card className="flex h-full flex-col overflow-hidden transition-all hover:shadow-xl">
+        <CardHeader className="p-0">
+          <div className="aspect-video w-full overflow-hidden">
+            <Image
+              src={project.imageUrl}
+              alt={project.title || 'Project image'}
+              width={800}
+              height={600}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              data-ai-hint={project.imageHint}
+            />
+          </div>
+        </CardHeader>
+        <CardContent className="flex-grow p-6">
+          <CardTitle className="font-headline text-2xl">
+            {project.title}
+          </CardTitle>
+          <CardDescription className="mt-2 text-base">
+            {project.description}
+          </CardDescription>
+        </CardContent>
+      </Card>
+    </AnimateOnScroll>
+  );
+}
 
 export function Work() {
-  const projects = Projects;
   const sectionRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const paragraphRef = useRef<HTMLParagraphElement>(null);
-  const imageContainerRef = useRef<HTMLDivElement>(null);
-  const listRef = useRef<HTMLUListElement>(null);
 
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [selectedProject, setSelectedProject] =
-    useState<(typeof projects)[0] | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isHovering, setIsHovering] = useState(false);
-
-  const autoplayTl = useRef<gsap.core.Timeline | null>(null);
-  const imageAnimation = useRef<gsap.core.Tween | null>(null);
-
-  // Animate the section title and paragraph on scroll
   useEffect(() => {
-    const section = sectionRef.current;
-    const title = titleRef.current;
-    const paragraph = paragraphRef.current;
-
-    if (!section || !title || !paragraph) return;
-
     const contentTl = gsap.timeline({
       scrollTrigger: {
         trigger: sectionRef.current,
@@ -71,138 +84,8 @@ export function Work() {
 
     return () => {
       contentTl.kill();
-      // Use the variables captured at the start of the effect for safe cleanup
-      if (title) gsap.getTweensOf(title).forEach((t) => t.kill());
-      if (paragraph) gsap.getTweensOf(paragraph).forEach((t) => t.kill());
     };
   }, []);
-
-  // Handle image and title animations when activeIndex changes
-  useEffect(() => {
-    if (!listRef.current || !imageContainerRef.current) return;
-
-    const allImages = gsap.utils.toArray<HTMLDivElement>(
-      '.project-image',
-      imageContainerRef.current
-    );
-    const allListItems = gsap.utils.toArray<HTMLLIElement>('li', listRef.current);
-    const allProgressBars = gsap.utils.toArray<HTMLDivElement>(
-      '.progress-bar-inner',
-      listRef.current
-    );
-
-    const activeImage = allImages[activeIndex];
-
-    // Kill previous animation to avoid conflicts
-    if (imageAnimation.current) {
-      imageAnimation.current.kill();
-    }
-
-    gsap.to(allImages, { opacity: 0, duration: 0.5, ease: 'power2.inOut' });
-    gsap.to(activeImage, { opacity: 1, duration: 0.5, ease: 'power2.inOut' });
-
-    // Ken Burns effect
-    if (activeImage) {
-      imageAnimation.current = gsap.fromTo(
-        activeImage.querySelector('img'),
-        { scale: 1.05, y: '2%' },
-        { scale: 1, y: '0%', duration: AUTOPLAY_DURATION + 2, ease: 'linear' }
-      );
-    }
-
-    // Update titles style
-    allListItems.forEach((listItem, index) => {
-      const title = listItem.querySelector('h3');
-      if (title) {
-        gsap.to(title, {
-          color:
-            index === activeIndex
-              ? 'hsl(var(--primary))'
-              : 'hsl(var(--muted-foreground))',
-          duration: 0.5,
-        });
-      }
-    });
-
-    // Reset and start progress bar for the active item
-    gsap.set(allProgressBars, { scaleX: 0 });
-    if (autoplayTl.current && !autoplayTl.current.paused()) {
-      gsap.to(allProgressBars[activeIndex], {
-        scaleX: 1,
-        duration: AUTOPLAY_DURATION,
-        ease: 'linear',
-      });
-    }
-  }, [activeIndex]);
-
-  // Handle autoplay logic
-  useEffect(() => {
-    if (isHovering || isDialogOpen) {
-      autoplayTl.current?.pause();
-      return;
-    }
-
-    autoplayTl.current = gsap.timeline({
-      onRepeat: () => {
-        const allProgressBars = gsap.utils.toArray<HTMLDivElement>(
-          '.progress-bar-inner',
-          listRef.current
-        );
-        gsap.set(allProgressBars, { scaleX: 0 }); // Reset all on loop
-      },
-      repeat: -1,
-    });
-
-    projects.forEach((_, index) => {
-      autoplayTl.current?.add(() => {
-        setActiveIndex(index);
-      }, `+=${AUTOPLAY_DURATION}`);
-    });
-
-    // Initial start
-    const allProgressBars = gsap.utils.toArray<HTMLDivElement>(
-      '.progress-bar-inner',
-      listRef.current
-    );
-    if (allProgressBars[activeIndex]) {
-      gsap.to(allProgressBars[activeIndex], {
-        scaleX: 1,
-        duration: AUTOPLAY_DURATION,
-        ease: 'linear',
-      });
-    }
-
-    return () => {
-      autoplayTl.current?.kill();
-    };
-  }, [isHovering, isDialogOpen, projects.length, activeIndex]);
-
-  const handleMouseEnter = (index: number) => {
-    setIsHovering(true);
-    setActiveIndex(index);
-    // Pause current progress bar animation
-    const allProgressBars = gsap.utils.toArray<HTMLDivElement>(
-      '.progress-bar-inner',
-      listRef.current
-    );
-    gsap.killTweensOf(allProgressBars);
-  };
-
-  const handleMouseLeave = () => {
-    setIsHovering(false);
-  };
-
-  const handleProjectClick = (project: (typeof projects)[0]) => {
-    setSelectedProject(project);
-    setIsDialogOpen(true);
-    setIsHovering(true); // Pauses autoplay
-  };
-
-  useEffect(() => {
-    if (!isDialogOpen) {
-      setIsHovering(false); // Resume autoplay when dialog closes
-    }
-  }, [isDialogOpen]);
 
   return (
     <section
@@ -229,86 +112,11 @@ export function Work() {
           </p>
         </div>
 
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <div
-            className="grid grid-cols-1 items-start gap-12 lg:grid-cols-2"
-            onMouseLeave={handleMouseLeave}
-          >
-            {/* Left: List of Projects */}
-            <ul ref={listRef} className="flex flex-col">
-              {projects.map((project, index) => (
-                <li
-                  key={project.id}
-                  className="group relative cursor-pointer border-t border-border last:border-b"
-                  onMouseEnter={() => handleMouseEnter(index)}
-                  onClick={() => handleProjectClick(project)}
-                >
-                  <div className="flex items-center justify-between p-8">
-                    <div className="flex items-baseline gap-4">
-                      <span className="font-mono text-sm text-muted-foreground">
-                        {String(index + 1).padStart(2, '0')}
-                      </span>
-                      <h3 className="font-headline text-3xl font-medium text-muted-foreground sm:text-4xl">
-                        {project.title}
-                      </h3>
-                    </div>
-                    <ArrowUpRight className="h-10 w-10 text-primary opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:rotate-45" />
-                  </div>
-                  <div className="progress-bar absolute bottom-0 left-0 h-px w-full bg-border/30">
-                    <div className="progress-bar-inner h-full w-full origin-left scale-x-0 bg-primary" />
-                  </div>
-                </li>
-              ))}
-            </ul>
-
-            {/* Right: Image Display */}
-            <div
-              ref={imageContainerRef}
-              className="sticky top-24 aspect-video w-full"
-            >
-              {projects.map((project, index) => (
-                <div
-                  key={project.id}
-                  className={cn(
-                    'project-image absolute inset-0 h-full w-full overflow-hidden rounded-lg opacity-0 shadow-xl'
-                  )}
-                  onClick={() => handleProjectClick(projects[activeIndex])}
-                >
-                  <Image
-                    src={project.imageUrl}
-                    alt={project.description}
-                    fill
-                    className="cursor-pointer object-cover"
-                    data-ai-hint={project.imageHint}
-                    priority={index === 0}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {selectedProject && (
-            <DialogContent className="max-h-[90vh] max-w-4xl p-0">
-              <div className="relative aspect-video w-full overflow-hidden">
-                <Image
-                  src={selectedProject.imageUrl}
-                  alt={selectedProject.title}
-                  fill
-                  className="object-cover"
-                  data-ai-hint={selectedProject.imageHint}
-                />
-              </div>
-              <DialogHeader className="p-6 text-left">
-                <DialogTitle className="font-headline text-4xl">
-                  {selectedProject.title}
-                </DialogTitle>
-                <DialogDescription className="pt-2 text-base text-muted-foreground">
-                  {selectedProject.description}
-                </DialogDescription>
-              </DialogHeader>
-            </DialogContent>
-          )}
-        </Dialog>
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12">
+          {Projects.map((project, index) => (
+            <ProjectCard key={project.id} project={project} index={index} />
+          ))}
+        </div>
       </div>
     </section>
   );
