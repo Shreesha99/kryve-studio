@@ -69,42 +69,33 @@ export function Contact() {
   const initialState: ContactFormState = { success: false, message: '' };
   const [state, formAction] = useFormState(sendEmail, initialState);
   const formRef = useRef<HTMLFormElement>(null);
-  const sectionRef = useRef<HTMLDivElement>(null);
   const planeRef = useRef<SVGPathElement>(null);
 
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   useEffect(() => {
     const plane = planeRef.current;
-    if (!plane || !sectionRef.current) return;
+    if (!plane) return;
 
-    const path = '#motion-path';
+    gsap.set(plane, { opacity: 1 });
 
     const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: 'top bottom',
-        end: 'bottom top',
-        scrub: 1.5,
-      },
+      repeat: -1,
       defaults: { ease: 'none' },
     });
 
     tl.to(plane, {
       motionPath: {
-        path: path,
-        align: path,
+        path: '#motion-path',
+        align: '#motion-path',
         alignOrigin: [0.5, 0.5],
         autoRotate: 90,
       },
-      duration: 10,
+      duration: 25,
     });
     
     return () => {
       tl.kill();
-      if(gsap.getTweensOf(plane).length > 0) {
-        gsap.killTweensOf(plane);
-      }
     }
   }, []);
 
@@ -130,7 +121,6 @@ export function Contact() {
   return (
     <section
       id="contact"
-      ref={sectionRef}
       className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-background py-24 md:py-32"
     >
       <svg
@@ -140,7 +130,7 @@ export function Contact() {
       >
         <path
           id="motion-path"
-          d="M-100 400 C 200 100, 1000 100, 1300 400 S 1000 700, 200 700, -100 400"
+          d="M-100 600 C 200 800, 400 400, 600 600 S 1000 800, 1300 600 V 200 C 1000 0, 800 400, 600 200 S 200 0, -100 200 Z"
           fill="none"
           stroke="hsl(var(--primary))"
           strokeWidth="1"
@@ -151,6 +141,7 @@ export function Contact() {
           d="M2.1,0.4L20.5,9.6c1.6,0.8,2.3,2.7,1.5,4.3c-0.8,1.6-2.7,2.3-4.3,1.5L-0.2,6.2C-1.8,5.4-2.5,3.5-1.7,1.9C-0.9,0.3,1, -0.4,2.1,0.4z M17.7-6.2L-0.7-15.4c-1.6-0.8-3.5-0.1-4.3,1.5s-0.1,3.5,1.5,4.3l18.4,9.2c1.6,0.8,3.5,0.1,4.3-1.5S19.3-5.4,17.7-6.2z"
           fill="hsl(var(--primary))"
           transform="scale(1.2)"
+          opacity="0"
         />
       </svg>
       <div className="container relative z-10 mx-auto px-4 md:px-6">
