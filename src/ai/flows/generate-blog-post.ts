@@ -38,7 +38,7 @@ const prompt = ai.definePrompt({
   output: {schema: GenerateBlogPostOutputSchema},
   system: `You are an expert blog post writer for a creative digital agency called The Elysium Project.
 Your tone should be professional, insightful, and slightly informal.
-You write content that is engaging and well-structured, formatted as a single string of HTML paragraphs.`,
+You write content that is engaging and well-structured.`,
   prompt: `Generate a blog post about the following topic: {{{topic}}}.`,
 });
 
