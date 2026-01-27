@@ -11,9 +11,12 @@ function NotFoundBackground() {
 
   useEffect(() => {
     if (!svgRef.current) return;
-    const shapes = gsap.utils.toArray<SVGPathElement>('.morph-shape', svgRef.current);
+    const groups = gsap.utils.toArray<SVGGElement>('.morph-group', svgRef.current);
     
-    shapes.forEach((shape, index) => {
+    groups.forEach((group, index) => {
+      const shape = group.querySelector('.morph-shape') as SVGPathElement;
+      if (!shape) return;
+
       const morphTarget = shape.getAttribute('data-morph-target');
       if (!morphTarget) return;
       
@@ -29,7 +32,8 @@ function NotFoundBackground() {
         ease: 'sine.inOut'
       });
       
-      gsap.to(shape, {
+      // Animate the group for position and rotation
+      gsap.to(group, {
         x: `random(-50, 50, true)`,
         y: `random(-50, 50, true)`,
         rotation: `random(-60, 60, true)`,
@@ -46,21 +50,23 @@ function NotFoundBackground() {
 
   return (
     <div className="pointer-events-none absolute inset-0 z-0 h-full w-full overflow-hidden opacity-5">
-      <svg ref={svgRef} width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
-        <path
-          className="morph-shape"
-          transform="translate(200 150) scale(1.5)"
-          fill="hsl(var(--primary))"
-          d="M107.4,22.6C128.2,43.4,128.2,77.4,107.4,98.2C86.6,119,52.6,119,31.8,98.2C11,77.4,11,43.4,31.8,22.6C52.6,1.8,86.6,1.8,107.4,22.6Z"
-          data-morph-target="M112.5,43.3C122.8,66.5,112.3,94,91.9,104.5C71.5,115,41.9,108.5,21.5,91.8C1.1,75.1,-9.4,48.5,10.9,31.8C31.3,15.1,61.9,8.5,82.3,18.8C102.7,29.1,102.1,19.9,112.5,43.3Z"
-        />
-        <path
-          className="morph-shape"
-          transform="translate(calc(100% - 200px), calc(100% - 150px)) scale(1.2)"
-          fill="hsl(var(--primary))"
-          d="M21,0 L79,0 L100,21 L100,79 L79,100 L21,100 L0,79 L0,21 Z"
-          data-morph-target="M36.3,4.3L82.6,21.8L93.3,71.2L50.8,95.7L5.7,76.5L2.8,26.8L36.3,4.3Z"
-        />
+      <svg ref={svgRef} width="100%" height="100%" preserveAspectRatio="xMidYMid slice" viewBox="0 0 800 600">
+        <g className="morph-group" transform="translate(200 150) scale(1.5)">
+          <path
+            className="morph-shape"
+            fill="hsl(var(--primary))"
+            d="M107.4,22.6C128.2,43.4,128.2,77.4,107.4,98.2C86.6,119,52.6,119,31.8,98.2C11,77.4,11,43.4,31.8,22.6C52.6,1.8,86.6,1.8,107.4,22.6Z"
+            data-morph-target="M112.5,43.3C122.8,66.5,112.3,94,91.9,104.5C71.5,115,41.9,108.5,21.5,91.8C1.1,75.1,-9.4,48.5,10.9,31.8C31.3,15.1,61.9,8.5,82.3,18.8C102.7,29.1,102.1,19.9,112.5,43.3Z"
+          />
+        </g>
+        <g className="morph-group" transform="translate(700 500) scale(1.2)">
+          <path
+            className="morph-shape"
+            fill="hsl(var(--primary))"
+            d="M21,0 L79,0 L100,21 L100,79 L79,100 L21,100 L0,79 L0,21 Z"
+            data-morph-target="M36.3,4.3L82.6,21.8L93.3,71.2L50.8,95.7L5.7,76.5L2.8,26.8L36.3,4.3Z"
+          />
+        </g>
       </svg>
     </div>
   );
@@ -77,23 +83,25 @@ export default function NotFound() {
       defaults: { ease: 'power3.out' },
     });
 
-    tl.fromTo(
-      titleRef.current,
-      { y: 50, opacity: 0, scale: 1.1 },
-      { y: 0, opacity: 1, scale: 1, duration: 1 }
-    )
-      .fromTo(
-        paragraphRef.current,
-        { y: 20, opacity: 0 },
-        { y: 0, opacity: 1, duration: 1 },
-        '-=0.7'
+    if (titleRef.current && paragraphRef.current && buttonRef.current) {
+      tl.fromTo(
+        titleRef.current,
+        { y: 50, opacity: 0, scale: 1.1 },
+        { y: 0, opacity: 1, scale: 1, duration: 1 }
       )
-      .fromTo(
-        buttonRef.current,
-        { y: 20, opacity: 0 },
-        { y: 0, opacity: 1, duration: 1 },
-        '-=0.7'
-      );
+        .fromTo(
+          paragraphRef.current,
+          { y: 20, opacity: 0 },
+          { y: 0, opacity: 1, duration: 1 },
+          '-=0.7'
+        )
+        .fromTo(
+          buttonRef.current,
+          { y: 20, opacity: 0 },
+          { y: 0, opacity: 1, duration: 1 },
+          '-=0.7'
+        );
+    }
   }, []);
 
   return (
