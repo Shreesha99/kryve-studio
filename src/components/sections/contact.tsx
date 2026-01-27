@@ -109,20 +109,17 @@ export function Contact() {
   }, []);
 
   useEffect(() => {
-    // Don't do anything if there's no message (initial state)
     if (!state.message) return;
 
     if (state.success) {
       setSubmitStatus('success');
       formRef.current?.reset();
     } else {
-      // Only show button error for non-validation errors
       if (!state.errors) {
         setSubmitStatus('error');
       }
     }
     
-    // If there was any kind of submission, reset the button state after a delay
     const timer = setTimeout(() => {
       setSubmitStatus('idle');
     }, 4000);
@@ -138,7 +135,7 @@ export function Contact() {
     >
       <svg
         viewBox="0 0 1200 800"
-        className="pointer-events-none absolute inset-0 z-0 h-full w-full opacity-10 dark:opacity-5"
+        className="pointer-events-none absolute inset-0 z-0 h-full w-full opacity-30 dark:opacity-20"
         preserveAspectRatio="xMidYMid slice"
       >
         <path
@@ -158,23 +155,23 @@ export function Contact() {
       </svg>
       <div className="container relative z-10 mx-auto px-4 md:px-6">
         <div className="mx-auto max-w-3xl text-center">
-          <h2
-            className="font-headline text-4xl font-semibold tracking-tight sm:text-5xl"
-          >
-            <div className="overflow-hidden py-1">
-              <span className="inline-block">
-                Let's build something great together.
-              </span>
-            </div>
-          </h2>
-          <p
-            className="mt-4 text-lg text-muted-foreground"
-          >
-            Have a project in mind or just want to say hello? Drop us a line.
-          </p>
+          <AnimateOnScroll>
+            <h2
+              className="font-headline text-4xl font-semibold tracking-tight sm:text-5xl"
+            >
+              Let's build something great together.
+            </h2>
+          </AnimateOnScroll>
+          <AnimateOnScroll delay="150ms">
+            <p
+              className="mt-4 text-lg text-muted-foreground"
+            >
+              Have a project in mind or just want to say hello? Drop us a line.
+            </p>
+          </AnimateOnScroll>
         </div>
 
-        <AnimateOnScroll delay="200ms" className="mx-auto mt-12 max-w-xl">
+        <AnimateOnScroll delay="300ms" className="mx-auto mt-12 max-w-xl">
           <div className="rounded-xl border bg-card/50 p-6 shadow-2xl backdrop-blur-sm sm:p-8">
             <form ref={formRef} action={formAction} className="space-y-6">
               {state.message && !state.success && !state.errors && (
