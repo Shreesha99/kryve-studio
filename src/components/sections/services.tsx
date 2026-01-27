@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
-import { TextPlugin } from 'gsap/dist/TextPlugin';
-import { cn } from '@/lib/utils';
-import { InteractiveOrbs } from '@/components/common/interactive-orbs';
+import { useState, useEffect, useRef, useCallback } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
+import { TextPlugin } from "gsap/dist/TextPlugin";
+import { cn } from "@/lib/utils";
+import { InteractiveOrbs } from "@/components/common/interactive-orbs";
 
 gsap.registerPlugin(TextPlugin, ScrollTrigger);
 
 const services = [
   {
-    id: 'design',
-    title: 'Visual Craft',
+    id: "design",
+    title: "Visual Craft",
     description:
-      'We forge digital identities. Our design philosophy merges aesthetic intuition with data-driven strategy to build interfaces that are not only beautiful but deeply functional and unforgettable.',
+      "We forge digital identities. Our design philosophy merges aesthetic intuition with data-driven strategy to build interfaces that are not only beautiful but deeply functional and unforgettable.",
     svg: (
       <>
         <path
@@ -33,10 +33,10 @@ const services = [
     ),
   },
   {
-    id: 'development',
-    title: 'Code Artistry',
+    id: "development",
+    title: "Code Artistry",
     description:
-      'Our code is clean, efficient, and built to last. We use cutting-edge technologies to engineer robust, scalable, and lightning-fast web experiences that perform flawlessly under pressure.',
+      "Our code is clean, efficient, and built to last. We use cutting-edge technologies to engineer robust, scalable, and lightning-fast web experiences that perform flawlessly under pressure.",
     svg: (
       <>
         <path className="bracket" d="M220 50 L180 100 L220 150" />
@@ -55,10 +55,10 @@ const services = [
     ),
   },
   {
-    id: 'branding',
-    title: 'Identity & Strategy',
+    id: "branding",
+    title: "Identity & Strategy",
     description:
-      'A brand is a story, a feeling, a promise. We help you define and articulate your unique identity, creating a cohesive brand world that resonates with your audience and stands the test of time.',
+      "A brand is a story, a feeling, a promise. We help you define and articulate your unique identity, creating a cohesive brand world that resonates with your audience and stands the test of time.",
     svg: (
       <>
         <g className="target-group">
@@ -87,12 +87,12 @@ const services = [
     ),
   },
   {
-    id: 'ecommerce',
-    title: 'Commerce Platforms',
+    id: "ecommerce",
+    title: "Commerce Platforms",
     description:
-      'We build powerful e-commerce engines designed for growth. From seamless user journeys to secure payment gateways, we create online stores that convert visitors into loyal customers.',
+      "We build powerful e-commerce engines designed for growth. From seamless user journeys to secure payment gateways, we create online stores that convert visitors into loyal customers.",
     svg: (
-      <g className="cart-group" transform="translate(30 0) scale(1.2)">
+      <g className="cart-group" transform="translate(20 0) scale(1)">
         <g className="speed-lines-group" transform="translateX(-40)">
           <path className="speed-line" d="M150 80 L 180 80" opacity="0" />
           <path className="speed-line" d="M140 100 L 190 100" opacity="0" />
@@ -127,7 +127,7 @@ export function Services() {
   const resumeTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
     setIsTouchDevice(isTouch);
   }, []);
 
@@ -135,17 +135,17 @@ export function Services() {
     const contentTl = gsap.timeline({
       scrollTrigger: {
         trigger: sectionRef.current,
-        start: 'top 70%',
-        toggleActions: 'play none none none',
+        start: "top 70%",
+        toggleActions: "play none none none",
       },
     });
 
     if (titleRef.current) {
-      const titleSpans = gsap.utils.toArray('span', titleRef.current);
+      const titleSpans = gsap.utils.toArray("span", titleRef.current);
       contentTl.fromTo(
         titleSpans,
         { yPercent: 120 },
-        { yPercent: 0, stagger: 0.1, duration: 1.2, ease: 'power3.out' }
+        { yPercent: 0, stagger: 0.1, duration: 1.2, ease: "power3.out" }
       );
     }
     return () => {
@@ -157,10 +157,10 @@ export function Services() {
   const runAutoplay = useCallback((index: number) => {
     progressTl.current?.kill();
     const progressBars = gsap.utils.toArray<HTMLDivElement>(
-      '.progress-bar-fill',
+      ".progress-bar-fill",
       sectionRef.current
     );
-    gsap.set(progressBars, { scaleY: 0, transformOrigin: 'bottom' });
+    gsap.set(progressBars, { scaleY: 0, transformOrigin: "bottom" });
 
     progressTl.current = gsap
       .timeline({
@@ -172,26 +172,26 @@ export function Services() {
       .to(progressBars[index], {
         scaleY: 1,
         duration: AUTOPLAY_DURATION,
-        ease: 'linear',
+        ease: "linear",
       });
   }, []);
 
   useEffect(() => {
     secondaryAnimation.current?.kill();
-    gsap.killTweensOf('.code-tag-text');
+    gsap.killTweensOf(".code-tag-text");
 
     if (!isHovering && !isTouchDevice) {
       runAutoplay(activeIndex);
     } else {
       progressTl.current?.pause();
     }
-    
+
     if (isTouchDevice && isHovering) {
-        if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
-        resumeTimerRef.current = setTimeout(() => {
-            setIsHovering(false);
-            runAutoplay(activeIndex);
-        }, 10000);
+      if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+      resumeTimerRef.current = setTimeout(() => {
+        setIsHovering(false);
+        runAutoplay(activeIndex);
+      }, 10000);
     }
 
     if (isHovering && resumeTimerRef.current) {
@@ -200,13 +200,13 @@ export function Services() {
 
     const ctx = gsap.context(() => {
       gsap.fromTo(
-        '.service-description',
+        ".service-description",
         { opacity: 0, y: 15 },
-        { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }
+        { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }
       );
 
       const allSvgs = gsap.utils.toArray<SVGSVGElement>(
-        'svg.service-svg',
+        "svg.service-svg",
         sectionRef.current
       );
       const activeSvg = allSvgs.find(
@@ -219,7 +219,7 @@ export function Services() {
         const mainDrawTl = gsap.timeline({
           onComplete: () => {
             secondaryAnimation.current?.kill();
-            gsap.killTweensOf('.code-tag-text');
+            gsap.killTweensOf(".code-tag-text");
             secondaryAnimation.current = gsap.timeline({
               repeat: -1,
               repeatDelay: 1,
@@ -227,7 +227,7 @@ export function Services() {
 
             const currentService = services[activeIndex];
 
-            if (currentService.id === 'design') {
+            if (currentService.id === "design") {
               const blinkTl = gsap.timeline({
                 repeat: 1,
                 yoyo: true,
@@ -235,69 +235,75 @@ export function Services() {
               });
               blinkTl.to(
                 [
-                  activeSvg.querySelector('.eye-outline'),
-                  activeSvg.querySelector('.pupil'),
+                  activeSvg.querySelector(".eye-outline"),
+                  activeSvg.querySelector(".pupil"),
                 ],
                 {
                   scaleY: 0.05,
                   duration: 0.1,
-                  transformOrigin: 'center',
-                  ease: 'power2.inOut',
+                  transformOrigin: "center",
+                  ease: "power2.inOut",
                 }
               );
-              secondaryAnimation.current.add(blinkTl, '+=1.0');
+              secondaryAnimation.current.add(blinkTl, "+=1.0");
             }
 
-            if (currentService.id === 'branding') {
-              const cracks = activeSvg.querySelector('.cracks');
+            if (currentService.id === "branding") {
+              const cracks = activeSvg.querySelector(".cracks");
               secondaryAnimation.current.fromTo(
                 cracks,
-                { autoAlpha: 0, scale: 0.5, transformOrigin: 'center center' },
+                { autoAlpha: 0, scale: 0.5, transformOrigin: "center center" },
                 {
                   autoAlpha: 1,
                   scale: 1,
                   duration: 0.3,
-                  ease: 'power2.out',
+                  ease: "power2.out",
                   delay: 0.2,
                 }
               );
             }
 
-            if (currentService.id === 'development') {
-                const textEl = activeSvg.querySelector('.code-tag-text');
-                if (textEl) {
-                    const tags = ['a', 'p', 'h1', 'div'];
-                    const textTl = gsap.timeline();
-            
-                    tags.forEach((tag) => {
-                    textTl
-                        .to(textEl, {
-                        autoAlpha: 0,
-                        duration: 0.3,
-                        ease: 'power1.in',
-                        onComplete: () => gsap.set(textEl, { text: tag })
-                        })
-                        .to(textEl, {
+            if (currentService.id === "development") {
+              const textEl = activeSvg.querySelector(".code-tag-text");
+              if (textEl) {
+                const tags = ["a", "p", "h1", "div"];
+                const textTl = gsap.timeline();
+
+                tags.forEach((tag) => {
+                  textTl
+                    .to(textEl, {
+                      autoAlpha: 0,
+                      duration: 0.3,
+                      ease: "power1.in",
+                      onComplete: () => {
+                        gsap.set(textEl, { text: tag });
+                      },
+                    })
+                    .to(
+                      textEl,
+                      {
                         autoAlpha: 1,
                         duration: 0.3,
-                        ease: 'power1.out',
-                        }, '+=1.2');
-                    });
-            
-                    secondaryAnimation.current.add(textTl, 0).repeat(-1);
-                    gsap.set(textEl, { text: tags[0], autoAlpha: 1 });
-                }
+                        ease: "power1.out",
+                      },
+                      "+=1.2"
+                    );
+                });
+
+                secondaryAnimation.current.add(textTl, 0).repeat(-1);
+                gsap.set(textEl, { text: tags[0], autoAlpha: 1 });
+              }
             }
 
-            if (currentService.id === 'ecommerce') {
-              const cartBody = activeSvg.querySelector('.cart-body-group');
-              const speedLines = activeSvg.querySelectorAll('.speed-line');
+            if (currentService.id === "ecommerce") {
+              const cartBody = activeSvg.querySelector(".cart-body-group");
+              const speedLines = activeSvg.querySelectorAll(".speed-line");
 
               const bounceTl = gsap.timeline({ repeat: -1, yoyo: true });
               bounceTl.to(cartBody, {
                 y: -3,
                 duration: 0.2,
-                ease: 'power1.inOut',
+                ease: "power1.inOut",
               });
 
               const speedLinesTl = gsap.timeline({ repeat: -1 });
@@ -308,7 +314,7 @@ export function Services() {
                   x: -30,
                   opacity: 0,
                   duration: 0.6,
-                  ease: 'power2.out',
+                  ease: "power2.out",
                   stagger: 0.15,
                 }
               );
@@ -324,7 +330,7 @@ export function Services() {
         );
 
         const paths = gsap.utils.toArray<SVGPathElement>(
-          '.bracket, .eye-outline, .cart-body',
+          ".bracket, .eye-outline, .cart-body",
           activeSvg
         );
         if (paths.length > 0) {
@@ -337,27 +343,27 @@ export function Services() {
             {
               strokeDashoffset: 0,
               duration: 1,
-              ease: 'power2.inOut',
+              ease: "power2.inOut",
               stagger: 0.2,
             },
-            '<'
+            "<"
           );
         }
         const circles = gsap.utils.toArray<SVGCircleElement>(
-          '.pupil, .strategy-circle, .cart-wheel',
+          ".pupil, .strategy-circle, .cart-wheel",
           activeSvg
         );
         if (circles.length > 0) {
           mainDrawTl.fromTo(
             circles,
-            { scale: 0, transformOrigin: 'center' },
+            { scale: 0, transformOrigin: "center" },
             {
               scale: 1,
               stagger: 0.15,
               duration: 0.8,
-              ease: 'elastic.out(1, 0.6)',
+              ease: "elastic.out(1, 0.6)",
             },
-            '<0.2'
+            "<0.2"
           );
         }
       }
@@ -437,25 +443,25 @@ export function Services() {
                   </div>
                   <div
                     className={cn(
-                      'group flex w-full cursor-pointer items-center justify-between py-8 pl-6 text-left transition-colors duration-300'
+                      "group flex w-full cursor-pointer items-center justify-between py-8 pl-6 text-left transition-colors duration-300"
                     )}
                   >
                     <h3
                       className={cn(
-                        'font-headline text-3xl font-medium sm:text-4xl transition-colors',
+                        "font-headline text-3xl font-medium sm:text-4xl transition-colors",
                         activeIndex === index
-                          ? 'text-primary'
-                          : 'text-foreground/60 group-hover:text-foreground'
+                          ? "text-primary"
+                          : "text-foreground/60 group-hover:text-foreground"
                       )}
                     >
                       {service.title}
                     </h3>
                     <span
                       className={cn(
-                        'material-symbols-outlined text-4xl text-primary transition-all duration-500 ease-in-out',
+                        "material-symbols-outlined text-4xl text-primary transition-all duration-500 ease-in-out",
                         activeIndex === index
-                          ? 'translate-x-0 opacity-100'
-                          : '-translate-x-4 opacity-0'
+                          ? "translate-x-0 opacity-100"
+                          : "-translate-x-4 opacity-0"
                       )}
                     >
                       arrow_right_alt

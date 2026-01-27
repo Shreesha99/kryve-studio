@@ -1,17 +1,27 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
+import { useEffect, useRef } from "react";
+import { gsap } from "gsap";
 
 export function CustomCursor() {
   const cursorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const cursor = cursorRef.current;
+
     if (!cursor) return;
 
+    const svg = cursor.querySelector("svg");
+    if (svg) {
+      gsap.set(svg, {
+        rotation: -45,
+        transformOrigin: "0% 0%",
+        transformBox: "fill-box",
+      });
+    }
+
     // Hide on touch devices
-    if (window.matchMedia('(pointer: coarse)').matches) {
+    if (window.matchMedia("(pointer: coarse)").matches) {
       gsap.set(cursor, { autoAlpha: 0 });
       return;
     }
@@ -21,7 +31,7 @@ export function CustomCursor() {
         x: e.clientX,
         y: e.clientY,
         duration: 0.1,
-        ease: 'power2.out',
+        ease: "power2.out",
       });
     };
 
@@ -37,7 +47,7 @@ export function CustomCursor() {
       gsap.to(cursor, {
         scale: 1.2,
         duration: 0.3,
-        ease: 'power3.out',
+        ease: "power3.out",
       });
     };
 
@@ -45,30 +55,30 @@ export function CustomCursor() {
       gsap.to(cursor, {
         scale: 1,
         duration: 0.3,
-        ease: 'power3.out',
+        ease: "power3.out",
       });
     };
 
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mousedown', onMouseDown);
-    window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mousedown", onMouseDown);
+    window.addEventListener("mouseup", onMouseUp);
 
     const interactiveElements = document.querySelectorAll(
       'a, button, [role="button"], input, textarea, select, .cursor-pointer'
     );
 
     interactiveElements.forEach((el) => {
-      el.addEventListener('mouseenter', onMouseEnterLink);
-      el.addEventListener('mouseleave', onMouseLeaveLink);
+      el.addEventListener("mouseenter", onMouseEnterLink);
+      el.addEventListener("mouseleave", onMouseLeaveLink);
     });
 
     return () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mousedown', onMouseDown);
-      window.removeEventListener('mouseup', onMouseUp);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mousedown", onMouseDown);
+      window.removeEventListener("mouseup", onMouseUp);
       interactiveElements.forEach((el) => {
-        el.removeEventListener('mouseenter', onMouseEnterLink);
-        el.removeEventListener('mouseleave', onMouseLeaveLink);
+        el.removeEventListener("mouseenter", onMouseEnterLink);
+        el.removeEventListener("mouseleave", onMouseLeaveLink);
       });
     };
   }, []);
@@ -79,7 +89,11 @@ export function CustomCursor() {
         width="24"
         height="24"
         viewBox="0 0 24 24"
-        style={{ transform: 'rotate(-45deg)' }}
+        style={{
+          transform: "rotate(-45deg)",
+          transformOrigin: "0 0",
+          transformBox: "fill-box",
+        }}
       >
         <path
           d="M0 0 L24 12 L13.5 13.5 L12 24 Z"

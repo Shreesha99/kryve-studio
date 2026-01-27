@@ -1,41 +1,41 @@
-import type { Metadata } from 'next';
-import './globals.css';
-import { AppProviders } from '@/components/common/app-providers';
-import { cn } from '@/lib/utils';
-import { ScrollToTop } from '@/components/common/scroll-to-top';
-import { CustomCursor } from '@/components/common/custom-cursor';
+import type { Metadata } from "next";
+import "./globals.css";
+import { AppProviders } from "@/components/common/app-providers";
+import { cn } from "@/lib/utils";
+import { ScrollToTop } from "@/components/common/scroll-to-top";
+import { CustomCursor } from "@/components/common/custom-cursor";
 
 export const metadata: Metadata = {
   title: {
-    default: 'Zenith Studio | Engineering Elegance. Designing Impact.',
-    template: '%s | Zenith Studio',
+    default: "Zenith Studio | Engineering Elegance. Designing Impact.",
+    template: "%s | Zenith Studio",
   },
   description:
-    'A premium digital studio that blends visionary design with precision engineering to create web experiences that are beautiful, brilliant, and drive results.',
-  metadataBase: new URL('https://zenith-studio.example.com'),
+    "A premium digital studio that blends visionary design with precision engineering to create web experiences that are beautiful, brilliant, and drive results.",
+  metadataBase: new URL("https://zenith-studio.example.com"),
   openGraph: {
-    title: 'Zenith Studio',
+    title: "Zenith Studio",
     description:
-      'A premium digital studio that blends visionary design with precision engineering to create web experiences that are beautiful and brilliant.',
-    url: 'https://zenith-studio.example.com',
-    siteName: 'Zenith Studio',
+      "A premium digital studio that blends visionary design with precision engineering to create web experiences that are beautiful and brilliant.",
+    url: "https://zenith-studio.example.com",
+    siteName: "Zenith Studio",
     images: [
       {
-        url: 'https://picsum.photos/seed/zenith-og/1200/630',
+        url: "https://picsum.photos/seed/zenith-og/1200/630",
         width: 1200,
         height: 630,
-        alt: 'Zenith Studio Hero Image',
+        alt: "Zenith Studio Hero Image",
       },
     ],
-    locale: 'en_US',
-    type: 'website',
+    locale: "en_US",
+    type: "website",
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'Zenith Studio',
+    card: "summary_large_image",
+    title: "Zenith Studio",
     description:
-      'A premium digital studio that blends visionary design with precision engineering to create web experiences that are beautiful and brilliant.',
-    images: ['https://picsum.photos/seed/zenith-og/1200/630'],
+      "A premium digital studio that blends visionary design with precision engineering to create web experiences that are beautiful and brilliant.",
+    images: ["https://picsum.photos/seed/zenith-og/1200/630"],
   },
   robots: {
     index: true,
@@ -43,13 +43,13 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
     },
   },
   icons: {
-    icon: '/favicon.ico',
+    icon: "/favicon.ico",
   },
 };
 
@@ -80,9 +80,9 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
         />
       </head>
-      <body className={cn('font-body antialiased')}>
+      <body className={cn("font-body antialiased")}>
         <AppProviders>
-          <CustomCursor />
+          {/* <CustomCursor /> */}
           {children}
           <ScrollToTop />
         </AppProviders>
