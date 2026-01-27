@@ -1,50 +1,42 @@
 'use client';
 
 import Image from 'next/image';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
-import Autoplay from 'embla-carousel-autoplay';
 import { Projects } from '@/lib/placeholder-images';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselPrevious,
-  CarouselNext,
-  type CarouselApi,
-} from '@/components/ui/carousel';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
+import { cn } from '@/lib/utils';
+import { ArrowUpRight } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const AUTOPLAY_DURATION = 5000;
+const AUTOPLAY_DURATION = 5; // seconds
 
 export function Work() {
   const projects = Projects;
   const sectionRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const paragraphRef = useRef<HTMLParagraphElement>(null);
-  const progressRingRef = useRef<SVGCircleElement>(null);
-  const progressTween = useRef<gsap.core.Tween | null>(null);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
 
-  const [api, setApi] = useState<CarouselApi>();
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [selectedProject, setSelectedProject] = useState<(typeof projects)[0] | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [selectedProject, setSelectedProject] =
+    useState<(typeof projects)[0] | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
 
-  const autoplayPlugin = useRef(
-    Autoplay({ delay: AUTOPLAY_DURATION, stopOnInteraction: false, stopOnMouseEnter: true })
-  );
+  const autoplayTl = useRef<gsap.core.Timeline | null>(null);
+  const imageAnimation = useRef<gsap.core.Tween | null>(null);
 
-  // Animate the section title and paragraph
+  // Animate the section title and paragraph on scroll
   useEffect(() => {
     const contentTl = gsap.timeline({
       scrollTrigger: {
@@ -73,137 +65,215 @@ export function Work() {
 
     return () => {
       contentTl.kill();
-      ScrollTrigger.getAll().forEach((t) => t.kill());
+      ScrollTrigger.getTweensOf([
+        titleRef.current,
+        paragraphRef.current,
+      ]).forEach((t) => t.kill());
     };
   }, []);
 
-  const animateProgressRing = useCallback(() => {
-    if (progressTween.current) {
-      progressTween.current.kill();
+  // Handle image and title animations when activeIndex changes
+  useEffect(() => {
+    if (!listRef.current || !imageContainerRef.current) return;
+
+    const allImages = gsap.utils.toArray<HTMLDivElement>(
+      '.project-image',
+      imageContainerRef.current
+    );
+    const allTitles = gsap.utils.toArray<HTMLLIElement>('li', listRef.current);
+    const allProgressBars = gsap.utils.toArray<HTMLDivElement>(
+      '.progress-bar-inner',
+      listRef.current
+    );
+
+    const activeImage = allImages[activeIndex];
+
+    // Kill previous animation to avoid conflicts
+    if (imageAnimation.current) {
+      imageAnimation.current.kill();
     }
-    gsap.set(progressRingRef.current, { strokeDashoffset: 301.59 });
-    progressTween.current = gsap.to(progressRingRef.current, {
-      strokeDashoffset: 0,
-      duration: AUTOPLAY_DURATION / 1000,
+
+    gsap.to(allImages, { opacity: 0, duration: 0.5, ease: 'power2.inOut' });
+    gsap.to(activeImage, { opacity: 1, duration: 0.5, ease: 'power2.inOut' });
+
+    // Ken Burns effect
+    imageAnimation.current = gsap.fromTo(
+      activeImage.querySelector('img'),
+      { scale: 1.05, y: '2%' },
+      { scale: 1, y: '0%', duration: AUTOPLAY_DURATION + 2, ease: 'linear' }
+    );
+
+    // Update titles style
+    allTitles.forEach((title, index) => {
+      gsap.to(title, {
+        color:
+          index === activeIndex
+            ? 'hsl(var(--primary))'
+            : 'hsl(var(--muted-foreground))',
+        duration: 0.5,
+      });
+    });
+
+    // Reset and start progress bar for the active item
+    gsap.set(allProgressBars, { scaleX: 0 });
+    if (autoplayTl.current && !autoplayTl.current.paused()) {
+      gsap.to(allProgressBars[activeIndex], {
+        scaleX: 1,
+        duration: AUTOPLAY_DURATION,
+        ease: 'linear',
+      });
+    }
+  }, [activeIndex]);
+
+  // Handle autoplay logic
+  useEffect(() => {
+    if (isHovering || isDialogOpen) {
+      autoplayTl.current?.pause();
+      return;
+    }
+
+    autoplayTl.current = gsap.timeline({
+      onRepeat: () => {
+        const allProgressBars = gsap.utils.toArray<HTMLDivElement>(
+          '.progress-bar-inner',
+          listRef.current
+        );
+        gsap.set(allProgressBars, { scaleX: 0 }); // Reset all on loop
+      },
+      repeat: -1,
+    });
+
+    projects.forEach((_, index) => {
+      autoplayTl.current?.add(() => {
+        setActiveIndex(index);
+      }, `+=${AUTOPLAY_DURATION}`);
+    });
+
+    // Initial start
+    const allProgressBars = gsap.utils.toArray<HTMLDivElement>(
+      '.progress-bar-inner',
+      listRef.current
+    );
+    gsap.to(allProgressBars[activeIndex], {
+      scaleX: 1,
+      duration: AUTOPLAY_DURATION,
       ease: 'linear',
     });
-  }, []);
-
-  const onSelect = useCallback((api: CarouselApi) => {
-    setCurrentSlide(api.selectedScrollSnap());
-    animateProgressRing();
-  }, [animateProgressRing]);
-
-  useEffect(() => {
-    if (!api) return;
-
-    onSelect(api);
-    api.on('select', onSelect);
-    api.on('reInit', onSelect);
 
     return () => {
-      api.off('select', onSelect);
-      api.off('reInit', onSelect);
+      autoplayTl.current?.kill();
     };
-  }, [api, onSelect]);
+  }, [isHovering, isDialogOpen, projects.length, activeIndex]);
 
-  useEffect(() => {
-    if (!api) return;
-    
-    if (isDialogOpen) {
-      autoplayPlugin.current.stop();
-      progressTween.current?.pause();
-    } else {
-      autoplayPlugin.current.play();
-      progressTween.current?.resume();
-    }
-  }, [isDialogOpen, api]);
+  const handleMouseEnter = (index: number) => {
+    setIsHovering(true);
+    setActiveIndex(index);
+    // Pause current progress bar animation
+    const allProgressBars = gsap.utils.toArray<HTMLDivElement>(
+      '.progress-bar-inner',
+      listRef.current
+    );
+    gsap.killTweensOf(allProgressBars);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovering(false);
+  };
 
   const handleProjectClick = (project: (typeof projects)[0]) => {
     setSelectedProject(project);
     setIsDialogOpen(true);
+    setIsHovering(true); // Pauses autoplay
   };
 
+  useEffect(() => {
+    if (!isDialogOpen) {
+      setIsHovering(false); // Resume autoplay when dialog closes
+    }
+  }, [isDialogOpen]);
+
   return (
-    <section id="work" ref={sectionRef} className="w-full bg-secondary py-24 md:py-32 lg:py-40">
+    <section
+      id="work"
+      ref={sectionRef}
+      className="w-full bg-secondary py-24 md:py-32 lg:py-40"
+    >
       <div className="container mx-auto px-4 md:px-6">
         <div className="mb-16 text-center">
-          <h2 ref={titleRef} className="font-headline text-4xl font-semibold tracking-tight sm:text-5xl">
+          <h2
+            ref={titleRef}
+            className="font-headline text-4xl font-semibold tracking-tight sm:text-5xl"
+          >
             <div className="overflow-hidden py-1">
-              <span className="inline-block">Featured Work</span>
+              <span className="inline-block">Curated Craft</span>
             </div>
           </h2>
-          <p ref={paragraphRef} className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground opacity-0">
-            A selection of projects that showcase our passion for digital excellence.
+          <p
+            ref={paragraphRef}
+            className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground opacity-0"
+          >
+            A portfolio of partnerships where design and technology converge to
+            create value.
           </p>
         </div>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <Carousel
-            setApi={setApi}
-            plugins={[autoplayPlugin.current]}
-            opts={{ loop: true }}
-            className="w-full"
+          <div
+            className="grid grid-cols-1 items-start gap-12 lg:grid-cols-2"
+            onMouseLeave={handleMouseLeave}
           >
-            <CarouselContent>
-              {projects.map((project) => (
-                <CarouselItem key={project.id} className="md:basis-1/2">
-                  <DialogTrigger asChild onClick={() => handleProjectClick(project)}>
-                    <div className="group relative cursor-pointer overflow-hidden rounded-lg shadow-lg">
-                      <div className="aspect-video w-full">
-                        <Image
-                          src={project.imageUrl}
-                          alt={project.description}
-                          width={800}
-                          height={600}
-                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          data-ai-hint={project.imageHint}
-                        />
-                      </div>
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                      <div className="absolute bottom-0 left-0 p-6">
-                        <h3 className="font-headline text-3xl font-bold text-white transition-transform duration-300 group-hover:-translate-y-1">
-                          {project.title}
-                        </h3>
-                      </div>
+            {/* Left: List of Projects */}
+            <ul ref={listRef} className="flex flex-col">
+              {projects.map((project, index) => (
+                <li
+                  key={project.id}
+                  className="group relative cursor-pointer border-t border-border transition-colors last:border-b"
+                  onMouseEnter={() => handleMouseEnter(index)}
+                  onClick={() => handleProjectClick(project)}
+                >
+                  <div className="flex items-center justify-between p-8">
+                    <div className="flex items-baseline gap-4">
+                      <span className="font-mono text-sm text-muted-foreground">
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <h3 className="font-headline text-3xl font-medium sm:text-4xl">
+                        {project.title}
+                      </h3>
                     </div>
-                  </DialogTrigger>
-                </CarouselItem>
+                    <ArrowUpRight className="h-10 w-10 text-primary opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:rotate-45" />
+                  </div>
+                  <div className="progress-bar absolute bottom-0 left-0 h-px w-full bg-border/30">
+                    <div className="progress-bar-inner h-full w-full origin-left scale-x-0 bg-primary" />
+                  </div>
+                </li>
               ))}
-            </CarouselContent>
+            </ul>
 
-            <div className="mt-12 flex items-center justify-center gap-6">
-              <CarouselPrevious className="static h-12 w-12 -translate-y-0" />
-              <div className="relative h-24 w-24">
-                <svg className="h-full w-full" viewBox="0 0 100 100">
-                  <circle
-                    className="stroke-border/20"
-                    strokeWidth="5"
-                    fill="transparent"
-                    r="48"
-                    cx="50"
-                    cy="50"
+            {/* Right: Image Display */}
+            <div
+              ref={imageContainerRef}
+              className="sticky top-24 aspect-video w-full"
+            >
+              {projects.map((project, index) => (
+                <div
+                  key={project.id}
+                  className={cn(
+                    'project-image absolute inset-0 h-full w-full overflow-hidden rounded-lg opacity-0 shadow-xl'
+                  )}
+                  onClick={() => handleProjectClick(projects[activeIndex])}
+                >
+                  <Image
+                    src={project.imageUrl}
+                    alt={project.description}
+                    fill
+                    className="cursor-pointer object-cover"
+                    data-ai-hint={project.imageHint}
+                    priority={index === 0}
                   />
-                  <circle
-                    ref={progressRingRef}
-                    className="stroke-primary -rotate-90 origin-center"
-                    strokeWidth="5"
-                    strokeLinecap="round"
-                    fill="transparent"
-                    r="48"
-                    cx="50"
-                    cy="50"
-                    strokeDasharray="301.59"
-                    strokeDashoffset="301.59"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-baseline justify-center">
-                  <span className="font-headline text-3xl font-bold">{String(currentSlide + 1).padStart(2, '0')}</span>
                 </div>
-              </div>
-              <CarouselNext className="static h-12 w-12 -translate-y-0" />
+              ))}
             </div>
-          </Carousel>
+          </div>
 
           {selectedProject && (
             <DialogContent className="max-h-[90vh] max-w-4xl p-0">
@@ -217,7 +287,9 @@ export function Work() {
                 />
               </div>
               <DialogHeader className="p-6 text-left">
-                <DialogTitle className="font-headline text-4xl">{selectedProject.title}</DialogTitle>
+                <DialogTitle className="font-headline text-4xl">
+                  {selectedProject.title}
+                </DialogTitle>
                 <DialogDescription className="pt-2 text-base text-muted-foreground">
                   {selectedProject.description}
                 </DialogDescription>
