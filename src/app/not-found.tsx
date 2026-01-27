@@ -6,44 +6,37 @@ import { gsap } from 'gsap';
 import { Header } from '@/components/common/header';
 import { Button } from '@/components/ui/button';
 import { Cracked404 } from '@/components/common/cracked-404';
-import { Binary, Bomb, Orbit, Palmtree, Planet } from 'lucide-react';
 
-const messageObjects = [
-  {
-    text: "Oops! This page must have been abducted by aliens. Let's beam you back to safety.",
-    icon: <Planet className="h-16 w-16 text-muted-foreground/30" />,
-  },
-  {
-    text: "Looks like you've found a glitch in the matrix. We're sending agents to fix it.",
-    icon: <Binary className="h-16 w-16 text-muted-foreground/30" />,
-  },
-  {
-    text: '404! This page is on a secret mission and will self-destruct in 5 seconds. (Not really).',
-    icon: <Bomb className="h-16 w-16 text-muted-foreground/30" />,
-  },
-  {
-    text: "Well, this is awkward. The page you're looking for seems to have gone on vacation.",
-    icon: <Palmtree className="h-16 w-16 text-muted-foreground/30" />,
-  },
-  {
-    text: 'Houston, we have a problem. This page has drifted off into the digital void.',
-    icon: <Orbit className="h-16 w-16 text-muted-foreground/30" />,
-  },
+const messages = [
+  "Oops! This page must have been abducted by aliens. Let's beam you back to safety.",
+  "Looks like you've found a glitch in the matrix. We're sending agents to fix it.",
+  '404! This page is on a secret mission and will self-destruct in 5 seconds. (Not really).',
+  "Well, this is awkward. The page you're looking for seems to have gone on vacation.",
+  'Houston, we have a problem. This page has drifted off into the digital void.',
+  "Are you sure you typed that right? Maybe try again after some coffee.",
+  "We've dispatched a team of highly trained monkeys to find this page.",
+  "This page is currently in another castle.",
+  "We looked everywhere. Even under the couch cushions. Nothing.",
+  "This is not the page you are looking for. *Jedi hand wave*",
+  "The page is a lie.",
+  "Looks like you've taken a wrong turn at Albuquerque.",
+  "Congratulations! You've discovered a page that doesn't exist. The rewards are purely metaphysical.",
+  "This page has been successfully deleted by our cat walking on the keyboard.",
+  "404: The page has been retired to a quiet life of sudoku and daytime television.",
+  "We asked our servers, they said they've never heard of this page.",
+  "Even the world's best detectives couldn't find this page. And we tried.",
+  "This page's ghost is probably haunting our servers right now."
 ];
 
 export default function NotFound() {
-  const iconRef = useRef<HTMLDivElement>(null);
   const paragraphRef = useRef<HTMLParagraphElement>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
-  const [selectedMessage, setSelectedMessage] = useState<{
-    text: string;
-    icon: React.ReactNode;
-  } | null>(null);
+  const [selectedMessage, setSelectedMessage] = useState<string | null>(null);
 
   // Set a random message on client-side mount to avoid hydration mismatch
   useEffect(() => {
     setSelectedMessage(
-      messageObjects[Math.floor(Math.random() * messageObjects.length)]
+      messages[Math.floor(Math.random() * messages.length)]
     );
   }, []);
 
@@ -52,21 +45,15 @@ export default function NotFound() {
     if (!selectedMessage) return;
 
     const tl = gsap.timeline({
-      delay: 1.0, // Delay to allow crack animation to play first
+      delay: 1.2, // Delay to allow crack animation to play first
       defaults: { ease: 'power3.out' },
     });
 
-    if (iconRef.current && paragraphRef.current && buttonRef.current) {
+    if (paragraphRef.current && buttonRef.current) {
       tl.fromTo(
-        iconRef.current,
-        { y: 20, scale: 0.8, opacity: 0 },
-        { y: 0, scale: 1, opacity: 1, duration: 1 }
-      )
-        .fromTo(
           paragraphRef.current,
           { y: 20, opacity: 0 },
-          { y: 0, opacity: 1, duration: 1 },
-          '-=0.7'
+          { y: 0, opacity: 1, duration: 1 }
         )
         .fromTo(
           buttonRef.current,
@@ -88,18 +75,11 @@ export default function NotFound() {
         <div className="relative z-10 w-full">
           <Cracked404 />
 
-          <div
-            ref={iconRef}
-            className="mt-8 flex justify-center opacity-0"
-          >
-            {selectedMessage?.icon}
-          </div>
-
           <p
             ref={paragraphRef}
-            className="mx-auto mt-4 max-w-md text-lg text-muted-foreground opacity-0 md:text-xl"
+            className="mx-auto mt-8 max-w-md text-lg text-muted-foreground opacity-0 md:text-xl"
           >
-            {selectedMessage?.text || '...'}
+            {selectedMessage || '...'}
           </p>
           <div ref={buttonRef} className="mt-8 opacity-0">
             <Button asChild size="lg">
