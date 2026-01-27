@@ -6,7 +6,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
 import { ScrollToPlugin } from 'gsap/dist/ScrollToPlugin';
 import { Projects, type ImagePlaceholder } from '@/lib/placeholder-images';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, X } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
@@ -27,10 +27,10 @@ export function Work() {
   const detailTopPaneRef = useRef<HTMLDivElement>(null);
   const detailBottomPaneRef = useRef<HTMLDivElement>(null);
   const detailContentRef = useRef<HTMLDivElement>(null);
+  const detailCloseBtnRef = useRef<HTMLButtonElement>(null);
 
   const mainTl = useRef<gsap.core.Timeline | null>(null);
   const mainSt = useRef<ScrollTrigger | null>(null);
-  const detailSt = useRef<ScrollTrigger | null>(null);
 
   useEffect(() => {
     const panels = gsap.utils.toArray<HTMLDivElement>('.project-panel');
@@ -70,6 +70,11 @@ export function Work() {
   };
 
   useEffect(() => {
+    // Kill any existing detail-related animations to prevent conflicts
+    if (gsap.getTweensOf([detailViewRef.current, detailContentRef.current]).length) {
+      gsap.killTweensOf([detailViewRef.current, detailContentRef.current]);
+    }
+
     if (isDetailOpen && activeProject) {
       mainSt.current?.disable();
 
@@ -82,88 +87,54 @@ export function Work() {
         backgroundImage: `url(${imageUrl})`,
       });
 
-      const openTl = gsap.timeline({
-        onComplete: () => {
-          // Add a small delay to avoid scroll momentum from instantly closing the overlay
-          gsap.delayedCall(0.1, () => {
-            detailSt.current = ScrollTrigger.create({
-              trigger: 'body',
-              start: 'top top-=1', // Close on the slightest scroll down
-              once: true,
-              onEnter: () => setIsDetailOpen(false),
-            });
-          });
-        },
-      });
+      const openTl = gsap.timeline();
 
       openTl
         .fromTo(
-          detailTopPaneRef.current,
-          { yPercent: 0 },
-          { yPercent: -100, duration: 0.7, ease: 'power3.inOut' }
-        )
-        .fromTo(
-          detailBottomPaneRef.current,
-          { yPercent: 0 },
-          { yPercent: 100, duration: 0.7, ease: 'power3.inOut' },
-          '<'
+          [detailTopPaneRef.current, detailBottomPaneRef.current],
+          { yPercent: (i) => (i === 0 ? 0 : 0) },
+          {
+            yPercent: (i) => (i === 0 ? -100 : 100),
+            duration: 0.8,
+            ease: 'power3.inOut',
+          }
         )
         .fromTo(
           detailContentRef.current,
-          { autoAlpha: 0, y: 30 },
-          { autoAlpha: 1, y: 0, duration: 0.5, ease: 'power2.out' },
+          { autoAlpha: 0 },
+          { autoAlpha: 1, duration: 0.6, ease: 'power2.out' },
+          '-=0.5'
+        )
+        .fromTo(
+          gsap.utils.toArray('.detail-content-reveal'),
+          { y: 30, autoAlpha: 0 },
+          { y: 0, autoAlpha: 1, stagger: 0.1, duration: 0.5, ease: 'power2.out' },
           '-=0.3'
         );
-    } else if (!isDetailOpen && activeProject && detailViewIndex !== null) {
-      detailSt.current?.kill();
 
+    } else if (!isDetailOpen && activeProject) {
       const closeTl = gsap.timeline({
         onComplete: () => {
           gsap.set(detailViewRef.current, { display: 'none' });
-
-          if (mainSt.current && detailViewIndex !== null) {
-            const nextIndex = (detailViewIndex + 1) % Projects.length;
-            const targetScroll = mainSt.current.labelToScroll(`project${nextIndex}`);
-
-            // Scroll to the next project, then re-enable the main scroll trigger
-            gsap.to(window, {
-              duration: 1,
-              scrollTo: targetScroll,
-              ease: 'power3.inOut',
-              onComplete: () => {
-                mainSt.current?.enable();
-                // It's good practice to refresh ScrollTrigger after animations and enabling
-                ScrollTrigger.refresh();
-              },
-            });
-          } else {
-            mainSt.current?.enable();
-          }
-
+          mainSt.current?.enable();
           setActiveProject(null);
           setDetailViewIndex(null);
         },
       });
 
       closeTl
-        .to(detailContentRef.current, {
-          autoAlpha: 0,
-          y: 30,
-          duration: 0.4,
-          ease: 'power2.in',
-        })
         .to(
-          detailTopPaneRef.current,
-          { yPercent: 0, duration: 0.6, ease: 'power3.inOut' },
-          '-=0.1'
+          gsap.utils.toArray('.detail-content-reveal'),
+          { y: 30, autoAlpha: 0, stagger: 0.05, duration: 0.4, ease: 'power2.in' }
         )
+        .to(detailContentRef.current, { autoAlpha: 0, duration: 0.4 }, '<')
         .to(
-          detailBottomPaneRef.current,
-          { yPercent: 0, duration: 0.6, ease: 'power3.inOut' },
-          '<'
+          [detailTopPaneRef.current, detailBottomPaneRef.current],
+          { yPercent: 0, duration: 0.7, ease: 'power3.inOut' },
+          '-=0.2'
         );
     }
-  }, [isDetailOpen, activeProject, detailViewIndex]);
+  }, [isDetailOpen, activeProject]);
 
   return (
     <>
@@ -248,13 +219,21 @@ export function Work() {
           className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 p-8 text-center opacity-0 backdrop-blur-md"
         >
           {activeProject && (
-            <div className="max-w-2xl space-y-6 text-foreground">
-              <h2 className="font-headline text-4xl font-bold">
+            <div className="relative max-w-2xl space-y-6 text-foreground">
+               <button 
+                  ref={detailCloseBtnRef}
+                  onClick={() => setIsDetailOpen(false)} 
+                  className="detail-content-reveal absolute -top-4 -right-4 rounded-full border border-foreground/20 bg-background/50 p-2 text-foreground transition-all hover:scale-110 hover:bg-background"
+                  aria-label="Close project details"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              <h2 className="detail-content-reveal font-headline text-4xl font-bold">
                 {activeProject.title}
               </h2>
-              <p className="text-lg">{activeProject.description}</p>
+              <p className="detail-content-reveal text-lg">{activeProject.description}</p>
               {activeProject.testimonial && (
-                 <blockquote className="border-l-4 border-primary pl-6">
+                 <blockquote className="detail-content-reveal border-l-4 border-primary pl-6">
                  <p className="text-xl italic">
                    "{activeProject.testimonial}"
                  </p>
