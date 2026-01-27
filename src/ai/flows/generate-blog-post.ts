@@ -38,12 +38,7 @@ const prompt = ai.definePrompt({
   output: {schema: GenerateBlogPostOutputSchema},
   system: `You are an expert blog post writer for a creative digital agency called Zenith Studio.
 Your tone should be professional, insightful, and slightly informal.
-You MUST respond with a valid JSON object that conforms to the following schema:
-{
-  "title": "The title of the blog post.",
-  "content": "The content of the blog post, formatted as a single string of HTML paragraphs. For example: '<p>First paragraph.</p><p>Second paragraph.</p><p>Third paragraph.</p>'"
-}
-Do not include any other text or markdown formatting like \`\`\`json\`\`\` around your response.`,
+You write content that is engaging and well-structured, formatted as a single string of HTML paragraphs.`,
   prompt: `Generate a blog post about the following topic: {{{topic}}}.`,
 });
 
