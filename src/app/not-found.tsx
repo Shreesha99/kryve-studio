@@ -4,43 +4,64 @@ import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { gsap } from 'gsap';
 import { Header } from '@/components/common/header';
-import { Footer } from '@/components/common/footer';
 import { Button } from '@/components/ui/button';
 
 function NotFoundBackground() {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const elements = gsap.utils.toArray<HTMLDivElement>(
-      '.floating-element',
-      container
-    );
-
-    elements.forEach((el) => {
-      gsap.to(el, {
-        x: 'random(-100, 100)',
-        y: 'random(-100, 100)',
-        scale: 'random(0.8, 1.2)',
-        opacity: 'random(0.5, 1)',
-        duration: 'random(10, 20)',
+    if (!svgRef.current) return;
+    const shapes = gsap.utils.toArray<SVGPathElement>('.morph-shape', svgRef.current);
+    
+    shapes.forEach((shape, index) => {
+      const morphTarget = shape.getAttribute('data-morph-target');
+      if (!morphTarget) return;
+      
+      const morphTl = gsap.timeline({
         repeat: -1,
         yoyo: true,
-        ease: 'sine.inOut',
+        delay: index * 1.5,
       });
+
+      morphTl.to(shape, {
+        attr: { d: morphTarget },
+        duration: 8,
+        ease: 'sine.inOut'
+      });
+      
+      gsap.to(shape, {
+        x: `random(-50, 50, true)`,
+        y: `random(-50, 50, true)`,
+        rotation: `random(-60, 60, true)`,
+        transformOrigin: '50% 50%',
+        duration: 20,
+        ease: 'sine.inOut',
+        repeat: -1,
+        yoyo: true,
+        delay: index
+      })
     });
+    
   }, []);
 
   return (
-    <div
-      ref={containerRef}
-      className="pointer-events-none absolute inset-0 z-0 h-full w-full overflow-hidden"
-    >
-      <div className="absolute -left-10 top-1/4 h-24 w-24 rounded-full bg-primary/5 floating-element" />
-      <div className="absolute -right-10 bottom-1/4 h-32 w-32 rounded-full bg-primary/5 floating-element" />
-      <div className="absolute left-1/3 top-1/3 h-16 w-16 rounded-full bg-primary/5 floating-element" />
+    <div className="pointer-events-none absolute inset-0 z-0 h-full w-full overflow-hidden opacity-5">
+      <svg ref={svgRef} width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+        <path
+          className="morph-shape"
+          transform="translate(200 150) scale(1.5)"
+          fill="hsl(var(--primary))"
+          d="M107.4,22.6C128.2,43.4,128.2,77.4,107.4,98.2C86.6,119,52.6,119,31.8,98.2C11,77.4,11,43.4,31.8,22.6C52.6,1.8,86.6,1.8,107.4,22.6Z"
+          data-morph-target="M112.5,43.3C122.8,66.5,112.3,94,91.9,104.5C71.5,115,41.9,108.5,21.5,91.8C1.1,75.1,-9.4,48.5,10.9,31.8C31.3,15.1,61.9,8.5,82.3,18.8C102.7,29.1,102.1,19.9,112.5,43.3Z"
+        />
+        <path
+          className="morph-shape"
+          transform="translate(calc(100% - 200px), calc(100% - 150px)) scale(1.2)"
+          fill="hsl(var(--primary))"
+          d="M21,0 L79,0 L100,21 L100,79 L79,100 L21,100 L0,79 L0,21 Z"
+          data-morph-target="M36.3,4.3L82.6,21.8L93.3,71.2L50.8,95.7L5.7,76.5L2.8,26.8L36.3,4.3Z"
+        />
+      </svg>
     </div>
   );
 }
@@ -100,7 +121,6 @@ export default function NotFound() {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }
