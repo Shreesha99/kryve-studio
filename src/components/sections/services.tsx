@@ -92,7 +92,7 @@ const services = [
     description:
       'We build powerful e-commerce engines designed for growth. From seamless user journeys to secure payment gateways, we create online stores that convert visitors into loyal customers.',
     svg: (
-      <g className="cart-group" transform="translateX(30)">
+      <g className="cart-group" transform="translate(30 0) scale(1.2)">
         <g className="speed-lines-group" transform="translateX(-40)">
           <path className="speed-line" d="M150 80 L 180 80" opacity="0" />
           <path className="speed-line" d="M140 100 L 190 100" opacity="0" />
