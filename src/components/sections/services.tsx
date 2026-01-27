@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
 import { TextPlugin } from 'gsap/dist/TextPlugin';
 import { cn } from '@/lib/utils';
 import { InteractiveOrbs } from '@/components/common/interactive-orbs';
 
-gsap.registerPlugin(TextPlugin);
+gsap.registerPlugin(TextPlugin, ScrollTrigger);
 
 const services = [
   {
@@ -98,7 +99,7 @@ const services = [
           <path className="speed-line" d="M150 120 L 180 120" opacity="0" />
         </g>
 
-        <g className="cart-container" transform="translateX(30)">
+        <g className="cart-container" transform="translateX(35)">
           <g className="cart-body-group">
             <path
               className="cart-body"
@@ -121,6 +122,7 @@ export function Services() {
   const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   const sectionRef = useRef<HTMLElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
   const progressTl = useRef<gsap.core.Timeline>();
   const secondaryAnimation = useRef<gsap.core.Timeline | null>(null);
   const resumeTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -130,26 +132,54 @@ export function Services() {
     setIsTouchDevice(isTouch);
   }, []);
 
-  const runAutoplay = useCallback((index: number) => {
-    if (isTouchDevice && isHovering) return; // isHovering is used to signify a manual tap
-    progressTl.current?.kill();
-    const progressBars = gsap.utils.toArray<HTMLDivElement>(
-      '.progress-bar-fill',
-      sectionRef.current
-    );
-    gsap.set(progressBars, { scaleY: 0, transformOrigin: 'bottom' });
-
-    progressTl.current = gsap.timeline({
-      onComplete: () => {
-        const nextIndex = (index + 1) % services.length;
-        setActiveIndex(nextIndex);
+  useEffect(() => {
+    const contentTl = gsap.timeline({
+      scrollTrigger: {
+        trigger: sectionRef.current,
+        start: 'top 70%',
+        toggleActions: 'play none none none',
       },
-    }).to(progressBars[index], {
-      scaleY: 1,
-      duration: AUTOPLAY_DURATION,
-      ease: 'linear',
     });
-  }, [isTouchDevice, isHovering]);
+
+    if (titleRef.current) {
+      const titleSpans = gsap.utils.toArray('span', titleRef.current);
+      contentTl.fromTo(
+        titleSpans,
+        { yPercent: 120 },
+        { yPercent: 0, stagger: 0.1, duration: 1.2, ease: 'power3.out' }
+      );
+    }
+    return () => {
+      contentTl.kill();
+      ScrollTrigger.getAll().forEach((t) => t.kill());
+    };
+  }, []);
+
+  const runAutoplay = useCallback(
+    (index: number) => {
+      if (isTouchDevice && isHovering) return; // isHovering is used to signify a manual tap
+      progressTl.current?.kill();
+      const progressBars = gsap.utils.toArray<HTMLDivElement>(
+        '.progress-bar-fill',
+        sectionRef.current
+      );
+      gsap.set(progressBars, { scaleY: 0, transformOrigin: 'bottom' });
+
+      progressTl.current = gsap
+        .timeline({
+          onComplete: () => {
+            const nextIndex = (index + 1) % services.length;
+            setActiveIndex(nextIndex);
+          },
+        })
+        .to(progressBars[index], {
+          scaleY: 1,
+          duration: AUTOPLAY_DURATION,
+          ease: 'linear',
+        });
+    },
+    [isTouchDevice, isHovering]
+  );
 
   useEffect(() => {
     secondaryAnimation.current?.kill();
@@ -229,7 +259,7 @@ export function Services() {
                 }
               );
             }
-           
+
             if (currentService.id === 'development') {
               const textEl = activeSvg.querySelector('.code-tag-text');
               if (textEl) {
@@ -238,20 +268,26 @@ export function Services() {
                 const textTl = gsap.timeline({
                   delay: 1,
                 });
-                
-                tags.forEach((tag, index) => {
-                  const nextTag = tags[(index + 1) % tags.length];
+
+                tags.forEach((tag) => {
                   textTl
-                    .to(textEl, { autoAlpha: 0, duration: 0.3, ease: 'power1.in' }, "+=1.2")
-                    .set(textEl, { text: nextTag })
-                    .to(textEl, { autoAlpha: 1, duration: 0.3, ease: 'power1.out' });
+                    .to(textEl, {
+                      autoAlpha: 0,
+                      duration: 0.3,
+                      ease: 'power1.in',
+                    })
+                    .set(textEl, { text: tag })
+                    .to(textEl, {
+                      autoAlpha: 1,
+                      duration: 0.3,
+                      ease: 'power1.out',
+                    }, '+=1.2');
                 });
-                
+
                 secondaryAnimation.current.add(textTl, 0).repeat(-1);
-                 gsap.set(textEl, { text: tags[0], autoAlpha: 1 });
+                gsap.set(textEl, { text: tags[0], autoAlpha: 1 });
               }
             }
-
 
             if (currentService.id === 'ecommerce') {
               const cartBody = activeSvg.querySelector('.cart-body-group');
@@ -336,12 +372,12 @@ export function Services() {
 
   const handleTap = (index: number) => {
     if (!isTouchDevice) return;
-    
+
     if (index === activeIndex && isHovering) return;
 
     progressTl.current?.pause();
     setIsHovering(true); // use isHovering state to signify a manual tap
-    
+
     if (resumeTimerRef.current) {
       clearTimeout(resumeTimerRef.current);
     }
@@ -376,8 +412,13 @@ export function Services() {
       <div className="container relative z-10 mx-auto px-4 md:px-6">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-24">
           <div className="space-y-8">
-            <h2 className="font-headline text-4xl font-semibold tracking-tight sm:text-5xl">
-              Anatomy of Excellence
+            <h2
+              ref={titleRef}
+              className="font-headline text-4xl font-semibold tracking-tight sm:text-5xl"
+            >
+              <div className="overflow-hidden py-1">
+                <span className="inline-block">Anatomy of Excellence</span>
+              </div>
             </h2>
 
             <ul

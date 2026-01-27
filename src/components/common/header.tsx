@@ -133,7 +133,7 @@ export function Header() {
   return (
     <header
       ref={headerRef}
-      className="fixed top-0 z-50 w-full p-4 transition-all"
+      className="fixed top-0 z-50 w-full p-4 transition-all opacity-0"
     >
       <div
         className={cn(

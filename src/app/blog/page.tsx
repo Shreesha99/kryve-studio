@@ -1,5 +1,10 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
+import { useEffect, useRef } from 'react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
 import { Header } from '@/components/common/header';
 import { Footer } from '@/components/common/footer';
 import { BlogGenerator } from '@/components/blog/blog-generator';
@@ -14,12 +19,8 @@ import {
 } from '@/components/ui/card';
 import { AnimateOnScroll } from '@/components/common/animate-on-scroll';
 import { Separator } from '@/components/ui/separator';
-import type { Metadata } from 'next';
 
-export const metadata: Metadata = {
-  title: 'Blog',
-  description: 'News, insights, and stories from the team at Zenith Studio.',
-};
+gsap.registerPlugin(ScrollTrigger);
 
 function PostCard({ post, index }: { post: Post; index: number }) {
   return (
@@ -59,16 +60,63 @@ function PostCard({ post, index }: { post: Post; index: number }) {
 }
 
 export default function BlogPage() {
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const paragraphRef = useRef<HTMLParagraphElement>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const contentTl = gsap.timeline({
+      scrollTrigger: {
+        trigger: sectionRef.current,
+        start: 'top 80%',
+        toggleActions: 'play none none none',
+      },
+    });
+
+    if (titleRef.current) {
+      const titleSpans = gsap.utils.toArray('span', titleRef.current);
+      contentTl.fromTo(
+        titleSpans,
+        { yPercent: 120 },
+        { yPercent: 0, stagger: 0.1, duration: 1.2, ease: 'power3.out' }
+      );
+    }
+    if (paragraphRef.current) {
+      contentTl.fromTo(
+        paragraphRef.current,
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1 },
+        '-=0.8'
+      );
+    }
+
+    return () => {
+      contentTl.kill();
+      ScrollTrigger.getAll().forEach((t) => t.kill());
+    };
+  }, []);
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
       <main className="flex-1">
-        <section className="container mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24">
+        <section
+          ref={sectionRef}
+          className="container mx-auto max-w-7xl px-4 py-16 pt-32 md:px-6 md:py-24 md:pt-48"
+        >
           <div className="space-y-4 text-center">
-            <h1 className="font-headline text-4xl font-semibold tracking-tighter sm:text-5xl md:text-6xl">
-              From the Studio
+            <h1
+              ref={titleRef}
+              className="font-headline text-4xl font-semibold tracking-tighter sm:text-5xl md:text-6xl"
+            >
+              <div className="overflow-hidden py-1">
+                <span className="inline-block">From the Studio</span>
+              </div>
             </h1>
-            <p className="mx-auto max-w-2xl text-muted-foreground md:text-xl">
+            <p
+              ref={paragraphRef}
+              className="mx-auto max-w-2xl text-muted-foreground opacity-0 md:text-xl"
+            >
               News, insights, and stories from the team at Zenith.
             </p>
           </div>

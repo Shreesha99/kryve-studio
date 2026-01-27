@@ -16,8 +16,6 @@ export function CustomCursor() {
       return;
     }
 
-    gsap.set(cursor, { xPercent: -50, yPercent: -50 });
-
     const onMouseMove = (e: MouseEvent) => {
       gsap.to(cursor, {
         x: e.clientX,
@@ -78,13 +76,13 @@ export function CustomCursor() {
   return (
     <div ref={cursorRef} className="custom-cursor">
       <svg
-        width="36"
-        height="36"
-        viewBox="0 0 36 36"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
         style={{ transform: 'rotate(-45deg)' }}
       >
         <path
-          d="M 18 2 L 30 30 L 18 22 L 6 30 Z"
+          d="M0 0 L24 12 L13.5 13.5 L12 24 Z"
           className="custom-cursor-path"
         />
       </svg>
