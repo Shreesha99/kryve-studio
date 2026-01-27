@@ -80,10 +80,11 @@ export function Contact() {
       const x = gsap.utils.random(0, bounds.width);
       const y = gsap.utils.random(0, bounds.height);
 
-      const currentPos = gsap.getProperty(plane, ["x", "y"]) as [number, number];
+      const currentX = gsap.getProperty(plane, "x") as number;
+      const currentY = gsap.getProperty(plane, "y") as number;
 
       const path = [
-        { x: currentPos[0], y: currentPos[1] },
+        { x: currentX, y: currentY },
         { x: x, y: y },
       ];
 
