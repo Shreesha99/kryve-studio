@@ -65,10 +65,9 @@ export function Work() {
 
     return () => {
       contentTl.kill();
-      ScrollTrigger.getTweensOf([
-        titleRef.current,
-        paragraphRef.current,
-      ]).forEach((t) => t.kill());
+      gsap
+        .getTweensOf([titleRef.current, paragraphRef.current])
+        .forEach((t) => t.kill());
     };
   }, []);
 
