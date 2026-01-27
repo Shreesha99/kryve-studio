@@ -62,7 +62,7 @@ export function BlogGenerator() {
           AI Blog Post Generator
         </h2>
         <p className="text-muted-foreground md:text-xl">
-          Generate compelling articles about company news and insights using the power of AI.
+          Need inspiration for your next company update? Enter a topic below and let our AI craft a compelling article for you.
         </p>
       </div>
 
@@ -81,7 +81,7 @@ export function BlogGenerator() {
                     <FormLabel>Blog Post Topic</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="e.g., 'Our new design philosophy for 2024'"
+                        placeholder="e.g., 'The impact of AI on modern design'"
                         {...field}
                       />
                     </FormControl>
