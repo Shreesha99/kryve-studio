@@ -4,11 +4,10 @@ import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
-import { ScrollToPlugin } from 'gsap/dist/ScrollToPlugin';
 import { Projects, type ImagePlaceholder } from '@/lib/placeholder-images';
 import { ArrowRight, X } from 'lucide-react';
 
-gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+gsap.registerPlugin(ScrollTrigger);
 
 export function Work() {
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -17,9 +16,9 @@ export function Work() {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const paragraphRef = useRef<HTMLParagraphElement>(null);
 
-  const [activeProject, setActiveProject] =
-    useState<ImagePlaceholder | null>(null);
-  const [detailViewIndex, setDetailViewIndex] = useState<number | null>(null);
+  const [activeProject, setActiveProject] = useState<ImagePlaceholder | null>(
+    null
+  );
   const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   // Refs for the detail view elements
@@ -32,9 +31,9 @@ export function Work() {
   const mainTl = useRef<gsap.core.Timeline | null>(null);
   const mainSt = useRef<ScrollTrigger | null>(null);
 
+  // Effect for main pinned scrolling animation
   useEffect(() => {
     const panels = gsap.utils.toArray<HTMLDivElement>('.project-panel');
-
     const ctx = gsap.context(() => {
       mainTl.current = gsap.timeline({
         scrollTrigger: {
@@ -50,9 +49,11 @@ export function Work() {
       panels.forEach((panel, i) => {
         mainTl.current!.addLabel(`project${i}`);
         if (i > 0) {
+          // Fade in the current panel
           mainTl.current!.from(panel, { autoAlpha: 0 });
         }
         if (i < panels.length - 1) {
+          // Fade out the current panel to reveal the next
           mainTl.current!.to(panel, { autoAlpha: 0 });
         }
         mainTl.current!.addLabel(`project${i}-end`);
@@ -62,21 +63,25 @@ export function Work() {
     return () => ctx.revert();
   }, []);
 
-  const handleProjectClick = (project: ImagePlaceholder, index: number) => {
+  const handleProjectClick = (project: ImagePlaceholder) => {
     if (isDetailOpen) return;
     setActiveProject(project);
-    setDetailViewIndex(index);
     setIsDetailOpen(true);
   };
+  
+  const handleCloseClick = () => {
+    setIsDetailOpen(false);
+  }
 
+  // Effect for opening/closing the detail view
   useEffect(() => {
-    // Kill any existing detail-related animations to prevent conflicts
-    if (gsap.getTweensOf([detailViewRef.current, detailContentRef.current]).length) {
-      gsap.killTweensOf([detailViewRef.current, detailContentRef.current]);
-    }
+    // Kill any conflicting tweens before running new ones.
+    gsap.killTweensOf([detailViewRef.current, detailContentRef.current]);
 
     if (isDetailOpen && activeProject) {
+      // --- OPEN ANIMATION ---
       mainSt.current?.disable();
+      document.body.style.overflow = 'hidden';
 
       gsap.set(detailViewRef.current, { display: 'block' });
       const imageUrl = activeProject.imageUrl;
@@ -92,7 +97,7 @@ export function Work() {
       openTl
         .fromTo(
           [detailTopPaneRef.current, detailBottomPaneRef.current],
-          { yPercent: (i) => (i === 0 ? 0 : 0) },
+          { yPercent: 0 },
           {
             yPercent: (i) => (i === 0 ? -100 : 100),
             duration: 0.8,
@@ -108,25 +113,34 @@ export function Work() {
         .fromTo(
           gsap.utils.toArray('.detail-content-reveal'),
           { y: 30, autoAlpha: 0 },
-          { y: 0, autoAlpha: 1, stagger: 0.1, duration: 0.5, ease: 'power2.out' },
+          {
+            y: 0,
+            autoAlpha: 1,
+            stagger: 0.1,
+            duration: 0.5,
+            ease: 'power2.out',
+          },
           '-=0.3'
         );
-
     } else if (!isDetailOpen && activeProject) {
+      // --- CLOSE ANIMATION ---
       const closeTl = gsap.timeline({
         onComplete: () => {
           gsap.set(detailViewRef.current, { display: 'none' });
           mainSt.current?.enable();
+          document.body.style.overflow = '';
           setActiveProject(null);
-          setDetailViewIndex(null);
         },
       });
 
       closeTl
-        .to(
-          gsap.utils.toArray('.detail-content-reveal'),
-          { y: 30, autoAlpha: 0, stagger: 0.05, duration: 0.4, ease: 'power2.in' }
-        )
+        .to(gsap.utils.toArray('.detail-content-reveal'), {
+          y: 30,
+          autoAlpha: 0,
+          stagger: 0.05,
+          duration: 0.4,
+          ease: 'power2.in',
+        })
         .to(detailContentRef.current, { autoAlpha: 0, duration: 0.4 }, '<')
         .to(
           [detailTopPaneRef.current, detailBottomPaneRef.current],
@@ -138,7 +152,11 @@ export function Work() {
 
   return (
     <>
-      <section id="work" ref={sectionRef} className="relative w-full bg-background">
+      <section
+        id="work"
+        ref={sectionRef}
+        className="relative w-full bg-background"
+      >
         <div
           ref={titleContainerRef}
           className="container mx-auto flex h-[20vh] items-center px-4 md:px-6"
@@ -170,7 +188,7 @@ export function Work() {
               <div
                 key={project.id}
                 className="project-panel absolute inset-0 h-full w-full"
-                onClick={() => handleProjectClick(project, i)}
+                onClick={() => handleProjectClick(project)}
               >
                 <div className="group relative h-full w-full cursor-pointer">
                   <Image
@@ -220,27 +238,29 @@ export function Work() {
         >
           {activeProject && (
             <div className="relative max-w-2xl space-y-6 text-foreground">
-               <button 
-                  ref={detailCloseBtnRef}
-                  onClick={() => setIsDetailOpen(false)} 
-                  className="detail-content-reveal absolute -top-4 -right-4 rounded-full border border-foreground/20 bg-background/50 p-2 text-foreground transition-all hover:scale-110 hover:bg-background"
-                  aria-label="Close project details"
-                >
-                  <X className="h-6 w-6" />
-                </button>
+              <button
+                ref={detailCloseBtnRef}
+                onClick={handleCloseClick}
+                className="detail-content-reveal absolute -top-4 -right-4 rounded-full border border-foreground/20 bg-background/50 p-2 text-foreground transition-all hover:scale-110 hover:bg-background"
+                aria-label="Close project details"
+              >
+                <X className="h-6 w-6" />
+              </button>
               <h2 className="detail-content-reveal font-headline text-4xl font-bold">
                 {activeProject.title}
               </h2>
-              <p className="detail-content-reveal text-lg">{activeProject.description}</p>
+              <p className="detail-content-reveal text-lg">
+                {activeProject.description}
+              </p>
               {activeProject.testimonial && (
-                 <blockquote className="detail-content-reveal border-l-4 border-primary pl-6">
-                 <p className="text-xl italic">
-                   "{activeProject.testimonial}"
-                 </p>
-                 <footer className="mt-2 text-base font-semibold text-primary">
-                   — {activeProject.client}
-                 </footer>
-               </blockquote>
+                <blockquote className="detail-content-reveal border-l-4 border-primary pl-6">
+                  <p className="text-xl italic">
+                    "{activeProject.testimonial}"
+                  </p>
+                  <footer className="mt-2 text-base font-semibold text-primary">
+                    — {activeProject.client}
+                  </footer>
+                </blockquote>
               )}
             </div>
           )}
