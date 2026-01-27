@@ -151,7 +151,7 @@ export default function BlogPage() {
   }, []);
 
   return (
-    <div className="relative flex min-h-screen flex-col bg-secondary/30">
+    <div className="relative flex min-h-screen flex-col bg-background">
       <AnimatedGradient className="opacity-20 dark:opacity-10" />
       <Header />
       <main className="relative z-10 flex-1">

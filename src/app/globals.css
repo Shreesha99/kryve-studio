@@ -100,10 +100,10 @@
 
 @layer utilities {
   .animated-gradient {
-    --gradient-color-1: hsl(220 40% 96%);
-    --gradient-color-2: hsl(260 40% 96%);
-    --gradient-color-3: hsl(320 40% 96%);
-    --gradient-color-4: hsl(150 40% 96%);
+    --gradient-color-1: hsl(220 80% 96%);
+    --gradient-color-2: hsl(260 80% 96%);
+    --gradient-color-3: hsl(320 80% 96%);
+    --gradient-color-4: hsl(150 80% 96%);
 
     --mouse-x: 50%;
     --mouse-y: 50%;

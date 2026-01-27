@@ -419,7 +419,7 @@ export function Services() {
       ref={sectionRef}
       className="relative flex min-h-screen w-full items-center overflow-hidden bg-background py-24 md:py-32"
     >
-      <AnimatedGradient className="opacity-10 dark:opacity-5" />
+      <AnimatedGradient className="opacity-20 dark:opacity-10" />
       <InteractiveOrbs />
       <div className="container relative z-10 mx-auto px-4 md:px-6">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-24">

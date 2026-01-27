@@ -140,7 +140,7 @@ export function About() {
       ref={sectionRef}
       className="relative flex min-h-screen w-full items-center overflow-hidden bg-background py-24 md:py-32"
     >
-      <AnimatedGradient className="opacity-15 dark:opacity-[0.07]" />
+      <AnimatedGradient className="opacity-20 dark:opacity-10" />
       <div className="pointer-events-none absolute inset-0 z-0 opacity-10 dark:opacity-5">
         <svg ref={bgSvgRef} width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 800 400">
           {bgPaths.map((path, i) => (
