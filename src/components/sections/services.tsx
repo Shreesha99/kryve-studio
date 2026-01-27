@@ -92,14 +92,13 @@ const services = [
     description:
       'We build powerful e-commerce engines designed for growth. From seamless user journeys to secure payment gateways, we create online stores that convert visitors into loyal customers.',
     svg: (
-      <g className="cart-group">
-        <g className="speed-lines-group">
+      <g className="cart-group" transform="translateX(30)">
+        <g className="speed-lines-group" transform="translateX(-40)">
           <path className="speed-line" d="M150 80 L 180 80" opacity="0" />
           <path className="speed-line" d="M140 100 L 190 100" opacity="0" />
           <path className="speed-line" d="M150 120 L 180 120" opacity="0" />
         </g>
-
-        <g className="cart-container" transform="translateX(35)">
+        <g className="cart-container">
           <g className="cart-body-group">
             <path
               className="cart-body"
@@ -114,7 +113,7 @@ const services = [
   },
 ];
 
-const AUTOPLAY_DURATION = 5; // seconds
+const AUTOPLAY_DURATION = 10; // seconds
 
 export function Services() {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -155,40 +154,44 @@ export function Services() {
     };
   }, []);
 
-  const runAutoplay = useCallback(
-    (index: number) => {
-      if (isTouchDevice && isHovering) return; // isHovering is used to signify a manual tap
-      progressTl.current?.kill();
-      const progressBars = gsap.utils.toArray<HTMLDivElement>(
-        '.progress-bar-fill',
-        sectionRef.current
-      );
-      gsap.set(progressBars, { scaleY: 0, transformOrigin: 'bottom' });
+  const runAutoplay = useCallback((index: number) => {
+    progressTl.current?.kill();
+    const progressBars = gsap.utils.toArray<HTMLDivElement>(
+      '.progress-bar-fill',
+      sectionRef.current
+    );
+    gsap.set(progressBars, { scaleY: 0, transformOrigin: 'bottom' });
 
-      progressTl.current = gsap
-        .timeline({
-          onComplete: () => {
-            const nextIndex = (index + 1) % services.length;
-            setActiveIndex(nextIndex);
-          },
-        })
-        .to(progressBars[index], {
-          scaleY: 1,
-          duration: AUTOPLAY_DURATION,
-          ease: 'linear',
-        });
-    },
-    [isTouchDevice, isHovering]
-  );
+    progressTl.current = gsap
+      .timeline({
+        onComplete: () => {
+          const nextIndex = (index + 1) % services.length;
+          setActiveIndex(nextIndex);
+        },
+      })
+      .to(progressBars[index], {
+        scaleY: 1,
+        duration: AUTOPLAY_DURATION,
+        ease: 'linear',
+      });
+  }, []);
 
   useEffect(() => {
     secondaryAnimation.current?.kill();
     gsap.killTweensOf('.code-tag-text');
 
-    if (!isHovering) {
+    if (!isHovering && !isTouchDevice) {
       runAutoplay(activeIndex);
     } else {
       progressTl.current?.pause();
+    }
+    
+    if (isTouchDevice && isHovering) {
+        if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+        resumeTimerRef.current = setTimeout(() => {
+            setIsHovering(false);
+            runAutoplay(activeIndex);
+        }, 10000);
     }
 
     if (isHovering && resumeTimerRef.current) {
@@ -247,7 +250,7 @@ export function Services() {
 
             if (currentService.id === 'branding') {
               const cracks = activeSvg.querySelector('.cracks');
-              gsap.fromTo(
+              secondaryAnimation.current.fromTo(
                 cracks,
                 { autoAlpha: 0, scale: 0.5, transformOrigin: 'center center' },
                 {
@@ -261,32 +264,29 @@ export function Services() {
             }
 
             if (currentService.id === 'development') {
-              const textEl = activeSvg.querySelector('.code-tag-text');
-              if (textEl) {
-                gsap.killTweensOf(textEl);
-                const tags = ['a', 'p', 'h1', 'div'];
-                const textTl = gsap.timeline({
-                  delay: 1,
-                });
-
-                tags.forEach((tag) => {
-                  textTl
-                    .to(textEl, {
-                      autoAlpha: 0,
-                      duration: 0.3,
-                      ease: 'power1.in',
-                    })
-                    .set(textEl, { text: tag })
-                    .to(textEl, {
-                      autoAlpha: 1,
-                      duration: 0.3,
-                      ease: 'power1.out',
-                    }, '+=1.2');
-                });
-
-                secondaryAnimation.current.add(textTl, 0).repeat(-1);
-                gsap.set(textEl, { text: tags[0], autoAlpha: 1 });
-              }
+                const textEl = activeSvg.querySelector('.code-tag-text');
+                if (textEl) {
+                    const tags = ['a', 'p', 'h1', 'div'];
+                    const textTl = gsap.timeline();
+            
+                    tags.forEach((tag) => {
+                    textTl
+                        .to(textEl, {
+                        autoAlpha: 0,
+                        duration: 0.3,
+                        ease: 'power1.in',
+                        onComplete: () => gsap.set(textEl, { text: tag })
+                        })
+                        .to(textEl, {
+                        autoAlpha: 1,
+                        duration: 0.3,
+                        ease: 'power1.out',
+                        }, '+=1.2');
+                    });
+            
+                    secondaryAnimation.current.add(textTl, 0).repeat(-1);
+                    gsap.set(textEl, { text: tags[0], autoAlpha: 1 });
+                }
             }
 
             if (currentService.id === 'ecommerce') {
@@ -368,7 +368,7 @@ export function Services() {
         clearTimeout(resumeTimerRef.current);
       }
     };
-  }, [activeIndex, isHovering, runAutoplay]);
+  }, [activeIndex, isHovering, runAutoplay, isTouchDevice]);
 
   const handleTap = (index: number) => {
     if (!isTouchDevice) return;
