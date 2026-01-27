@@ -1,11 +1,12 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
-import { Projects, type ImagePlaceholder } from '@/lib/placeholder-images';
-import { ArrowRight, X } from 'lucide-react';
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
+import { Projects, type ImagePlaceholder } from "@/lib/placeholder-images";
+import { ArrowRight, X } from "lucide-react";
+import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -29,11 +30,12 @@ export function Work() {
   const detailCloseBtnRef = useRef<HTMLButtonElement>(null);
 
   const mainTl = useRef<gsap.core.Timeline | null>(null);
-  const mainSt = useRef<ScrollTrigger | null>(null);
+  const mainSt = useRef<ScrollTrigger | undefined>(undefined);
+  const scrollYRef = useRef(0);
 
   // Effect for main pinned scrolling animation
   useEffect(() => {
-    const panels = gsap.utils.toArray<HTMLDivElement>('.project-panel');
+    const panels = gsap.utils.toArray<HTMLDivElement>(".project-panel");
     const ctx = gsap.context(() => {
       mainTl.current = gsap.timeline({
         scrollTrigger: {
@@ -64,91 +66,14 @@ export function Work() {
   }, []);
 
   const handleProjectClick = (project: ImagePlaceholder) => {
-    if (isDetailOpen) return;
     setActiveProject(project);
     setIsDetailOpen(true);
   };
-  
+
   const handleCloseClick = () => {
     setIsDetailOpen(false);
-  }
-
-  // Effect for opening/closing the detail view
-  useEffect(() => {
-    // Kill any conflicting tweens before running new ones.
-    gsap.killTweensOf([detailViewRef.current, detailContentRef.current]);
-
-    if (isDetailOpen && activeProject) {
-      // --- OPEN ANIMATION ---
-      mainSt.current?.disable();
-      document.body.style.overflow = 'hidden';
-
-      gsap.set(detailViewRef.current, { display: 'block' });
-      const imageUrl = activeProject.imageUrl;
-      gsap.set(detailTopPaneRef.current, {
-        backgroundImage: `url(${imageUrl})`,
-      });
-      gsap.set(detailBottomPaneRef.current, {
-        backgroundImage: `url(${imageUrl})`,
-      });
-
-      const openTl = gsap.timeline();
-
-      openTl
-        .fromTo(
-          [detailTopPaneRef.current, detailBottomPaneRef.current],
-          { yPercent: 0 },
-          {
-            yPercent: (i) => (i === 0 ? -100 : 100),
-            duration: 0.8,
-            ease: 'power3.inOut',
-          }
-        )
-        .fromTo(
-          detailContentRef.current,
-          { autoAlpha: 0 },
-          { autoAlpha: 1, duration: 0.6, ease: 'power2.out' },
-          '-=0.5'
-        )
-        .fromTo(
-          gsap.utils.toArray('.detail-content-reveal'),
-          { y: 30, autoAlpha: 0 },
-          {
-            y: 0,
-            autoAlpha: 1,
-            stagger: 0.1,
-            duration: 0.5,
-            ease: 'power2.out',
-          },
-          '-=0.3'
-        );
-    } else if (!isDetailOpen && activeProject) {
-      // --- CLOSE ANIMATION ---
-      const closeTl = gsap.timeline({
-        onComplete: () => {
-          gsap.set(detailViewRef.current, { display: 'none' });
-          mainSt.current?.enable();
-          document.body.style.overflow = '';
-          setActiveProject(null);
-        },
-      });
-
-      closeTl
-        .to(gsap.utils.toArray('.detail-content-reveal'), {
-          y: 30,
-          autoAlpha: 0,
-          stagger: 0.05,
-          duration: 0.4,
-          ease: 'power2.in',
-        })
-        .to(detailContentRef.current, { autoAlpha: 0, duration: 0.4 }, '<')
-        .to(
-          [detailTopPaneRef.current, detailBottomPaneRef.current],
-          { yPercent: 0, duration: 0.7, ease: 'power3.inOut' },
-          '-=0.2'
-        );
-    }
-  }, [isDetailOpen, activeProject]);
+    setActiveProject(null);
+  };
 
   return (
     <>
@@ -181,7 +106,7 @@ export function Work() {
         <div
           ref={triggerRef}
           className="relative h-screen w-full"
-          style={{ marginTop: '-20vh' }}
+          style={{ marginTop: "-20vh" }}
         >
           <div className="sticky top-0 h-screen w-full overflow-hidden">
             {Projects.map((project, i) => (
@@ -193,7 +118,7 @@ export function Work() {
                 <div className="group relative h-full w-full cursor-pointer">
                   <Image
                     src={project.imageUrl}
-                    alt={project.title || 'Project image'}
+                    alt={project.title || "Project image"}
                     fill
                     className="object-cover"
                     data-ai-hint={project.imageHint}
@@ -225,45 +150,62 @@ export function Work() {
         <div
           ref={detailTopPaneRef}
           className="absolute top-0 left-0 h-1/2 w-full bg-cover"
-          style={{ backgroundPosition: 'center top' }}
+          style={{ backgroundPosition: "center top" }}
         />
         <div
           ref={detailBottomPaneRef}
           className="absolute bottom-0 left-0 h-1/2 w-full bg-cover"
-          style={{ backgroundPosition: 'center bottom' }}
+          style={{ backgroundPosition: "center bottom" }}
         />
         <div
           ref={detailContentRef}
           className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 p-8 text-center opacity-0 backdrop-blur-md"
         >
-          {activeProject && (
-            <div className="relative max-w-2xl space-y-6 text-foreground">
-              <button
-                ref={detailCloseBtnRef}
-                onClick={handleCloseClick}
-                className="detail-content-reveal absolute -top-4 -right-4 rounded-full border border-foreground/20 bg-background/50 p-2 text-foreground transition-all hover:scale-110 hover:bg-background"
-                aria-label="Close project details"
-              >
-                <X className="h-6 w-6" />
-              </button>
-              <h2 className="detail-content-reveal font-headline text-4xl font-bold">
-                {activeProject.title}
-              </h2>
-              <p className="detail-content-reveal text-lg">
-                {activeProject.description}
-              </p>
-              {activeProject.testimonial && (
-                <blockquote className="detail-content-reveal border-l-4 border-primary pl-6">
-                  <p className="text-xl italic">
-                    "{activeProject.testimonial}"
+          <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
+            <DialogContent className="max-w-3xl bg-background/90 backdrop-blur-md">
+              {activeProject && (
+                <div className="space-y-6 text-center">
+                  <div className="relative aspect-video w-full overflow-hidden rounded-lg">
+                    <Image
+                      src={activeProject.imageUrl}
+                      alt="{activeProject.title}"
+                      fill
+                      className="object-cover"
+                      sizes="(min-width: 768px) 720px, 100vw"
+                    />
+                  </div>
+
+                  <h2 className="font-headline text-4xl font-bold">
+                    {activeProject.title}
+                  </h2>
+
+                  <p className="text-lg text-muted-foreground">
+                    {activeProject.description}
                   </p>
-                  <footer className="mt-2 text-base font-semibold text-primary">
-                    — {activeProject.client}
-                  </footer>
-                </blockquote>
+
+                  {activeProject.testimonial && (
+                    <blockquote className="border-l-4 border-primary pl-6 text-left">
+                      <p className="text-xl italic">
+                        "{activeProject.testimonial}"
+                      </p>
+                      <footer className="mt-2 font-semibold text-primary">
+                        — {activeProject.client}
+                      </footer>
+                    </blockquote>
+                  )}
+
+                  <DialogClose asChild>
+                    <button
+                      onClick={handleCloseClick}
+                      className="rounded-full border px-6 py-2 text-sm font-medium transition hover:bg-muted"
+                    >
+                      Close
+                    </button>
+                  </DialogClose>
+                </div>
               )}
-            </div>
-          )}
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </>
