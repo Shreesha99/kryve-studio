@@ -57,7 +57,7 @@ export function Header() {
     // Animate the header in when the component mounts
     const headerEl = headerRef.current;
     if (headerEl) {
-      gsap.set(headerEl, { opacity: 1 }); // Make header visible before animating children
+      gsap.set(headerEl, { opacity: 1, perspective: 800 }); // Make header visible AND add perspective for 3D transforms
       const logo = headerEl.querySelector('.header-logo');
       const navItems = gsap.utils.toArray('.nav-link-item', headerEl);
       const actions = headerEl.querySelector('.header-actions');
