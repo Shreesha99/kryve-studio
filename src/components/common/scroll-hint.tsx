@@ -13,21 +13,33 @@ export function ScrollHint({
   scrollTo: string;
 }) {
   const lenis = useLenis();
-  const hintRef = useRef<HTMLButtonElement>(null);
-  const wheelRef = useRef<SVGRectElement>(null);
+  const containerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    const wheel = wheelRef.current;
-    if (!wheel) return;
+    const dots = gsap.utils.toArray<HTMLDivElement>('.scroll-dot', containerRef.current);
+    if (!dots.length) return;
 
-    // Animate the scroll wheel moving up and down
-    gsap.to(wheel, {
+    gsap.set(dots, { opacity: 0, y: -10 });
+
+    const tl = gsap.timeline({ repeat: -1, repeatDelay: 0.5 });
+
+    tl.to(dots, {
+      opacity: 1,
+      y: 0,
+      duration: 0.4,
+      stagger: 0.2,
+      ease: 'power2.out',
+    }).to(dots, {
+      opacity: 0,
       y: 10,
-      repeat: -1,
-      yoyo: true,
-      duration: 1.2,
-      ease: 'power1.inOut',
-    });
+      duration: 0.4,
+      stagger: 0.2,
+      ease: 'power2.in',
+    }, '+=0.5');
+
+    return () => {
+      tl.kill();
+    }
   }, []);
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -50,37 +62,14 @@ export function ScrollHint({
   return (
     <div className={cn('absolute bottom-8 left-1/2 z-30 -translate-x-1/2', className)}>
       <button
-        ref={hintRef}
+        ref={containerRef}
         onClick={handleClick}
         aria-label="Scroll to next section"
-        className="group transition-opacity duration-300 hover:opacity-70"
+        className="group flex flex-col items-center gap-2 p-2 transition-opacity duration-300 hover:opacity-70"
       >
-        <svg
-          width="28"
-          height="48"
-          viewBox="0 0 28 48"
-          className="stroke-current text-muted-foreground transition-colors duration-300 group-hover:text-primary"
-        >
-          <rect
-            x="1"
-            y="1"
-            width="26"
-            height="46"
-            rx="13"
-            strokeWidth="2"
-            fill="none"
-          />
-          <rect
-            ref={wheelRef}
-            x="12"
-            y="10"
-            width="4"
-            height="8"
-            rx="2"
-            fill="currentColor"
-            className="fill-current"
-          />
-        </svg>
+        <div className="scroll-dot h-1.5 w-1.5 rounded-full bg-muted-foreground transition-colors group-hover:bg-primary" />
+        <div className="scroll-dot h-1.5 w-1.5 rounded-full bg-muted-foreground transition-colors group-hover:bg-primary" />
+        <div className="scroll-dot h-1.5 w-1.5 rounded-full bg-muted-foreground transition-colors group-hover:bg-primary" />
       </button>
     </div>
   );
