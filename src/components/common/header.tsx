@@ -90,7 +90,6 @@ export function Header() {
         rotationX: 0,
         duration: 0.8,
         ease: 'power3.out',
-        stagger: 0.08,
       });
     }
 
@@ -167,14 +166,14 @@ export function Header() {
   return (
     <header
       ref={headerRef}
-      className="fixed top-0 z-50 w-full p-4 transition-all opacity-0"
+      className="fixed top-0 z-50 w-full p-4 opacity-0"
     >
       <div
         className={cn(
           'mx-auto grid h-16 max-w-7xl grid-cols-2 items-center rounded-full border px-6 shadow-sm md:grid-cols-3',
           isScrolled
             ? 'border-border bg-background/80 backdrop-blur-sm'
-            : 'border-transparent bg-background/30'
+            : 'border-border/30 bg-background/30'
         )}
       >
         <div className="header-logo flex items-center justify-start md:flex-1">
