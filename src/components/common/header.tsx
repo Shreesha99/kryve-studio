@@ -57,40 +57,24 @@ export function Header() {
     // Animate the header in when the component mounts
     const headerEl = headerRef.current;
     if (headerEl) {
-      // Set perspective on the parent for 3D transforms to work
       gsap.set(headerEl, { perspective: 800 });
-      gsap.set(headerEl, { opacity: 1 });
-
-      // Select all the elements to animate
-      const logo = headerEl.querySelector('.header-logo');
-      const navItems = gsap.utils.toArray<HTMLElement>(
-        '.nav-link-item',
-        headerEl
+      gsap.fromTo(
+        headerEl,
+        {
+          opacity: 0,
+          y: -60,
+          rotationX: -90,
+          transformOrigin: 'top center',
+        },
+        {
+          opacity: 1,
+          y: 0,
+          rotationX: 0,
+          duration: 1.0,
+          ease: 'power3.out',
+          delay: 0.2, // A short delay for effect
+        }
       );
-      const actions = headerEl.querySelector('.header-actions');
-      const allItems = [logo, ...navItems, actions].filter(Boolean);
-
-      // Set the initial state of the animation (invisible and transformed)
-      gsap.set(allItems, {
-        opacity: 0,
-        y: -40,
-        rotationX: -90,
-        transformOrigin: 'top center',
-      });
-
-      // Create the animation timeline
-      const tl = gsap.timeline({
-        delay: 0.2, // Start after a brief moment
-      });
-
-      // Animate all items to their final state (visible and in position)
-      tl.to(allItems, {
-        opacity: 1,
-        y: 0,
-        rotationX: 0,
-        duration: 0.8,
-        ease: 'power3.out',
-      });
     }
 
     // Run on mount to set initial state
