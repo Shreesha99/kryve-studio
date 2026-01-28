@@ -170,7 +170,7 @@ export function Header() {
     >
       <div
         className={cn(
-          'mx-auto grid h-16 max-w-7xl grid-cols-2 items-center rounded-full border px-6 shadow-sm md:grid-cols-3',
+          'mx-auto grid h-16 max-w-7xl grid-cols-2 items-center rounded-full border px-6 shadow-lg md:grid-cols-3',
           isScrolled
             ? 'border-border bg-background/80 backdrop-blur-sm'
             : 'border-border/30 bg-background/30'
