@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { gsap } from 'gsap';
 import { useLenis } from './smooth-scroll-provider';
 import { cn } from '@/lib/utils';
+import { ArrowRight } from 'lucide-react';
 
 const navLinks = [
   { href: '#home', label: 'Home' },
@@ -23,8 +24,7 @@ interface FullScreenMenuProps {
 
 export function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps) {
     const menuRef = useRef<HTMLDivElement>(null);
-    const overlayPanelsRef = useRef<HTMLDivElement[]>([]);
-    const navItemsRef = useRef<(HTMLAnchorElement | null)[]>([]);
+    const navListRef = useRef<HTMLUListElement>(null);
     const footerRef = useRef<HTMLDivElement>(null);
     const lenis = useLenis();
     const pathname = usePathname();
@@ -58,56 +58,71 @@ export function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps) {
         return () => window.removeEventListener('scroll', handleScroll);
     }, [pathname]);
 
-    // GSAP Animation Timeline
+
+    // GSAP Animation Timeline for menu open/close
     useEffect(() => {
-        const panels = overlayPanelsRef.current;
-        const navItems = navItemsRef.current.filter(Boolean);
+        const menu = menuRef.current;
+        const navItems = gsap.utils.toArray('li', navListRef.current);
         const footer = footerRef.current;
+
+        // Set initial state for animations
+        gsap.set(menu, {
+            clipPath: 'circle(0% at calc(100% - 44px) 36px)',
+        });
+        gsap.set(navItems, { opacity: 0 });
 
         timelineRef.current = gsap.timeline({
             paused: true,
             onStart: () => {
                 if (isOpen) {
                     lenis?.stop();
-                    gsap.set(menuRef.current, { pointerEvents: 'auto' });
+                    gsap.set(menu, { pointerEvents: 'auto' });
                 }
             },
             onReverseComplete: () => {
                 lenis?.start();
-                gsap.set(menuRef.current, { pointerEvents: 'none' });
+                gsap.set(menu, { pointerEvents: 'none' });
             },
         });
 
         timelineRef.current
-        .fromTo(
-            panels,
-            { yPercent: -101 },
-            {
-                yPercent: 0,
-                stagger: 0.05,
-                duration: 0.8,
-                ease: 'power3.inOut',
-            }
-        )
-        .fromTo(
-            navItems,
-            { opacity: 0, y: 30 },
-            {
-                opacity: 1,
-                y: 0,
-                stagger: 0.08,
-                duration: 0.8,
-                ease: 'power3.out',
-            },
-            '-=0.4'
-        )
-        .fromTo(
-            footer,
-            { opacity: 0, y: 20 },
-            { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' },
-            '-=0.6'
-        );
+            .to(menu, {
+                clipPath: 'circle(150% at calc(100% - 44px) 36px)',
+                duration: 1.2,
+                ease: 'power3.inOut'
+            })
+            .to(
+                navItems,
+                {
+                    opacity: 1,
+                    y: 0,
+                    stagger: 0.08,
+                    duration: 1,
+                    ease: 'power3.out',
+                },
+                '-=0.9'
+            )
+            .fromTo(
+                footer,
+                { opacity: 0, y: 20 },
+                { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' },
+                '-=0.8'
+            );
         
+        // Setup hover animations for each nav item
+        navItems.forEach(item => {
+            const underline = item.querySelector('.underline-anim');
+            const arrow = item.querySelector('.arrow-anim');
+            if (!underline || !arrow) return;
+
+            const hoverTl = gsap.timeline({ paused: true });
+            hoverTl.to(underline, { scaleX: 1, duration: 0.4, ease: 'power2.out' })
+                   .to(arrow, { rotation: -45, duration: 0.4, ease: 'power2.out' }, 0);
+            
+            item.addEventListener('mouseenter', () => hoverTl.play());
+            item.addEventListener('mouseleave', () => hoverTl.reverse());
+        });
+
         return () => {
             timelineRef.current?.kill();
         }
@@ -126,83 +141,73 @@ export function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps) {
         const isAnchor = href.startsWith('#');
 
         if (isAnchor && !isHomePage) {
-            // Let the anchor link redirect to the homepage
             onClose();
             return;
         }
 
         onClose();
         
-        // Delay scroll to allow menu to start animating out
         if (isAnchor) {
             setTimeout(() => {
                 lenis?.scrollTo(href, { duration: 1.5, lerp: 0.08 });
-            }, 300);
+            }, 600); // Delay for close animation
         }
     };
 
     return (
         <div
             ref={menuRef}
-            className="pointer-events-none fixed inset-0 z-40"
+            className="pointer-events-none fixed inset-0 z-40 flex flex-col items-center justify-center bg-background"
             aria-hidden={!isOpen}
         >
-            <div className="absolute inset-0 flex">
-                <div
-                ref={(el) => (overlayPanelsRef.current[0] = el!)}
-                className="h-full w-1/2 bg-background"
-                />
-                <div
-                ref={(el) => (overlayPanelsRef.current[1] = el!)}
-                className="h-full w-1/2 bg-background"
-                />
-            </div>
-            
             <div className="container relative z-10 flex h-full flex-col items-center justify-center px-4 md:px-6">
                 <nav>
-                    <ul className="flex flex-col items-center gap-2 text-center md:gap-4">
-                        {navLinks.map((link, index) => {
-                        const isPageLink = link.href.startsWith('/');
-                        const isHomePage = pathname === '/';
-                        let isActive = false;
-                        if (isPageLink) {
-                            isActive = pathname.startsWith(link.href);
-                        } else if (isHomePage) {
-                            isActive = activeSection === link.href.substring(1);
-                        }
-                        
-                        return (
-                            <li key={link.href}>
-                                {isPageLink ? (
-                                    <Link
-                                        href={link.href}
-                                        ref={(el) => { navItemsRef.current[index] = el; }}
-                                        className={cn("font-headline text-5xl font-semibold md:text-7xl",
-                                            isActive ? "text-primary" : "text-foreground transition-colors hover:text-primary"
+                    <ul ref={navListRef} className="flex flex-col items-center gap-2 text-center md:gap-4">
+                        {navLinks.map((link) => {
+                            const isPageLink = link.href.startsWith('/');
+                            const isHomePage = pathname === '/';
+                            let isActive = false;
+                            if (isPageLink) {
+                                isActive = pathname.startsWith(link.href);
+                            } else if (isHomePage) {
+                                isActive = activeSection === link.href.substring(1);
+                            }
+                            
+                            return (
+                                <li key={link.href} className="relative opacity-0" style={{ transform: 'translateY(40px)' }}>
+                                    <div className="relative">
+                                        {isPageLink ? (
+                                            <Link
+                                                href={link.href}
+                                                className={cn("flex items-center gap-4 font-headline text-5xl font-semibold md:text-7xl",
+                                                    isActive ? "text-primary" : "text-foreground"
+                                                )}
+                                                onClick={onClose}
+                                                tabIndex={isOpen ? 0 : -1}
+                                            >
+                                            {link.label}
+                                            <ArrowRight className="arrow-anim h-8 w-8 shrink-0 text-primary md:h-12 md:w-12" strokeWidth={1.5} />
+                                            </Link>
+                                        ) : (
+                                            <a
+                                                href={isHomePage ? link.href : `/${link.href}`}
+                                                className={cn("flex items-center gap-4 font-headline text-5xl font-semibold md:text-7xl",
+                                                    isActive ? "text-primary" : "text-foreground"
+                                                )}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    handleLinkClick(link.href);
+                                                }}
+                                                tabIndex={isOpen ? 0 : -1}
+                                            >
+                                            {link.label}
+                                            <ArrowRight className="arrow-anim h-8 w-8 shrink-0 text-primary md:h-12 md:w-12" strokeWidth={1.5} />
+                                            </a>
                                         )}
-                                        onClick={onClose}
-                                        tabIndex={isOpen ? 0 : -1}
-                                    >
-                                    {link.label}
-                                    </Link>
-                                ) : (
-                                    <a
-                                        href={isHomePage ? link.href : `/${link.href}`}
-                                        ref={(el) => { navItemsRef.current[index] = el; }}
-                                        className={cn("font-headline text-5xl font-semibold md:text-7xl",
-                                            isActive ? "text-primary" : "text-foreground transition-colors hover:text-primary"
-                                        )}
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            handleLinkClick(link.href);
-                                        }}
-                                        tabIndex={isOpen ? 0 : -1}
-                                    >
-                                    {link.label}
-                                    </a>
-                                )}
-                            </li>
-                        );
+                                    </div>
+                                    <div className="underline-anim pointer-events-none absolute -bottom-1 left-0 h-0.5 w-full origin-left scale-x-0 bg-primary" />
+                                </li>
+                            );
                         })}
                     </ul>
                 </nav>
