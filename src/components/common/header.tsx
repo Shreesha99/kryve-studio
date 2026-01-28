@@ -55,11 +55,29 @@ export function Header() {
     window.addEventListener('scroll', handleScroll, { passive: true });
 
     // Animate the header in when the component mounts
-    gsap.fromTo(
-      headerRef.current,
-      { y: -100, opacity: 0 },
-      { y: 0, opacity: 1, duration: 1, ease: 'power3.out', delay: 0.2 }
-    );
+    const headerEl = headerRef.current;
+    if (headerEl) {
+      gsap.set(headerEl, { opacity: 1 }); // Make header visible before animating children
+      const logo = headerEl.querySelector('.header-logo');
+      const navItems = gsap.utils.toArray('.nav-link-item', headerEl);
+      const actions = headerEl.querySelector('.header-actions');
+
+      const tl = gsap.timeline({
+        delay: 0.2, // Start after a brief moment
+        defaults: {
+          opacity: 0,
+          y: -40,
+          rotationX: -90,
+          transformOrigin: 'top center',
+          ease: 'power3.out',
+          duration: 0.8,
+        },
+      });
+
+      tl.from(logo, {})
+        .from(navItems, { stagger: 0.08 }, '-=0.6')
+        .from(actions, {}, '-=0.6');
+    }
     
     // Run on mount to set initial state
     handleScroll();
@@ -89,7 +107,7 @@ export function Header() {
           <a
             href={href}
             className={cn(
-              'text-lg font-medium transition-colors hover:text-primary md:text-sm',
+              'nav-link-item text-lg font-medium transition-colors hover:text-primary md:text-sm',
               isActive ? 'text-primary' : 'text-muted-foreground'
             )}
             onClick={(e) => {
@@ -108,7 +126,7 @@ export function Header() {
       return (
         <Link
           href={`/${href}`}
-          className="text-lg font-medium text-muted-foreground transition-colors hover:text-primary md:text-sm"
+          className="nav-link-item text-lg font-medium text-muted-foreground transition-colors hover:text-primary md:text-sm"
           onClick={() => setIsMobileMenuOpen(false)}
         >
           {label}
@@ -121,7 +139,7 @@ export function Header() {
       <Link
         href={href}
         className={cn(
-          'text-lg font-medium transition-colors hover:text-primary md:text-sm',
+          'nav-link-item text-lg font-medium transition-colors hover:text-primary md:text-sm',
           isActive ? 'text-primary' : 'text-muted-foreground'
         )}
         onClick={() => setIsMobileMenuOpen(false)}
@@ -144,7 +162,7 @@ export function Header() {
             : 'border-transparent bg-background/30'
         )}
       >
-        <div className="flex items-center justify-start md:flex-1">
+        <div className="header-logo flex items-center justify-start md:flex-1">
           <Logo />
         </div>
 
@@ -156,7 +174,7 @@ export function Header() {
           </div>
         </nav>
 
-        <div className="flex items-center justify-end md:flex-1">
+        <div className="header-actions flex items-center justify-end md:flex-1">
           <ThemeToggle />
           <div className="md:hidden">
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
