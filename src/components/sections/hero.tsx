@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { MorphingSvg } from '@/components/common/morphing-svg';
 import { AnimatedGradient } from '../common/animated-gradient';
+import { ScrollHint } from '@/components/common/scroll-hint';
 
 export function Hero() {
   const headlineRef = useRef<HTMLHeadingElement>(null);
@@ -19,7 +20,7 @@ export function Hero() {
   useEffect(() => {
     const tl = gsap.timeline({
       defaults: { ease: 'power4.out', duration: 1.2 },
-      delay: 1.0, // Wait for header animation to complete
+      delay: 1.6,
     });
 
     // Animate each line of the headline from a masked container
@@ -119,6 +120,7 @@ export function Hero() {
           </div>
         </div>
       </div>
+      <ScrollHint scrollTo="#about" />
     </section>
   );
 }

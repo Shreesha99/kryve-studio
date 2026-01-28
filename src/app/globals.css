@@ -54,6 +54,10 @@
   }
   html {
     @apply scroll-smooth;
+    scrollbar-width: none; /* For Firefox */
+  }
+  html::-webkit-scrollbar {
+    display: none; /* For Webkit browsers */
   }
   body {
     @apply bg-background text-foreground;
