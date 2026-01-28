@@ -63,7 +63,6 @@ export function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps) {
     useEffect(() => {
         const menu = menuRef.current;
         const navItems = gsap.utils.toArray<HTMLLIElement>('li', navListRef.current);
-        const navLinks = gsap.utils.toArray<HTMLAnchorElement>('a', navListRef.current);
         const footer = footerRef.current;
 
         // Set initial state for animations
@@ -109,8 +108,8 @@ export function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps) {
                 '-=0.8'
             );
         
-        // Setup hover animations for each nav item
-        navLinks.forEach((link: Element) => {
+        const navLinksElements = gsap.utils.toArray('a', navListRef.current);
+        navLinksElements.forEach((link: Element) => {
             const underline = link.querySelector('.underline-anim');
             const arrow = link.querySelector('.arrow-anim');
             if (!underline || !arrow) return;
@@ -201,8 +200,12 @@ export function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps) {
                                                 isActive ? "text-primary" : "text-foreground"
                                             )}
                                             onClick={(e) => {
-                                                e.preventDefault();
-                                                handleLinkClick(link.href);
+                                                if (isHomePage) {
+                                                    e.preventDefault();
+                                                    handleLinkClick(link.href);
+                                                } else {
+                                                    onClose();
+                                                }
                                             }}
                                             tabIndex={isOpen ? 0 : -1}
                                         >
