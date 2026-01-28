@@ -29,6 +29,7 @@ export function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps) {
     const lenis = useLenis();
     const pathname = usePathname();
     const timelineRef = useRef<gsap.core.Timeline>();
+    const targetHrefRef = useRef<string | null>(null);
 
     const [activeSection, setActiveSection] = useState('home');
 
@@ -79,8 +80,17 @@ export function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps) {
                 gsap.set(menu, { pointerEvents: 'auto' });
             },
             onReverseComplete: () => {
-                lenis?.start();
                 gsap.set(menu, { pointerEvents: 'none' });
+                if (targetHrefRef.current && lenis) {
+                    lenis.scrollTo(targetHrefRef.current, { 
+                        duration: 2, 
+                        // easeOutExpo
+                        ease: (t: number) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t) 
+                    });
+                    targetHrefRef.current = null; // Reset after use
+                } else {
+                    lenis?.start();
+                }
             },
         });
 
@@ -108,8 +118,8 @@ export function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps) {
                 '-=0.8'
             );
         
-        const navLinksElements = gsap.utils.toArray('a', navListRef.current);
-        navLinksElements.forEach((link: Element) => {
+        const navLinkElements = gsap.utils.toArray<Element>('a', navListRef.current);
+        navLinkElements.forEach((link: Element) => {
             const underline = link.querySelector('.underline-anim');
             const arrow = link.querySelector('.arrow-anim');
             if (!underline || !arrow) return;
@@ -138,21 +148,8 @@ export function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps) {
     }, [isOpen]);
 
     const handleLinkClick = (href: string) => {
-        const isHomePage = pathname === '/';
-        const isAnchor = href.startsWith('#');
-
-        if (isAnchor && !isHomePage) {
-            onClose();
-            return;
-        }
-
+        targetHrefRef.current = href;
         onClose();
-        
-        if (isAnchor) {
-            setTimeout(() => {
-                lenis?.scrollTo(href, { duration: 1.5, lerp: 0.08 });
-            }, 600); // Delay for close animation
-        }
     };
 
     return (

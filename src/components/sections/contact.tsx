@@ -2,8 +2,8 @@
 
 import { useFormState, useFormStatus } from "react-dom";
 import { useEffect, useRef, useState } from "react";
+import { useTheme } from "next-themes";
 import { gsap } from "gsap";
-import { MotionPathPlugin } from "gsap/dist/MotionPathPlugin";
 import { sendEmail, type ContactFormState } from "@/actions/send-email";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,6 +49,11 @@ function SubmitButton({ status }: { status: "idle" | "success" | "error" }) {
   );
 }
 
+const tags = [
+  '#contact', '#hello', '#connect', '#inbox', '#message', '#send',
+  '#elysium', '#letstalk', '#collaboration', '#inquiry'
+];
+
 export function Contact() {
   const initialState: ContactFormState = {
     success: false,
@@ -58,106 +63,55 @@ export function Contact() {
   const [state, formAction] = useFormState(sendEmail, initialState);
   const formRef = useRef<HTMLFormElement>(null);
   const containerRef = useRef<HTMLElement>(null);
-  const planeRef = useRef<SVGGElement>(null);
+  const { resolvedTheme } = useTheme();
 
   const [submitStatus, setSubmitStatus] = useState<
     "idle" | "success" | "error"
   >("idle");
 
   useEffect(() => {
-    gsap.registerPlugin(MotionPathPlugin);
-    const plane = planeRef.current;
     const container = containerRef.current;
-    if (!plane || !container) return;
-
+    if (!container) return;
+    
     let isCancelled = false;
-    let currentTl: gsap.core.Timeline | null = null;
+    
+    const createAndAnimateTag = () => {
+        if (isCancelled) return;
+        
+        const tagEl = document.createElement('span');
+        tagEl.innerText = tags[gsap.utils.random(0, tags.length - 1, 1)];
+        tagEl.className = 'contact-bg-tag pointer-events-none absolute z-0 select-none font-headline text-lg md:text-2xl opacity-0';
+        tagEl.style.color = resolvedTheme === 'dark' ? 'hsl(var(--primary) / 0.05)' : 'hsl(var(--primary) / 0.05)';
+        
+        container.appendChild(tagEl);
 
-    const fly = () => {
-      if (isCancelled) return;
+        const bounds = container.getBoundingClientRect();
 
-      const bounds = container.getBoundingClientRect();
-      const x = gsap.utils.random(0, bounds.width);
-      const y = gsap.utils.random(0, bounds.height);
+        gsap.set(tagEl, {
+            x: gsap.utils.random(0, bounds.width),
+            y: gsap.utils.random(0, bounds.height),
+        });
 
-      const currentX = gsap.getProperty(plane, "x") as number;
-      const currentY = gsap.getProperty(plane, "y") as number;
-
-      const path = [
-        { x: currentX, y: currentY },
-        { x: x, y: y },
-      ];
-
-      const trail = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "path"
-      );
-      trail.setAttribute("class", "paper-trail");
-      trail.setAttribute(
-        "d",
-        `M ${path[0].x} ${path[0].y} L ${path[1].x} ${path[1].y}`
-      );
-      container.querySelector("svg")?.prepend(trail);
-
-      const trailLength = trail.getTotalLength();
-      gsap.set(trail, {
-        strokeDasharray: trailLength,
-        strokeDashoffset: trailLength,
-        opacity: 1,
-      });
-
-      currentTl = gsap.timeline({
-        onComplete: fly,
-      });
-
-      currentTl
-        .to(plane, {
-          motionPath: {
-            path: path,
-            align: "relative",
-            autoRotate: true,
-            alignOrigin: [0.5, 0.5],
-          },
-          duration: gsap.utils.random(3, 5),
-          ease: "power2.inOut",
-        })
-        .to(
-          trail,
-          {
-            strokeDashoffset: 0,
-            duration: currentTl.duration() * 0.7,
-            ease: "power1.out",
-          },
-          "<"
-        )
-        .to(
-          trail,
-          {
-            opacity: 0,
-            duration: 1.5,
-            onComplete: () => trail.remove(),
-          },
-          ">-1"
-        );
+        gsap.timeline({ onComplete: () => tagEl.remove() })
+            .to(tagEl, { autoAlpha: 1, duration: 1, ease: 'power2.out' })
+            .to(tagEl, {
+                x: '+=random(-50, 50)',
+                y: '+=random(-50, 50)',
+                rotation: 'random(-15, 15)',
+                duration: gsap.utils.random(5, 8),
+                ease: 'none'
+            }, 0)
+            .to(tagEl, { autoAlpha: 0, duration: 1.5, ease: 'power2.in' }, '>-1.5');
     };
 
-    const initialBounds = container.getBoundingClientRect();
-    gsap.set(plane, {
-      x: initialBounds.width / 2,
-      y: initialBounds.height / 2,
-    });
-
-    fly();
+    const interval = setInterval(createAndAnimateTag, 800);
 
     return () => {
-      isCancelled = true;
-      if (currentTl) {
-        currentTl.kill();
-      }
-      gsap.killTweensOf(plane);
-      container.querySelectorAll('.paper-trail').forEach(el => el.remove());
+        isCancelled = true;
+        clearInterval(interval);
+        container.querySelectorAll('.contact-bg-tag').forEach(el => el.remove());
     };
-  }, []);
+  }, [resolvedTheme]);
 
   useEffect(() => {
     if (state.message || state.errors) {
@@ -182,20 +136,6 @@ export function Contact() {
       ref={containerRef}
       className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-background py-24 md:py-32"
     >
-      <style jsx>{`
-        .paper-trail {
-          stroke: hsl(var(--primary));
-          stroke-width: 2;
-          stroke-dasharray: 5 10;
-          fill: none;
-        }
-      `}</style>
-      <svg className="pointer-events-none absolute inset-0 z-0 h-full w-full opacity-30">
-        <g ref={planeRef}>
-          <Send className="h-7 w-7 text-primary" strokeWidth={1} />
-        </g>
-      </svg>
-
       <div className="container relative z-10 mx-auto px-4 md:px-6">
         <div className="mx-auto max-w-3xl text-center">
           <AnimateOnScroll>
