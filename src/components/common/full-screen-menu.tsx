@@ -29,7 +29,6 @@ export function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps) {
     const lenis = useLenis();
     const pathname = usePathname();
     const timelineRef = useRef<gsap.core.Timeline>();
-    const targetHrefRef = useRef<string | null>(null);
 
     const [activeSection, setActiveSection] = useState('home');
 
@@ -76,21 +75,11 @@ export function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps) {
         timelineRef.current = gsap.timeline({
             paused: true,
             onStart: () => {
-                lenis?.stop();
+                // lenis?.stop(); // User request: don't disable scroll
                 gsap.set(menu, { pointerEvents: 'auto' });
             },
             onReverseComplete: () => {
                 gsap.set(menu, { pointerEvents: 'none' });
-                if (targetHrefRef.current && lenis) {
-                    lenis.scrollTo(targetHrefRef.current, { 
-                        duration: 2, 
-                        // easeOutExpo
-                        ease: (t: number) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t) 
-                    });
-                    targetHrefRef.current = null; // Reset after use
-                } else {
-                    lenis?.start();
-                }
             },
         });
 
@@ -137,7 +126,7 @@ export function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps) {
         return () => {
             timelineRef.current?.kill();
         }
-    }, [lenis]);
+    }, []);
 
     useEffect(() => {
         if (isOpen) {
@@ -148,8 +137,16 @@ export function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps) {
     }, [isOpen]);
 
     const handleLinkClick = (href: string) => {
-        targetHrefRef.current = href;
-        onClose();
+        onClose(); // Triggers the menu close animation.
+        // Use a delayed call to ensure the scroll starts after the menu has begun closing.
+        gsap.delayedCall(0.3, () => {
+          if (lenis) {
+            lenis.scrollTo(href, {
+              duration: 2,
+              ease: (t: number) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t)), // easeOutExpo
+            });
+          }
+        });
     };
 
     return (
