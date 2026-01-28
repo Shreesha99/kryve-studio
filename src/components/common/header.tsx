@@ -17,13 +17,15 @@ export function Header() {
   useEffect(() => {
     const headerEl = headerRef.current;
     if (!headerEl) return;
-
+    
+    gsap.set(headerEl, { perspective: 800 });
     gsap.fromTo(
       headerEl,
-      { y: -100, opacity: 0 },
+      { y: -100, opacity: 0, rotationX: -90, transformOrigin: 'top center' },
       {
         y: 0,
         opacity: 1,
+        rotationX: 0,
         duration: 1.2,
         ease: 'power3.out',
         delay: 0.5,
@@ -46,14 +48,14 @@ export function Header() {
     <>
       <header
         ref={headerRef}
-        className="fixed top-0 z-50 w-full p-4 opacity-0"
+        className="fixed top-0 z-50 w-full p-4"
       >
         <div
           className={cn(
             'mx-auto flex h-16 max-w-7xl items-center justify-between rounded-full border px-6 shadow-lg transition-colors duration-300',
             isScrolled
               ? 'border-border bg-background/80 backdrop-blur-sm'
-              : 'border-transparent bg-transparent'
+              : 'border-border bg-transparent'
           )}
         >
           <div className="flex items-center justify-start">

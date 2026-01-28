@@ -63,21 +63,21 @@ export function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps) {
     useEffect(() => {
         const menu = menuRef.current;
         const navItems = gsap.utils.toArray('li', navListRef.current);
+        const navLinks = gsap.utils.toArray('a', navListRef.current);
         const footer = footerRef.current;
 
         // Set initial state for animations
         gsap.set(menu, {
-            clipPath: 'circle(0% at calc(100% - 44px) 36px)',
+            clipPath: 'circle(0% at calc(100% - 44px) 44px)',
+            pointerEvents: 'none'
         });
         gsap.set(navItems, { opacity: 0 });
 
         timelineRef.current = gsap.timeline({
             paused: true,
             onStart: () => {
-                if (isOpen) {
-                    lenis?.stop();
-                    gsap.set(menu, { pointerEvents: 'auto' });
-                }
+                lenis?.stop();
+                gsap.set(menu, { pointerEvents: 'auto' });
             },
             onReverseComplete: () => {
                 lenis?.start();
@@ -87,7 +87,7 @@ export function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps) {
 
         timelineRef.current
             .to(menu, {
-                clipPath: 'circle(150% at calc(100% - 44px) 36px)',
+                clipPath: 'circle(150% at calc(100% - 44px) 44px)',
                 duration: 1.2,
                 ease: 'power3.inOut'
             })
@@ -110,23 +110,23 @@ export function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps) {
             );
         
         // Setup hover animations for each nav item
-        navItems.forEach(item => {
-            const underline = item.querySelector('.underline-anim');
-            const arrow = item.querySelector('.arrow-anim');
+        navLinks.forEach(link => {
+            const underline = link.querySelector('.underline-anim');
+            const arrow = link.querySelector('.arrow-anim');
             if (!underline || !arrow) return;
 
             const hoverTl = gsap.timeline({ paused: true });
             hoverTl.to(underline, { scaleX: 1, duration: 0.4, ease: 'power2.out' })
                    .to(arrow, { rotation: -45, duration: 0.4, ease: 'power2.out' }, 0);
             
-            item.addEventListener('mouseenter', () => hoverTl.play());
-            item.addEventListener('mouseleave', () => hoverTl.reverse());
+            link.addEventListener('mouseenter', () => hoverTl.play());
+            link.addEventListener('mouseleave', () => hoverTl.reverse());
         });
 
         return () => {
             timelineRef.current?.kill();
         }
-    }, [lenis, isOpen]);
+    }, [lenis]);
 
     useEffect(() => {
         if (isOpen) {
@@ -157,7 +157,7 @@ export function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps) {
     return (
         <div
             ref={menuRef}
-            className="pointer-events-none fixed inset-0 z-40 flex flex-col items-center justify-center bg-background"
+            className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-background"
             aria-hidden={!isOpen}
         >
             <div className="container relative z-10 flex h-full flex-col items-center justify-center px-4 md:px-6">
@@ -173,39 +173,44 @@ export function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps) {
                                 isActive = activeSection === link.href.substring(1);
                             }
                             
+                            const targetHref = isPageLink ? link.href : (isHomePage ? link.href : `/${link.href}`);
+
                             return (
-                                <li key={link.href} className="relative opacity-0" style={{ transform: 'translateY(40px)' }}>
-                                    <div className="relative">
-                                        {isPageLink ? (
-                                            <Link
-                                                href={link.href}
-                                                className={cn("flex items-center gap-4 font-headline text-5xl font-semibold md:text-7xl",
-                                                    isActive ? "text-primary" : "text-foreground"
-                                                )}
-                                                onClick={onClose}
-                                                tabIndex={isOpen ? 0 : -1}
-                                            >
-                                            {link.label}
+                                <li key={link.href} className="opacity-0" style={{ transform: 'translateY(40px)' }}>
+                                    {isPageLink ? (
+                                        <Link
+                                            href={targetHref}
+                                            className={cn("flex items-center gap-4 font-headline text-5xl font-semibold md:text-7xl",
+                                                isActive ? "text-primary" : "text-foreground"
+                                            )}
+                                            onClick={onClose}
+                                            tabIndex={isOpen ? 0 : -1}
+                                        >
+                                            <span className="relative py-1">
+                                                {link.label}
+                                                <span className="underline-anim pointer-events-none absolute bottom-0 left-0 h-0.5 w-full origin-left scale-x-0 bg-primary" />
+                                            </span>
                                             <ArrowRight className="arrow-anim h-8 w-8 shrink-0 text-primary md:h-12 md:w-12" strokeWidth={1.5} />
-                                            </Link>
-                                        ) : (
-                                            <a
-                                                href={isHomePage ? link.href : `/${link.href}`}
-                                                className={cn("flex items-center gap-4 font-headline text-5xl font-semibold md:text-7xl",
-                                                    isActive ? "text-primary" : "text-foreground"
-                                                )}
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    handleLinkClick(link.href);
-                                                }}
-                                                tabIndex={isOpen ? 0 : -1}
-                                            >
-                                            {link.label}
+                                        </Link>
+                                    ) : (
+                                        <a
+                                            href={targetHref}
+                                            className={cn("flex items-center gap-4 font-headline text-5xl font-semibold md:text-7xl",
+                                                isActive ? "text-primary" : "text-foreground"
+                                            )}
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                handleLinkClick(link.href);
+                                            }}
+                                            tabIndex={isOpen ? 0 : -1}
+                                        >
+                                            <span className="relative py-1">
+                                                {link.label}
+                                                <span className="underline-anim pointer-events-none absolute bottom-0 left-0 h-0.5 w-full origin-left scale-x-0 bg-primary" />
+                                            </span>
                                             <ArrowRight className="arrow-anim h-8 w-8 shrink-0 text-primary md:h-12 md:w-12" strokeWidth={1.5} />
-                                            </a>
-                                        )}
-                                    </div>
-                                    <div className="underline-anim pointer-events-none absolute -bottom-1 left-0 h-0.5 w-full origin-left scale-x-0 bg-primary" />
+                                        </a>
+                                    )}
                                 </li>
                             );
                         })}
