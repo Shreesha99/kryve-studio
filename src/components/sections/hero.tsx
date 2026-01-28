@@ -19,7 +19,7 @@ export function Hero() {
   useEffect(() => {
     const tl = gsap.timeline({
       defaults: { ease: 'power4.out', duration: 1.2 },
-      delay: 1.0, // Increased delay to start after header animation
+      delay: 1.6, // Wait for header animation to complete
     });
 
     // Animate each line of the headline from a masked container

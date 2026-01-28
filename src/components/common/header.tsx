@@ -57,28 +57,43 @@ export function Header() {
     // Animate the header in when the component mounts
     const headerEl = headerRef.current;
     if (headerEl) {
-      gsap.set(headerEl, { opacity: 1, perspective: 800 }); // Make header visible AND add perspective for 3D transforms
-      const logo = headerEl.querySelector('.header-logo');
-      const navItems = gsap.utils.toArray('.nav-link-item', headerEl);
-      const actions = headerEl.querySelector('.header-actions');
+      // Set perspective on the parent for 3D transforms to work
+      gsap.set(headerEl, { perspective: 800 });
+      gsap.set(headerEl, { opacity: 1 });
 
-      const tl = gsap.timeline({
-        delay: 0.2, // Start after a brief moment
-        defaults: {
-          opacity: 0,
-          y: -40,
-          rotationX: -90,
-          transformOrigin: 'top center',
-          ease: 'power3.out',
-          duration: 0.8,
-        },
+      // Select all the elements to animate
+      const logo = headerEl.querySelector('.header-logo');
+      const navItems = gsap.utils.toArray<HTMLElement>(
+        '.nav-link-item',
+        headerEl
+      );
+      const actions = headerEl.querySelector('.header-actions');
+      const allItems = [logo, ...navItems, actions].filter(Boolean);
+
+      // Set the initial state of the animation (invisible and transformed)
+      gsap.set(allItems, {
+        opacity: 0,
+        y: -40,
+        rotationX: -90,
+        transformOrigin: 'top center',
       });
 
-      tl.from(logo, {})
-        .from(navItems, { stagger: 0.08 }, '-=0.6')
-        .from(actions, {}, '-=0.6');
+      // Create the animation timeline
+      const tl = gsap.timeline({
+        delay: 0.2, // Start after a brief moment
+      });
+
+      // Animate all items to their final state (visible and in position)
+      tl.to(allItems, {
+        opacity: 1,
+        y: 0,
+        rotationX: 0,
+        duration: 0.8,
+        ease: 'power3.out',
+        stagger: 0.08,
+      });
     }
-    
+
     // Run on mount to set initial state
     handleScroll();
 
@@ -88,7 +103,7 @@ export function Header() {
   const NavLink = ({ href, label }: { href: string; label: string }) => {
     const isPageLink = href.startsWith('/');
     const isHomePage = pathname === '/';
-    
+
     let isActive = false;
     if (isPageLink) {
       // Handle /blog page link
