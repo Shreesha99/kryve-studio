@@ -62,8 +62,8 @@ export function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps) {
     // GSAP Animation Timeline for menu open/close
     useEffect(() => {
         const menu = menuRef.current;
-        const navItems = gsap.utils.toArray('li', navListRef.current);
-        const navLinks = gsap.utils.toArray('a', navListRef.current);
+        const navItems = gsap.utils.toArray<HTMLLIElement>('li', navListRef.current);
+        const navLinks = gsap.utils.toArray<HTMLAnchorElement>('a', navListRef.current);
         const footer = footerRef.current;
 
         // Set initial state for animations
@@ -114,13 +114,15 @@ export function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps) {
             const underline = link.querySelector('.underline-anim');
             const arrow = link.querySelector('.arrow-anim');
             if (!underline || !arrow) return;
-
-            const hoverTl = gsap.timeline({ paused: true });
-            hoverTl.to(underline, { scaleX: 1, duration: 0.4, ease: 'power2.out' })
-                   .to(arrow, { rotation: -45, duration: 0.4, ease: 'power2.out' }, 0);
             
-            link.addEventListener('mouseenter', () => hoverTl.play());
-            link.addEventListener('mouseleave', () => hoverTl.reverse());
+            link.addEventListener('mouseenter', () => {
+                gsap.to(underline, { scaleX: 1, duration: 0.4, ease: 'power2.out' });
+                gsap.to(arrow, { rotation: -45, duration: 0.4, ease: 'power2.out' });
+            });
+            link.addEventListener('mouseleave', () => {
+                gsap.to(underline, { scaleX: 0, duration: 0.4, ease: 'power2.out' });
+                gsap.to(arrow, { rotation: 0, duration: 0.4, ease: 'power2.out' });
+            });
         });
 
         return () => {
