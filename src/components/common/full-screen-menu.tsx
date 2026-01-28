@@ -110,17 +110,17 @@ export function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps) {
             );
         
         // Setup hover animations for each nav item
-        navLinks.forEach(link => {
+        navLinks.forEach((link: Element) => {
             const underline = link.querySelector('.underline-anim');
             const arrow = link.querySelector('.arrow-anim');
             if (!underline || !arrow) return;
             
             link.addEventListener('mouseenter', () => {
-                gsap.to(underline, { scaleX: 1, duration: 0.4, ease: 'power2.out' });
+                gsap.to(underline, { scaleX: 1, duration: 0.4, ease: 'power2.out', overwrite: true });
                 gsap.to(arrow, { rotation: -45, duration: 0.4, ease: 'power2.out' });
             });
             link.addEventListener('mouseleave', () => {
-                gsap.to(underline, { scaleX: 0, duration: 0.4, ease: 'power2.out' });
+                gsap.to(underline, { scaleX: 0, duration: 0.4, ease: 'power2.out', overwrite: true });
                 gsap.to(arrow, { rotation: 0, duration: 0.4, ease: 'power2.out' });
             });
         });
