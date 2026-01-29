@@ -4,6 +4,7 @@ import { AppProviders } from "@/components/common/app-providers";
 import { cn } from "@/lib/utils";
 import { ScrollToTop } from "@/components/common/scroll-to-top";
 import { CustomCursor } from "@/components/common/custom-cursor";
+import { CookieBanner } from "@/components/common/cookie-banner";
 
 const faviconSvg = `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><style>.line{stroke:hsl(240 10% 3.9%)}@media (prefers-color-scheme:dark){.line{stroke:hsl(0 0% 98%)}}</style><path class="line" d="M25,18.33A7.5,7.5 0 0,1 17.5,25.83H7.5V7.5H17.5A7.5,7.5 0 0,1 25,15V18.33Z" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const faviconDataUri = `data:image/svg+xml,${encodeURIComponent(faviconSvg)}`;
@@ -110,6 +111,7 @@ export default function RootLayout({
           {children}
           <ScrollToTop />
         </AppProviders>
+        <CookieBanner />
       </body>
     </html>
   );

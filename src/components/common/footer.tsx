@@ -10,7 +10,7 @@ export function Footer() {
         <div className="grid gap-16 md:grid-cols-2 lg:grid-cols-4">
           <div className="flex flex-col justify-between space-y-12 md:col-span-2 lg:col-span-2">
             <h3 className="font-headline text-3xl font-semibold md:text-4xl">
-              Do it once. Do it right.
+              Where pixels meet purpose.
             </h3>
             <div className="flex flex-wrap gap-12">
               <div className="space-y-3">
