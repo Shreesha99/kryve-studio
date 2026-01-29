@@ -24,8 +24,7 @@ export function Work() {
       const travel = window.innerHeight;
       const isTouch = ScrollTrigger.isTouch === 1;
 
-      // 🔧 IMPORTANT FIX:
-      // All cards start below, NO special-casing first card
+      // All cards start below
       gsap.set(cards, {
         y: travel,
         scale: 0.96,
@@ -34,7 +33,7 @@ export function Work() {
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
-          start: "top top",
+          start: isTouch ? "top+=1 top" : "top top", // 🔥 FIX
           end: `+=${(cards.length - 1) * 100}%`,
           pin: true,
           scrub: isTouch ? 1.4 : 1,
@@ -53,6 +52,7 @@ export function Work() {
         },
       });
 
+      // First card visible immediately
       tl.to(cards[0], {
         y: 0,
         scale: 1,
@@ -63,7 +63,6 @@ export function Work() {
       cards.forEach((card, i) => {
         if (i === 0) return;
 
-        // Incoming card
         tl.to(card, {
           y: 0,
           scale: 1,
@@ -71,7 +70,6 @@ export function Work() {
           duration: 1,
         });
 
-        // Previous cards recede smoothly
         for (let j = 0; j < i; j++) {
           tl.to(
             cards[j],
