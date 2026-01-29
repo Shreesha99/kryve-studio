@@ -21,39 +21,65 @@ export function Work() {
   useEffect(() => {
     const ctx = gsap.context(() => {
       const cards = cardsRef.current;
+      const travel = window.innerHeight;
+      const isTouch = ScrollTrigger.isTouch === 1;
 
-      gsap.set(cards, {
-        opacity: 0,
-        scale: 0.85,
-        y: 120,
+      // Initial positions
+      cards.forEach((card, i) => {
+        gsap.set(card, {
+          y: i === 0 ? 0 : travel,
+          scale: i === 0 ? 1 : 0.96,
+        });
+      });
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top top",
+          end: `+=${(cards.length - 1) * 100}%`,
+          pin: true,
+          scrub: isTouch ? 1.4 : 1,
+          anticipatePin: 1,
+          fastScrollEnd: true,
+          preventOverlaps: true,
+
+          // 👇 only add snap on non-touch devices
+          ...(isTouch
+            ? {}
+            : {
+                snap: {
+                  snapTo: 1 / (cards.length - 1),
+                  duration: 0.25,
+                  ease: "power2.out",
+                },
+              }),
+        },
       });
 
       cards.forEach((card, i) => {
-        gsap
-          .timeline({
-            scrollTrigger: {
-              trigger: card,
-              start: "top center+=100",
-              end: "bottom center",
-              scrub: true,
-            },
-          })
-          .to(card, {
-            opacity: 1,
-            scale: 1,
-            y: 0,
-            ease: "power3.out",
-          })
-          .to(
-            card,
+        if (i === 0) return;
+
+        // Incoming card
+        tl.to(card, {
+          y: 0,
+          scale: 1,
+          ease: "power2.out",
+          duration: 1,
+        });
+
+        // Previous cards recede smoothly
+        for (let j = 0; j < i; j++) {
+          tl.to(
+            cards[j],
             {
-              opacity: 0.2,
-              scale: 0.9,
-              y: -120,
-              ease: "power3.in",
+              y: -40 - j * 20,
+              scale: 0.96 - j * 0.04,
+              ease: "none",
+              duration: 1,
             },
-            "+=0.2"
+            "<"
           );
+        }
       });
     }, sectionRef);
 
@@ -65,52 +91,59 @@ export function Work() {
       <section
         ref={sectionRef}
         id="work"
-        className="relative min-h-screen bg-background py-32"
+        className="relative h-screen bg-background"
       >
-        {/* Header */}
-        <div className="container mx-auto mb-32 px-4">
-          <h2 className="font-headline text-5xl font-semibold tracking-tight">
-            Curated Craft
-          </h2>
-          <p className="mt-4 max-w-xl text-lg text-muted-foreground">
-            Selected partnerships where design, motion, and engineering collide.
-          </p>
-        </div>
-
-        {/* Projects */}
-        <div className="relative flex flex-col gap-[30vh]">
+        {/* Stacked stage */}
+        <div className="relative flex h-screen items-center justify-center overflow-hidden pt-20 md:pt-24 lg:pt-24 touch-pan-y">
           {Projects.map((project, i) => (
             <div
               key={project.id}
               ref={(el) => {
                 if (el) cardsRef.current[i] = el;
               }}
-              className="relative mx-auto w-[90vw] max-w-6xl cursor-pointer"
+              className="
+                absolute inset-0 mx-auto flex
+                w-[94vw] sm:w-[92vw] lg:w-[90vw]
+                max-w-7xl
+                cursor-pointer
+                items-center justify-center
+              "
               onClick={() => {
                 setActiveProject(project);
                 setOpen(true);
               }}
             >
-              <div className="group relative aspect-[16/9] overflow-hidden rounded-2xl shadow-[0_40px_120px_-20px_rgba(0,0,0,0.6)]">
+              <div
+                className="
+    relative w-full
+    aspect-[4/5] sm:aspect-[16/9]
+    min-h-[70vh] sm:min-h-0
+    overflow-hidden
+    rounded-2xl md:rounded-3xl
+    shadow-[0_40px_120px_-25px_rgba(0,0,0,0.6)]
+  "
+              >
                 <Image
                   src={project.imageUrl}
                   alt={project.title ?? "Project"}
                   fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  sizes="(min-width: 1024px) 960px, 90vw"
+                  className="object-cover"
+                  sizes="(min-width: 1024px) 1100px, 94vw"
                 />
 
                 {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/25 to-transparent" />
 
                 {/* Title */}
-                <div className="absolute bottom-0 left-0 p-8">
-                  <h3 className="font-headline text-4xl font-bold text-white">
+                <div className="absolute bottom-0 left-0 p-6 sm:p-8">
+                  <h3 className="font-headline text-3xl sm:text-4xl font-semibold text-white">
                     {project.title}
                   </h3>
-                  <p className="mt-2 max-w-md text-sm text-white/70">
-                    {project.subtitle}
-                  </p>
+                  {project.subtitle && (
+                    <p className="mt-2 max-w-md text-sm text-white/70">
+                      {project.subtitle}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -136,7 +169,7 @@ export function Work() {
                 {activeProject.title}
               </h2>
 
-              <p className="text-muted-foreground text-lg">
+              <p className="text-lg text-muted-foreground">
                 {activeProject.description}
               </p>
 
