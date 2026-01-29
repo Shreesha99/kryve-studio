@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { ReactLenis, useLenis } from '@studio-freight/react-lenis';
-import { type ReactNode, useEffect } from 'react';
-import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
-import { gsap } from 'gsap';
+import { ReactLenis, useLenis } from "@studio-freight/react-lenis";
+import { type ReactNode, useEffect } from "react";
+import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
+import { gsap } from "gsap";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -37,7 +37,7 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
     <ReactLenis
       root
       autoRaf={false} // We are using GSAP's ticker, so we disable Lenis's internal RAF.
-      options={{ lerp: 0.1, smoothTouch: true, smoothWheel: true }}
+      options={{ lerp: 0.1, syncTouch: false, smoothWheel: true }}
     >
       <GsapLenisBridge />
       {children}
