@@ -16,22 +16,11 @@ function ElysiumIcon({ className }: { className?: string }) {
       preserveAspectRatio="xMidYMid meet"
     >
       <path
-        d="M7 8H25"
+        d="M25 7H7V13H20V19H7V25H25"
         stroke="currentColor"
         strokeWidth="3"
         strokeLinecap="round"
-      />
-      <path
-        d="M7 16H20"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
-      <path
-        d="M7 24H25"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );

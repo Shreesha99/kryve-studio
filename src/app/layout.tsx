@@ -6,7 +6,7 @@ import { ScrollToTop } from "@/components/common/scroll-to-top";
 import { CustomCursor } from "@/components/common/custom-cursor";
 
 // A theme-aware, custom SVG favicon that represents a stylized 'E'
-const faviconSvg = `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><style>.lines{stroke:hsl(240 10% 3.9%)}@media (prefers-color-scheme:dark){.lines{stroke:hsl(0 0% 98%)}}</style><path class="lines" d="M7 8H25" stroke-width="3" stroke-linecap="round"/><path class="lines" d="M7 16H20" stroke-width="3" stroke-linecap="round"/><path class="lines" d="M7 24H25" stroke-width="3" stroke-linecap="round"/></svg>`;
+const faviconSvg = `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><style>.line{stroke:hsl(240 10% 3.9%)}@media (prefers-color-scheme:dark){.line{stroke:hsl(0 0% 98%)}}</style><path class="line" d="M25 7H7V13H20V19H7V25H25" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const faviconDataUri = `data:image/svg+xml,${encodeURIComponent(faviconSvg)}`;
 
 export const metadata: Metadata = {
