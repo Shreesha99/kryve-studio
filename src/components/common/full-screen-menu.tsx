@@ -75,7 +75,6 @@ export function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps) {
         timelineRef.current = gsap.timeline({
             paused: true,
             onStart: () => {
-                // lenis?.stop(); // User request: don't disable scroll
                 gsap.set(menu, { pointerEvents: 'auto' });
             },
             onReverseComplete: () => {
@@ -143,7 +142,7 @@ export function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps) {
           if (lenis) {
             lenis.scrollTo(href, {
               duration: 2,
-              ease: (t: number) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t)), // easeOutExpo
+              easing: (t: number) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t)), // easeOutExpo
             });
           }
         });
