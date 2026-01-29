@@ -77,6 +77,7 @@ export function Preloader({ onAnimationComplete }: PreloaderProps) {
     });
 
     const tl = gsap.timeline({
+      delay: 0.5,
       defaults: { ease: "power3.out" },
       onComplete: () => {
         preloader.style.display = "none";
