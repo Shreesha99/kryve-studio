@@ -5,41 +5,62 @@ import { cn } from "@/lib/utils";
 import { ScrollToTop } from "@/components/common/scroll-to-top";
 import { CustomCursor } from "@/components/common/custom-cursor";
 
-// A theme-aware, custom SVG favicon that represents a stylized 'E'
-const faviconSvg = `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><style>.line{stroke:hsl(240 10% 3.9%)}@media (prefers-color-scheme:dark){.line{stroke:hsl(0 0% 98%)}}</style><path class="line" d="M25 7H7V13H20V19H7V25H25" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const faviconSvg = `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><style>.line{stroke:hsl(240 10% 3.9%)}@media (prefers-color-scheme:dark){.line{stroke:hsl(0 0% 98%)}}</style><path class="line" d="M25,18.33A7.5,7.5 0 0,1 17.5,25.83H7.5V7.5H17.5A7.5,7.5 0 0,1 25,15V18.33Z" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const faviconDataUri = `data:image/svg+xml,${encodeURIComponent(faviconSvg)}`;
 
-export const metadata: Metadata = {
-  title: {
-    default: "The Elysium Project | Engineering Elegance. Designing Impact.",
-    template: "%s | The Elysium Project",
-  },
+const siteConfig = {
+  name: "The Elysium Project",
+  url: "https://elysium-project.example.com", // IMPORTANT: Replace with your actual domain.
+  ogImage: "https://picsum.photos/seed/elysium-og/1200/630", // IMPORTANT: Replace with your actual OG image URL.
   description:
-    "A premium digital studio that blends visionary design with precision engineering to create web experiences that are beautiful, brilliant, and drive results.",
-  metadataBase: new URL("https://elysium-project.example.com"),
+    "The Elysium Project is a premium digital studio specializing in web design, development, and branding. We build beautiful, high-performance websites with Next.js and React that drive results and create lasting impact.",
+  keywords: [
+    "Web Design",
+    "Web Development",
+    "Branding",
+    "Digital Studio",
+    "Next.js",
+    "React",
+    "TypeScript",
+    "Tailwind CSS",
+    "UI/UX Design",
+    "SEO",
+    "Performance Optimization",
+  ],
+};
+
+
+export const metadata: Metadata = {
+  metadataBase: new URL(siteConfig.url),
+  title: {
+    default: `${siteConfig.name} | Premium Web Design & Development`,
+    template: `%s | ${siteConfig.name}`,
+  },
+  description: siteConfig.description,
+  keywords: siteConfig.keywords,
+  creator: siteConfig.name,
   openGraph: {
-    title: "The Elysium Project",
-    description:
-      "A premium digital studio that blends visionary design with precision engineering to create web experiences that are beautiful and brilliant.",
-    url: "https://elysium-project.example.com",
-    siteName: "The Elysium Project",
+    type: "website",
+    locale: "en_US",
+    url: siteConfig.url,
+    title: siteConfig.name,
+    description: siteConfig.description,
+    siteName: siteConfig.name,
     images: [
       {
-        url: "https://picsum.photos/seed/elysium-og/1200/630",
+        url: siteConfig.ogImage,
         width: 1200,
         height: 630,
-        alt: "The Elysium Project Hero Image",
+        alt: `${siteConfig.name} - ${siteConfig.description}`,
       },
     ],
-    locale: "en_US",
-    type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "The Elysium Project",
-    description:
-      "A premium digital studio that blends visionary design with precision engineering to create web experiences that are beautiful and brilliant.",
-    images: ["https://picsum.photos/seed/elysium-og/1200/630"],
+    title: `${siteConfig.name} | Premium Web Design & Development`,
+    description: siteConfig.description,
+    images: [siteConfig.ogImage],
+    creator: "@elysium", // IMPORTANT: Replace with your Twitter handle.
   },
   robots: {
     index: true,

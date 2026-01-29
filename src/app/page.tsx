@@ -1,3 +1,4 @@
+import { Metadata } from 'next';
 import { Header } from '@/components/common/header';
 import { Footer } from '@/components/common/footer';
 import { Hero } from '@/components/sections/hero';
@@ -6,16 +7,23 @@ import { Services } from '@/components/sections/services';
 import { Work } from '@/components/sections/work';
 import { Contact } from '@/components/sections/contact';
 
+// The root metadata is defined in layout.tsx
+// We can override it for specific pages like this.
+export const metadata: Metadata = {
+  title: "The Elysium Project | Premium Web Design & Development",
+  description: "A premium digital studio that blends visionary design with precision engineering to create web experiences that are beautiful, brilliant, and drive results.",
+};
+
 const jsonLd = {
   '@context': 'https://schema.org',
-  '@type': 'ProfessionalService',
+  '@type': 'Organization',
   name: 'The Elysium Project',
-  url: 'https://elysium-project.example.com',
-  logo: 'https://elysium-project.example.com/logo.png', // User should replace with actual logo URL
-  description: 'A premium digital studio that blends visionary design with precision engineering to create web experiences that are beautiful and brilliant.',
+  url: 'https://elysium-project.example.com', // IMPORTANT: Replace with your actual domain
+  logo: 'https://elysium-project.example.com/logo.png', // IMPORTANT: Replace with your actual logo URL
+  description: 'The Elysium Project is a premium digital studio specializing in web design, development, and branding. We build beautiful, high-performance websites that drive results.',
   address: {
     '@type': 'PostalAddress',
-    streetAddress: '100, MG Road',
+    streetAddress: '100 MG Road', // IMPORTANT: Replace with your address
     addressLocality: 'Bengaluru',
     addressRegion: 'KA',
     postalCode: '560001',
@@ -23,9 +31,14 @@ const jsonLd = {
   },
   contactPoint: {
     '@type': 'ContactPoint',
-    telephone: '+1-555-555-5555', // User should replace
+    telephone: '+91-999-999-9999', // IMPORTANT: Replace with your phone number
     contactType: 'Customer Service',
+    email: 'hello@elysium.com'
   },
+  sameAs: [ // IMPORTANT: Replace with your actual social media URLs
+    'https://instagram.com/elysium',
+    'https://linkedin.com/company/elysium'
+  ]
 };
 
 

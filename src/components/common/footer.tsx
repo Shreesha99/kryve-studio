@@ -77,7 +77,9 @@ export function Footer() {
             <ul className="space-y-3 text-lg">
               <li>
                 <a
-                  href="#"
+                  href="https://instagram.com/elysium"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="group inline-flex items-center gap-2 transition-colors hover:text-background/80"
                 >
                   Instagram{" "}
@@ -88,7 +90,9 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="#"
+                  href="https://linkedin.com/company/elysium"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="group inline-flex items-center gap-2 transition-colors hover:text-background/80"
                 >
                   LinkedIn{" "}
