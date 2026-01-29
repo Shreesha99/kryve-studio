@@ -101,15 +101,15 @@ export function Preloader({ onAnimationComplete }: PreloaderProps) {
           viewBox="0 0 100 100"
           className="absolute inset-0 h-full w-full"
         >
-          <path
-            ref={iconPathRef}
-            d="M80 25 H25 V42 H65 V58 H25 V75 H80"
-            stroke="currentColor"
-            strokeWidth="8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            fill="none"
-          />
+            <path
+              ref={iconPathRef}
+              d="M70 30C70 43.2548 59.2548 54 46 54H30M30 70C30 56.7452 40.7452 46 54 46H70"
+              stroke="currentColor"
+              strokeWidth="8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+            />
           <circle
             ref={ringRef}
             cx="50"
