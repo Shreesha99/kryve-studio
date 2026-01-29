@@ -16,10 +16,10 @@ export function Footer() {
               <div className="space-y-3">
                 <h4 className="text-sm text-background/70">New Business:</h4>
                 <a
-                  href="mailto:hello@elysium.com"
+                  href="mailto:hello@the-elysium-project.in"
                   className="text-lg transition-colors hover:text-background/80"
                 >
-                  hello@elysium.com
+                  hello@the-elysium-project.in
                 </a>
               </div>
               <NewsletterForm />
@@ -77,7 +77,7 @@ export function Footer() {
             <ul className="space-y-3 text-lg">
               <li>
                 <a
-                  href="https://instagram.com/elysium"
+                  href="https://instagram.com/the_elysium_project"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group inline-flex items-center gap-2 transition-colors hover:text-background/80"
@@ -90,7 +90,7 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="https://linkedin.com/company/elysium"
+                  href="https://linkedin.com/company/the-elysium-project"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group inline-flex items-center gap-2 transition-colors hover:text-background/80"
@@ -111,11 +111,19 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-24 flex flex-col justify-between gap-4 border-t border-background/20 pt-8 text-sm text-background/70 sm:flex-row">
-          <p>&copy; {new Date().getFullYear()} The Elysium Project</p>
-          <Link href="#" className="transition-colors hover:text-background/80">
-            Terms of Use
-          </Link>
+        <div className="mt-24 flex flex-col-reverse items-center justify-between gap-6 border-t border-background/20 pt-8 text-sm text-background/70 sm:flex-row">
+            <p>&copy; {new Date().getFullYear()} The Elysium Project. All Rights Reserved.</p>
+            <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
+                <Link href="/legal/terms-and-conditions" className="transition-colors hover:text-background/80">
+                Terms of Service
+                </Link>
+                <Link href="/legal/privacy-policy" className="transition-colors hover:text-background/80">
+                Privacy Policy
+                </Link>
+                <Link href="/legal/disclaimer" className="transition-colors hover:text-background/80">
+                Disclaimer
+                </Link>
+            </div>
         </div>
       </div>
 

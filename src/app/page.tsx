@@ -18,8 +18,8 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'The Elysium Project',
-  url: 'https://elysium-project.example.com', // IMPORTANT: Replace with your actual domain
-  logo: 'https://elysium-project.example.com/logo.png', // IMPORTANT: Replace with your actual logo URL
+  url: 'https://www.the-elysium-project.in',
+  logo: 'https://www.the-elysium-project.in/logo.png', // IMPORTANT: Replace with your actual logo URL
   description: 'The Elysium Project is a premium digital studio specializing in web design, development, and branding. We build beautiful, high-performance websites that drive results.',
   address: {
     '@type': 'PostalAddress',
@@ -33,11 +33,11 @@ const jsonLd = {
     '@type': 'ContactPoint',
     telephone: '+91-999-999-9999', // IMPORTANT: Replace with your phone number
     contactType: 'Customer Service',
-    email: 'hello@elysium.com'
+    email: 'hello@the-elysium-project.in'
   },
   sameAs: [ // IMPORTANT: Replace with your actual social media URLs
-    'https://instagram.com/elysium',
-    'https://linkedin.com/company/elysium'
+    'https://instagram.com/the_elysium_project',
+    'https://linkedin.com/company/the-elysium-project'
   ]
 };
 

@@ -10,8 +10,8 @@ const faviconDataUri = `data:image/svg+xml,${encodeURIComponent(faviconSvg)}`;
 
 const siteConfig = {
   name: "The Elysium Project",
-  url: "https://elysium-project.example.com", // IMPORTANT: Replace with your actual domain.
-  ogImage: "https://picsum.photos/seed/elysium-og/1200/630", // IMPORTANT: Replace with your actual OG image URL.
+  url: "https://www.the-elysium-project.in",
+  ogImage: "https://www.the-elysium-project.in/og-image.png", // IMPORTANT: You should host your own OG image
   description:
     "The Elysium Project is a premium digital studio specializing in web design, development, and branding. We build beautiful, high-performance websites with Next.js and React that drive results and create lasting impact.",
   keywords: [
@@ -26,6 +26,9 @@ const siteConfig = {
     "UI/UX Design",
     "SEO",
     "Performance Optimization",
+    "Bengaluru",
+    "India",
+    "Creative Agency",
   ],
 };
 
@@ -41,7 +44,7 @@ export const metadata: Metadata = {
   creator: siteConfig.name,
   openGraph: {
     type: "website",
-    locale: "en_US",
+    locale: "en_IN",
     url: siteConfig.url,
     title: siteConfig.name,
     description: siteConfig.description,
@@ -51,7 +54,7 @@ export const metadata: Metadata = {
         url: siteConfig.ogImage,
         width: 1200,
         height: 630,
-        alt: `${siteConfig.name} - ${siteConfig.description}`,
+        alt: `An image representing The Elysium Project's brand of premium web design.`,
       },
     ],
   },
@@ -60,7 +63,7 @@ export const metadata: Metadata = {
     title: `${siteConfig.name} | Premium Web Design & Development`,
     description: siteConfig.description,
     images: [siteConfig.ogImage],
-    creator: "@elysium", // IMPORTANT: Replace with your Twitter handle.
+    creator: "@the_elysium_project", // IMPORTANT: Replace with your actual Twitter handle.
   },
   robots: {
     index: true,
