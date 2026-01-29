@@ -77,7 +77,7 @@ export function Logo() {
           className="flex items-center justify-center font-headline text-2xl font-bold text-foreground"
         >
           {/* The new icon replaces the 'E' */}
-          <ElysiumIcon className="mr-1 h-[0.7em]" />
+          <ElysiumIcon className="mr-1 h-[0.75em] mb-px" />
           <span>LYSIUM</span>
         </div>
         <span
