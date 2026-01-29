@@ -1,48 +1,46 @@
 'use client';
 
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
-import Lenis from '@studio-freight/lenis';
+import { ReactLenis } from '@studio-freight/react-lenis';
+import { type ReactNode, useEffect, useRef } from 'react';
+import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
 import { gsap } from 'gsap';
+import type Lenis from '@studio-freight/lenis';
 
-type LenisContextType = Lenis | null;
-
-const LenisContext = createContext<LenisContextType>(null);
-
-export const useLenis = () => {
-    return useContext(LenisContext);
-}
+gsap.registerPlugin(ScrollTrigger);
 
 export function SmoothScrollProvider({ children }: { children: ReactNode }) {
-    const lenisRef = useRef<Lenis | null>(null);
-    const [lenis, setLenis] = useState<Lenis | null>(null);
+  const lenisRef = useRef<Lenis | null>(null);
 
-    useEffect(() => {
-        const l = new Lenis({
-            lerp: 0.1,
-            smoothWheel: true,
-        });
+  useEffect(() => {
+    const lenis = lenisRef.current;
+    if (!lenis) return;
 
-        lenisRef.current = l;
-        setLenis(l);
-        
-        const update = (time: number) => {
-            l.raf(time * 1000);
-        }
-        
-        gsap.ticker.add(update);
-        gsap.ticker.lagSmoothing(0);
+    // Sync ScrollTrigger
+    lenis.on('scroll', ScrollTrigger.update);
 
-        return () => {
-            gsap.ticker.remove(update);
-            l.destroy();
-            lenisRef.current = null;
-            setLenis(null);
-        };
-    }, []);
+    // Sync GSAP ticker
+    const unsubscribe = gsap.ticker.add((time) => {
+      lenis.raf(time * 1000);
+    });
+    gsap.ticker.lagSmoothing(0);
 
-    return (
-        <LenisContext.Provider value={lenis}>
-            {children}
-        </LenisContext.Provider>
-    )
+    return () => {
+      unsubscribe();
+      lenis.off('scroll', ScrollTrigger.update);
+    };
+  }, []);
+
+  return (
+    <ReactLenis
+      root
+      ref={lenisRef}
+      autoRaf={false}
+      options={{ lerp: 0.1, smoothTouch: true, smoothWheel: true }}
+    >
+      {children}
+    </ReactLenis>
+  );
 }
+
+// Re-export useLenis so other components don't break
+export { useLenis } from '@studio-freight/react-lenis';
