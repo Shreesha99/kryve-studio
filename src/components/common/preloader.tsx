@@ -2,111 +2,90 @@
 
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
-import { cn } from "@/lib/utils";
 
 interface PreloaderProps {
   onAnimationComplete: () => void;
 }
 
-// Inlining the icon component to avoid import issues
-function ElysiumIcon({ className, pathRef }: { className?: string, pathRef?: React.Ref<SVGPathElement> }) {
-  return (
-    <svg
-      viewBox="0 0 32 32"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={cn("h-full w-auto", className)}
-      preserveAspectRatio="xMidYMid meet"
-    >
-      <path
-        ref={pathRef}
-        d="M25 7H7V13H20V19H7V25H25"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-
 export function Preloader({ onAnimationComplete }: PreloaderProps) {
   const preloaderRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const iconRef = useRef<HTMLDivElement>(null);
-  const textRef = useRef<HTMLDivElement>(null);
   const iconPathRef = useRef<SVGPathElement>(null);
+  const ringRef = useRef<SVGCircleElement>(null);
 
   useEffect(() => {
     const preloader = preloaderRef.current;
     const container = containerRef.current;
-    const icon = iconRef.current;
-    const text = textRef.current;
     const iconPath = iconPathRef.current;
-    if (!preloader || !container || !icon || !text || !iconPath) return;
+    const ring = ringRef.current;
 
-    const pathLength = iconPath.getTotalLength();
-    
-    // Temporarily show to calculate width
-    gsap.set(text, { autoAlpha: 1 });
-    const textWidth = text.getBoundingClientRect().width;
-    const iconWidth = icon.getBoundingClientRect().width;
-    const gap = 8;
-    
+    if (!preloader || !container || !iconPath || !ring) return;
+
+    const iconPathLength = iconPath.getTotalLength();
+    const ringLength = ring.getTotalLength();
+
     // Set initial states
-    gsap.set(preloader, { perspective: 800 });
     gsap.set(container, { autoAlpha: 1 });
-    gsap.set(icon, { autoAlpha: 1 });
-    gsap.set(text, { autoAlpha: 0, clipPath: 'inset(0 50% 0 50%)' });
-    gsap.set(iconPath, { strokeDasharray: pathLength, strokeDashoffset: pathLength });
-
-    const tl = gsap.timeline({
-      onComplete: () => {
-        // A short delay before calling the completion handler to ensure the fade-out is smooth
-        setTimeout(onAnimationComplete, 300);
-      },
+    gsap.set(iconPath, {
+      strokeDasharray: iconPathLength,
+      strokeDashoffset: iconPathLength,
+    });
+    gsap.set(ring, {
+      strokeDasharray: ringLength,
+      strokeDashoffset: ringLength,
+      autoAlpha: 0,
     });
 
-    tl
-      // 1. Draw the icon in the center
-      .to(iconPath, { strokeDashoffset: 0, duration: 1.2, ease: "power2.inOut" })
-      
-      // 2. Reveal LYSIUM and move both elements apart
-      .to(icon, { 
-        x: -(textWidth / 2 + gap / 2),
-        duration: 1.2,
-        ease: 'power3.inOut'
-      }, "split")
-      .to(text, {
-        autoAlpha: 1,
-        x: (iconWidth / 2 + gap / 2),
-        clipPath: 'inset(0 0 0 0)',
-        duration: 1.2,
-        ease: 'power3.inOut'
-      }, "split")
+    const tl = gsap.timeline();
 
-      // 3. Hold the complete logo
-      .to({}, { duration: 0.8 })
+    tl
+      // 1. Draw the icon
+      .to(iconPath, {
+        strokeDashoffset: 0,
+        duration: 1.5,
+        ease: "power2.inOut",
+      })
+
+      // 2. Show and draw the ring
+      .to(ring, { autoAlpha: 1, duration: 0.1 }, "-=0.5")
+      .to(
+        ring,
+        {
+          strokeDashoffset: 0,
+          duration: 1.2,
+          ease: "power1.inOut",
+        },
+        "<"
+      )
+
+      // 3. Hold for a moment
+      .to({}, { duration: 0.5 })
 
       // 4. Exit animation
       .to(container, {
         opacity: 0,
-        y: -50,
+        scale: 0.8,
         duration: 0.8,
         ease: "power3.in",
       })
-      .to(preloader, {
-        opacity: 0,
-        duration: 0.5,
-        onComplete: () => {
-          if (preloaderRef.current) {
-            preloaderRef.current.style.display = "none";
-          }
-          onAnimationComplete();
+      .to(
+        preloader,
+        {
+          opacity: 0,
+          duration: 0.5,
+          onComplete: () => {
+            if (preloaderRef.current) {
+              preloaderRef.current.style.display = "none";
+            }
+            onAnimationComplete();
+          },
         },
-      }, "-=0.5");
+        "-=0.5"
+      );
       
+      return () => {
+        tl.kill();
+      }
   }, [onAnimationComplete]);
 
   return (
@@ -116,16 +95,33 @@ export function Preloader({ onAnimationComplete }: PreloaderProps) {
     >
       <div
         ref={containerRef}
-        className="relative flex items-center justify-center"
+        className="relative h-24 w-24 text-foreground"
       >
-        <div ref={iconRef} className="absolute h-12 w-12 text-foreground">
-           <ElysiumIcon pathRef={iconPathRef} />
-        </div>
-        <div ref={textRef} className="absolute">
-            <h1 className="font-headline text-5xl font-bold tracking-wider text-foreground">
-                LYSIUM
-            </h1>
-        </div>
+        <svg
+          viewBox="0 0 100 100"
+          className="absolute inset-0 h-full w-full"
+        >
+          <path
+            ref={iconPathRef}
+            d="M80 25 H25 V42 H65 V58 H25 V75 H80"
+            stroke="currentColor"
+            strokeWidth="8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+          />
+          <circle
+            ref={ringRef}
+            cx="50"
+            cy="50"
+            r="45"
+            stroke="currentColor"
+            strokeWidth="3"
+            fill="none"
+            strokeLinecap="round"
+            transform="rotate(-90 50 50)"
+          />
+        </svg>
       </div>
     </div>
   );
