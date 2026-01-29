@@ -7,11 +7,13 @@ import { ThemeToggle } from "./theme-toggle";
 import { cn } from "@/lib/utils";
 import { HamburgerButton } from "./hamburger-button";
 import { FullScreenMenu } from "./full-screen-menu";
+import { useLenis } from "./smooth-scroll-provider";
 
 export function Header() {
   const headerRef = useRef<HTMLDivElement>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const lenis = useLenis();
 
   // Animate header on initial load
   useEffect(() => {
@@ -21,14 +23,14 @@ export function Header() {
     gsap.set(headerEl, { perspective: 800 });
     gsap.fromTo(
       headerEl,
-      { y: -100, opacity: 0, rotationX: -90, transformOrigin: "top center" },
+      { y: -20, opacity: 0, rotationX: -45, transformOrigin: "top center" },
       {
         y: 0,
         opacity: 1,
         rotationX: 0,
         duration: 1.2,
         ease: "power3.out",
-        delay: 0,
+        delay: 0.2,
       }
     );
   }, []);
@@ -46,8 +48,12 @@ export function Header() {
 
   // Stop scrolling when the menu is open
   useEffect(() => {
-    // No-op - lenis scroll blocking is removed
-  }, [isMenuOpen]);
+    if (isMenuOpen) {
+      lenis?.stop();
+    } else {
+      lenis?.start();
+    }
+  }, [isMenuOpen, lenis]);
 
   return (
     <>
