@@ -1,26 +1,35 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
-import { useEffect, useRef, useState } from 'react';
-import { subscribeNewsletter } from '@/actions/subscribe-newsletter';
+import { useEffect, useState } from 'react';
+import { useForm, type SubmitHandler } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { addSubscriber } from '@/lib/newsletter';
 import { cn } from '@/lib/utils';
-import { ArrowRight, Check, Loader2 } from 'lucide-react';
+import { ArrowRight, Check, Loader2, X } from 'lucide-react';
 
-function SubmitButton({ success }: { success: boolean }) {
-  const { pending } = useFormStatus();
+const schema = z.object({
+  email: z.string().email('Please enter a valid email address.'),
+});
+type FormValues = z.infer<typeof schema>;
 
-  if (success) {
+type Status = 'idle' | 'loading' | 'success' | 'error';
+
+function SubmitButton({ status }: { status: Status }) {
+  if (status === 'success') {
     return <Check className="h-6 w-6 text-green-400" />;
   }
-
+  if (status === 'error') {
+    return <X className="h-6 w-6 text-red-400" />;
+  }
   return (
     <button
       type="submit"
       aria-label="Submit email for newsletter"
       className="transition-transform hover:translate-x-1 disabled:cursor-not-allowed disabled:opacity-50"
-      disabled={pending}
+      disabled={status === 'loading'}
     >
-      {pending ? (
+      {status === 'loading' ? (
         <Loader2 className="h-6 w-6 animate-spin" />
       ) : (
         <ArrowRight className="h-6 w-6" />
@@ -30,48 +39,70 @@ function SubmitButton({ success }: { success: boolean }) {
 }
 
 export function NewsletterForm() {
-  const [state, formAction] = useFormState(subscribeNewsletter, {
-    success: false,
-    message: '',
-  });
-  const formRef = useRef<HTMLFormElement>(null);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [status, setStatus] = useState<Status>('idle');
+  const [message, setMessage] = useState('');
 
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+  });
+
+  const onSubmit: SubmitHandler<FormValues> = async (data) => {
+    setStatus('loading');
+    setMessage('');
+    try {
+      await addSubscriber(data.email);
+      setStatus('success');
+      setMessage('Thank you for subscribing!');
+      reset();
+    } catch (error) {
+      setStatus('error');
+      setMessage('Something went wrong. Please try again.');
+      console.error(error);
+    }
+  };
+  
   useEffect(() => {
-    if (state.message) {
-      if (state.success) {
-        formRef.current?.reset();
-        setShowSuccess(true);
+    if(status === 'success' || status === 'error') {
         const timer = setTimeout(() => {
-            setShowSuccess(false);
-            // Reset state message
-            state.message = '';
+            setStatus('idle');
+            setMessage('');
         }, 3000);
         return () => clearTimeout(timer);
-      }
     }
-  }, [state]);
+  }, [status]);
+
 
   return (
     <div className="max-w-xs space-y-3">
       <h4 className="text-sm text-background/70">
         Sign up for our newsletter
       </h4>
-      <form ref={formRef} action={formAction} className="flex items-center gap-4 border-b border-background/50 py-1 transition-colors focus-within:border-background">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex items-center gap-4 border-b border-background/50 py-1 transition-colors focus-within:border-background"
+      >
         <input
-          name="email"
+          {...register('email')}
           type="email"
           placeholder="Your Email"
           className="w-full bg-transparent text-lg placeholder:text-background/50 focus:outline-none"
           required
         />
-        <SubmitButton success={showSuccess} />
+        <SubmitButton status={status} />
       </form>
-      {!state.success && state.message && (
-        <p className="text-sm text-red-400">{state.message}</p>
+      {errors.email && (
+        <p className="text-sm text-red-400">{errors.email.message}</p>
       )}
-      {showSuccess && (
-        <p className="text-sm text-green-400">{state.message}</p>
+      {status === 'error' && (
+        <p className="text-sm text-red-400">{message}</p>
+      )}
+      {status === 'success' && (
+        <p className="text-sm text-green-400">{message}</p>
       )}
     </div>
   );
