@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import { useTheme } from 'next-themes';
-import { gsap } from 'gsap';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { MorphingSvg } from '@/components/common/morphing-svg';
-import { AnimatedGradient } from '../common/animated-gradient';
-import { ScrollHint } from '@/components/common/scroll-hint';
+import { useEffect, useRef, useState } from "react";
+import { useTheme } from "next-themes";
+import { gsap } from "gsap";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { MorphingSvg } from "@/components/common/morphing-svg";
+import { AnimatedGradient } from "../common/animated-gradient";
+import { ScrollHint } from "@/components/common/scroll-hint";
 
 export function Hero() {
   const headlineRef = useRef<HTMLHeadingElement>(null);
@@ -19,44 +19,48 @@ export function Hero() {
 
   useEffect(() => {
     const tl = gsap.timeline({
-      defaults: { ease: 'power4.out', duration: 1.2 },
+      defaults: { ease: "power4.out", duration: 1.2 },
       delay: 1.6,
     });
 
     // Animate each line of the headline from a masked container
-    const headlineSpans = gsap.utils.toArray('span', headlineRef.current);
+    const headlineSpans = gsap.utils.toArray("span", headlineRef.current);
 
     tl.fromTo(
       headlineSpans,
       { yPercent: 120 },
-      { yPercent: 0, stagger: 0.1, duration: 1.2, ease: 'power3.out' }
+      { yPercent: 0, stagger: 0.1, duration: 1.2, ease: "power3.out" }
     )
       .fromTo(
         paragraphRef.current,
         { y: 20, opacity: 0 },
         { y: 0, opacity: 1, duration: 1 },
-        '-=0.8'
+        "-=0.8"
       )
       .fromTo(
         buttonRef.current,
         { y: 20, opacity: 0 },
         { y: 0, opacity: 1, duration: 1 },
-        '-=0.8'
+        "-=0.8"
       )
       .fromTo(
         svgRef.current,
-        { opacity: 0, scale: 0.98, y: 10 },
+        {
+          opacity: 0,
+          y: 40,
+          scale: 0.94,
+        },
         {
           opacity: 1,
-          scale: 1,
           y: 0,
-          duration: 0.8,
-          ease: 'power3.out',
+          scale: 1,
+          duration: 1.1,
+          ease: "power3.out",
           onComplete: () => {
             setIsSvgReady(true);
           },
         },
-        '-=1.0'
+        "-=0.9"
       );
 
     return () => {
@@ -79,7 +83,7 @@ export function Hero() {
             >
               <div className="overflow-hidden py-1">
                 <span className="inline-block">
-                  Engineering{' '}
+                  Engineering{" "}
                   <span className="inline-block cursor-pointer rounded-full border border-foreground/50 px-4 py-1 transition-colors duration-300 ease-in-out hover:bg-foreground hover:text-background">
                     Elegance
                   </span>
@@ -88,7 +92,7 @@ export function Hero() {
               </div>
               <div className="overflow-hidden py-1">
                 <span className="inline-block">
-                  Designing{' '}
+                  Designing{" "}
                   <span className="inline-block cursor-pointer rounded-full border border-foreground/50 px-4 py-1 transition-colors duration-300 ease-in-out hover:bg-foreground hover:text-background">
                     Impact
                   </span>
@@ -112,11 +116,16 @@ export function Hero() {
               </Button>
             </div>
           </div>
-          <div
-            ref={svgRef}
-            className="relative aspect-[4/3] w-full max-w-2xl justify-self-center overflow-hidden rounded-lg lg:max-w-none"
-          >
-            <MorphingSvg theme={resolvedTheme} isReadyToAnimate={isSvgReady} />
+          <div className="relative overflow-hidden">
+            <div
+              ref={svgRef}
+              className="relative aspect-[4/3] w-full max-w-2xl justify-self-center overflow-hidden rounded-lg lg:max-w-none"
+            >
+              <MorphingSvg
+                theme={resolvedTheme}
+                isReadyToAnimate={isSvgReady}
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import { useTheme } from 'next-themes';
-import { gsap } from 'gsap';
+import { useEffect, useRef } from "react";
+import { useTheme } from "next-themes";
+import { gsap } from "gsap";
 
 interface MorphingSvgProps {
   theme?: string;
@@ -64,42 +64,51 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
 
     const colors = {
       light: {
-        bg: 'hsl(0 0% 100%)',
-        uiBg: 'hsl(240 4.8% 95.9%)',
-        uiStroke: 'hsl(240 5.9% 90%)',
-        uiFillMuted: 'hsl(240 3.8% 46.1%)',
-        uiFillPrimary: 'hsl(240 10% 3.9%)',
-        uiTextMuted: 'hsl(240 3.8% 46.1%)',
-        primary: 'hsl(240 10% 3.9%)',
-        primaryForeground: 'hsl(0 0% 98%)',
+        bg: "hsl(0 0% 100%)",
+        uiBg: "hsl(240 4.8% 95.9%)",
+        uiStroke: "hsl(240 5.9% 90%)",
+        uiFillMuted: "hsl(240 3.8% 46.1%)",
+        uiFillPrimary: "hsl(240 10% 3.9%)",
+        uiTextMuted: "hsl(240 3.8% 46.1%)",
+        primary: "hsl(240 10% 3.9%)",
+        primaryForeground: "hsl(0 0% 98%)",
       },
       dark: {
-        bg: 'hsl(240 10% 3.9%)',
-        uiBg: 'hsl(240 3.7% 15.9%)',
-        uiStroke: 'hsl(240 3.7% 15.9%)',
-        uiFillMuted: 'hsl(240 5% 64.9%)',
-        uiFillPrimary: 'hsl(0 0% 98%)',
-        uiTextMuted: 'hsl(240 5% 64.9%)',
-        primary: 'hsl(0 0% 98%)',
-        primaryForeground: 'hsl(240 5.9% 10%)',
+        bg: "hsl(240 10% 3.9%)",
+        uiBg: "hsl(240 3.7% 15.9%)",
+        uiStroke: "hsl(240 3.7% 15.9%)",
+        uiFillMuted: "hsl(240 5% 64.9%)",
+        uiFillPrimary: "hsl(0 0% 98%)",
+        uiTextMuted: "hsl(240 5% 64.9%)",
+        primary: "hsl(0 0% 98%)",
+        primaryForeground: "hsl(240 5.9% 10%)",
       },
     };
 
     const masterTl = gsap.timeline();
     masterTlRef.current = masterTl;
 
-    masterTl.eventCallback('onComplete', () => {
+    masterTl.eventCallback("onComplete", () => {
       if (!masterTlRef.current) return;
-      const allUiElements = uis.map(r => r.current).filter(Boolean);
+      const allUiElements = uis.map((r) => r.current).filter(Boolean);
 
       // Create a new timeline to animate the reset
-      gsap.timeline({
-        onComplete: () => {
-          masterTlRef.current?.restart();
-        }
-      })
-      .to(allUiElements, { autoAlpha: 0, duration: 0.7, ease: 'power2.in' }, 0)
-      .to(scrollGroupRef.current, { y: 0, duration: 1, ease: 'power2.in' }, 0);
+      gsap
+        .timeline({
+          onComplete: () => {
+            masterTlRef.current?.restart();
+          },
+        })
+        .to(
+          allUiElements,
+          { autoAlpha: 0, duration: 0.7, ease: "power2.in" },
+          0
+        )
+        .to(
+          scrollGroupRef.current,
+          { y: 0, duration: 1, ease: "power2.in" },
+          0
+        );
     });
 
     const setup = () => {
@@ -108,21 +117,17 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
       gsap.set(allUiElements, { autoAlpha: 0 });
       if (scrollGroupRef.current) gsap.set(scrollGroupRef.current, { y: 0 });
 
-      if (heroHeadlineRef.current) heroHeadlineRef.current.textContent = '';
-      if (heroSubtitleRef.current) heroSubtitleRef.current.textContent = '';
-      if (contactMessageRef.current) contactMessageRef.current.textContent = '';
+      if (heroHeadlineRef.current) heroHeadlineRef.current.textContent = "";
+      if (heroSubtitleRef.current) heroSubtitleRef.current.textContent = "";
+      if (contactMessageRef.current) contactMessageRef.current.textContent = "";
       if (contactCursorRef.current)
         gsap.set(contactCursorRef.current, { autoAlpha: 0 });
 
-      gsap.set(svg.querySelectorAll('.service-desc-group'), { autoAlpha: 0 });
-      gsap.set(svg.querySelectorAll('.project-detail'), { autoAlpha: 0 });
-      gsap.set(svg.querySelectorAll('.process-step'), { autoAlpha: 0 });
+      gsap.set(svg.querySelectorAll(".service-desc-group"), { autoAlpha: 0 });
+      gsap.set(svg.querySelectorAll(".project-detail"), { autoAlpha: 0 });
+      gsap.set(svg.querySelectorAll(".process-step"), { autoAlpha: 0 });
 
-      const processLines = [
-        processLine1Ref,
-        processLine2Ref,
-        processLine3Ref,
-      ];
+      const processLines = [processLine1Ref, processLine2Ref, processLine3Ref];
       processLines.forEach((lineRef) => {
         if (lineRef.current) {
           const length = lineRef.current.getTotalLength();
@@ -133,30 +138,30 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
         }
       });
 
-      const startThemeKey = theme === 'dark' ? 'dark' : 'light';
+      const startThemeKey = theme === "dark" ? "dark" : "light";
       const startTheme = colors[startThemeKey];
 
       gsap.set(backgroundRectRef.current, {
         fill: startTheme.bg,
         stroke: startTheme.uiStroke,
       });
-      gsap.set(svg.querySelectorAll('.ui-bg'), { fill: startTheme.uiBg });
-      gsap.set(svg.querySelectorAll('.ui-stroke'), {
+      gsap.set(svg.querySelectorAll(".ui-bg"), { fill: startTheme.uiBg });
+      gsap.set(svg.querySelectorAll(".ui-stroke"), {
         stroke: startTheme.uiStroke,
       });
-      gsap.set(svg.querySelectorAll('.ui-fill-muted'), {
+      gsap.set(svg.querySelectorAll(".ui-fill-muted"), {
         fill: startTheme.uiFillMuted,
       });
-      gsap.set(svg.querySelectorAll('.ui-fill-primary'), {
+      gsap.set(svg.querySelectorAll(".ui-fill-primary"), {
         fill: startTheme.uiFillPrimary,
       });
-      gsap.set(svg.querySelectorAll('.ui-text-muted'), {
+      gsap.set(svg.querySelectorAll(".ui-text-muted"), {
         fill: startTheme.uiTextMuted,
       });
-      gsap.set(svg.querySelectorAll('.ui-primary-stroke'), {
+      gsap.set(svg.querySelectorAll(".ui-primary-stroke"), {
         stroke: startTheme.uiFillPrimary,
       });
-      gsap.set(svg.querySelectorAll('.contact-button-text'), {
+      gsap.set(svg.querySelectorAll(".contact-button-text"), {
         fill: startTheme.primaryForeground,
       });
       if (logoTextRef.current) {
@@ -164,12 +169,24 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
       }
 
       if (sunIconRef.current && moonIconRef.current) {
-        if (startThemeKey === 'dark') {
-          gsap.set(sunIconRef.current, { autoAlpha: 0, scale: 0, rotation: -90 });
-          gsap.set(moonIconRef.current, { autoAlpha: 1, scale: 1, rotation: 0 });
+        if (startThemeKey === "dark") {
+          gsap.set(sunIconRef.current, {
+            autoAlpha: 0,
+            scale: 0,
+            rotation: -90,
+          });
+          gsap.set(moonIconRef.current, {
+            autoAlpha: 1,
+            scale: 1,
+            rotation: 0,
+          });
         } else {
           gsap.set(sunIconRef.current, { autoAlpha: 1, scale: 1, rotation: 0 });
-          gsap.set(moonIconRef.current, { autoAlpha: 0, scale: 0, rotation: 90 });
+          gsap.set(moonIconRef.current, {
+            autoAlpha: 0,
+            scale: 0,
+            rotation: 90,
+          });
         }
       }
     };
@@ -182,8 +199,8 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
       return tl;
     };
 
-    const headlineText = 'ARTISTRY MEETS ARCHITECTURE';
-    const subtitleText = 'Crafting unique digital experiences.';
+    const headlineText = "ARTISTRY MEETS ARCHITECTURE";
+    const subtitleText = "Crafting unique digital experiences.";
 
     const typeText = (
       ref: React.RefObject<SVGTextElement>,
@@ -207,14 +224,14 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
     };
 
     const toggleTl = gsap.timeline();
-    const startTheme = theme === 'dark' ? 'dark' : 'light';
-    const targetTheme = startTheme === 'dark' ? 'light' : 'dark';
+    const startTheme = theme === "dark" ? "dark" : "light";
+    const targetTheme = startTheme === "dark" ? "light" : "dark";
     const toColors = colors[targetTheme];
 
     if (sunIconRef.current && moonIconRef.current) {
       const sunState = { scale: 1, rotation: 0, autoAlpha: 1 };
       const moonState = { scale: 0, rotation: -90, autoAlpha: 0 };
-      if (startTheme === 'dark') {
+      if (startTheme === "dark") {
         [sunState.scale, moonState.scale] = [moonState.scale, sunState.scale];
         [sunState.rotation, moonState.rotation] = [
           moonState.rotation,
@@ -230,7 +247,7 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
           scale: moonState.scale,
           rotation: moonState.rotation,
           autoAlpha: moonState.autoAlpha,
-          ease: 'power2.in',
+          ease: "power2.in",
           duration: 0.5,
         })
         .to(
@@ -239,10 +256,10 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
             scale: sunState.scale,
             rotation: sunState.rotation,
             autoAlpha: sunState.autoAlpha,
-            ease: 'power2.out',
+            ease: "power2.out",
             duration: 0.5,
           },
-          '>-0.4'
+          ">-0.4"
         );
     }
 
@@ -250,71 +267,71 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
       .to(
         backgroundRectRef.current,
         { fill: toColors.bg, stroke: toColors.uiStroke, duration: 0.8 },
-        '<'
+        "<"
       )
       .to(
-        svg.querySelectorAll('.ui-bg'),
+        svg.querySelectorAll(".ui-bg"),
         { fill: toColors.uiBg, duration: 0.8 },
-        '<'
+        "<"
       )
       .to(
-        svg.querySelectorAll('.ui-stroke'),
+        svg.querySelectorAll(".ui-stroke"),
         { stroke: toColors.uiStroke, duration: 0.8 },
-        '<'
+        "<"
       )
       .to(
-        svg.querySelectorAll('.ui-fill-muted'),
+        svg.querySelectorAll(".ui-fill-muted"),
         { fill: toColors.uiFillMuted, duration: 0.8 },
-        '<'
+        "<"
       )
       .to(
-        svg.querySelectorAll('.ui-fill-primary'),
+        svg.querySelectorAll(".ui-fill-primary"),
         { fill: toColors.uiFillPrimary, duration: 0.8 },
-        '<'
+        "<"
       )
       .to(
-        svg.querySelectorAll('.ui-text-muted'),
+        svg.querySelectorAll(".ui-text-muted"),
         { fill: toColors.uiTextMuted, duration: 0.8 },
-        '<'
+        "<"
       )
       .to(
-        svg.querySelectorAll('.ui-primary-stroke'),
+        svg.querySelectorAll(".ui-primary-stroke"),
         { stroke: toColors.uiFillPrimary, duration: 0.8 },
-        '<'
+        "<"
       )
       .to(
-        svg.querySelectorAll('.contact-button-text'),
+        svg.querySelectorAll(".contact-button-text"),
         { fill: toColors.primaryForeground, duration: 0.8 },
-        '<'
+        "<"
       );
 
     if (logoTextRef.current) {
       toggleTl.to(
         logoTextRef.current,
         { fill: toColors.primary, duration: 0.8 },
-        '<'
+        "<"
       );
     }
 
     const contactTypingTl = gsap.timeline();
     if (contactMessageRef.current && contactCursorRef.current) {
       contactTypingTl
-        .set(contactMessageRef.current, { textContent: '' })
+        .set(contactMessageRef.current, { textContent: "" })
         .set(contactCursorRef.current, { autoAlpha: 1 })
         .to(contactCursorRef.current, {
           autoAlpha: 0,
           repeat: 3,
           yoyo: true,
           duration: 0.4,
-          ease: 'steps(1)',
+          ease: "steps(1)",
         })
-        .add(typeText(contactMessageRef, 'Hello!', 0.8))
+        .add(typeText(contactMessageRef, "Hello!", 0.8))
         .set(contactCursorRef.current, { autoAlpha: 0 });
     }
 
     const processAnimationTl = gsap.timeline();
     if (processUiRef.current) {
-      const steps = gsap.utils.toArray('.process-step', processUiRef.current);
+      const steps = gsap.utils.toArray(".process-step", processUiRef.current);
       const lines = [
         processLine1Ref.current,
         processLine2Ref.current,
@@ -329,7 +346,7 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
         if (line) {
           processAnimationTl.to(
             line,
-            { strokeDashoffset: 0, duration: 0.6, ease: 'power1.inOut' },
+            { strokeDashoffset: 0, duration: 0.6, ease: "power1.inOut" },
             `<${index * 0.8 + 0.4}`
           );
         }
@@ -343,7 +360,7 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
         .to(servicesLinkRef.current, { fill: activeColor, duration: 0.2 })
         .to(servicesLinkRef.current, {
           scale: 1.05,
-          transformOrigin: 'center middle',
+          transformOrigin: "center middle",
           duration: 0.3,
           yoyo: true,
           repeat: 1,
@@ -352,71 +369,71 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
 
     // --- MASTER TIMELINE ---
     masterTl.add(setup);
-    masterTl.add(animateSection(navUiRef), '+=0.5');
-    masterTl.add(animateSection(heroUiRef), '+=0.2');
-    masterTl.add(typeText(heroHeadlineRef, headlineText, 1.2), '+=0.3');
-    masterTl.add(typeText(heroSubtitleRef, subtitleText, 1.2), '+=0.2');
-    
+    masterTl.add(animateSection(navUiRef), "+=0.5");
+    masterTl.add(animateSection(heroUiRef), "+=0.2");
+    masterTl.add(typeText(heroHeadlineRef, headlineText, 1.2), "+=0.3");
+    masterTl.add(typeText(heroSubtitleRef, subtitleText, 1.2), "+=0.2");
+
     // Animate About section
     if (aboutUiRef.current) {
       masterTl.fromTo(
-        aboutUiRef.current, 
+        aboutUiRef.current,
         { autoAlpha: 0, y: 15 },
-        { autoAlpha: 1, y: 0, duration: 0.5, ease: 'power2.out' }, 
-        '+=1.0'
+        { autoAlpha: 1, y: 0, duration: 0.5, ease: "power2.out" },
+        "+=1.0"
       );
     }
-    
-    masterTl.add(toggleTl, '+=1.2');
+
+    masterTl.add(toggleTl, "+=1.2");
 
     const sequenceTl = gsap.timeline();
     sequenceTl
-      .add(animateSection(servicesUiRef), '+=0.2')
-      .add(animateSection(projectsUiRef), '>-0.4')
-      .add(animateSection(processUiRef), '>-0.2')
-      .add(animateSection(contactUiRef), '>-0.2');
+      .add(animateSection(servicesUiRef), "+=0.2")
+      .add(animateSection(projectsUiRef), ">-0.4")
+      .add(animateSection(processUiRef), ">-0.2")
+      .add(animateSection(contactUiRef), ">-0.2");
 
-    masterTl.add(sequenceTl, '>-0.5');
+    masterTl.add(sequenceTl, ">-0.5");
 
-    masterTl.add(processAnimationTl, '>-1.5');
+    masterTl.add(processAnimationTl, ">-1.5");
 
     masterTl.fromTo(
-      svg.querySelectorAll('.project-detail'),
+      svg.querySelectorAll(".project-detail"),
       { autoAlpha: 0, y: 10 },
       {
         autoAlpha: 1,
         y: 0,
         stagger: 0.3,
-        ease: 'power2.out',
+        ease: "power2.out",
         duration: 0.6,
       },
-      '>-4.0'
+      ">-4.0"
     );
 
-    masterTl.addLabel('interact', '+=0.5'); 
-    masterTl.add(servicesClickTl, 'interact');
+    masterTl.addLabel("interact", "+=0.5");
+    masterTl.add(servicesClickTl, "interact");
 
     if (scrollGroupRef.current) {
       masterTl.to(
         scrollGroupRef.current,
-        { y: -300, duration: 2.5, ease: 'power3.inOut' },
-        'interact+=0.2'
+        { y: -300, duration: 2.5, ease: "power3.inOut" },
+        "interact+=0.2"
       );
       masterTl.fromTo(
-        svg.querySelectorAll('.service-desc-group'),
+        svg.querySelectorAll(".service-desc-group"),
         { autoAlpha: 0, y: 10 },
         {
           autoAlpha: 1,
           y: 0,
           stagger: 0.2,
-          ease: 'power2.out',
+          ease: "power2.out",
           duration: 0.6,
         },
-        '>-1.8'
+        ">-1.8"
       );
     }
-    
-    masterTl.add(contactTypingTl, '+=1.0');
+
+    masterTl.add(contactTypingTl, "+=1.0");
     masterTl.add(animateSection(footerUiRef), "+=1.0");
 
     masterTl.to({}, { duration: 2.0 });
@@ -433,7 +450,7 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
       ref={svgRef}
       viewBox="0 0 600 400"
       preserveAspectRatio="xMidYMin slice"
-      className="h-full w-full opacity-0"
+      className="h-full w-full"
     >
       <defs>
         <style>
@@ -500,8 +517,22 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
                 className="ui-bg ui-stroke"
                 strokeWidth="1"
               />
-               <rect x="-180" y="-25" width="120" height="60" rx="3" className="ui-fill-muted" opacity="0.2"/>
-               <path d="M -165 -10 l 15 15 l 20 -10" strokeWidth="2" fill="none" className="ui-fill-muted" opacity="0.5" />
+              <rect
+                x="-180"
+                y="-25"
+                width="120"
+                height="60"
+                rx="3"
+                className="ui-fill-muted"
+                opacity="0.2"
+              />
+              <path
+                d="M -165 -10 l 15 15 l 20 -10"
+                strokeWidth="2"
+                fill="none"
+                className="ui-fill-muted"
+                opacity="0.5"
+              />
               <text x="-20" y="-30" className="about-title ui-fill-primary">
                 Our Philosophy
               </text>
@@ -642,7 +673,11 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
                   className="ui-fill-muted"
                   opacity="0.5"
                 />
-                <text x="-125" y="-25" className="project-title ui-fill-primary">
+                <text
+                  x="-125"
+                  y="-25"
+                  className="project-title ui-fill-primary"
+                >
                   Project One
                 </text>
                 <text x="-125" y="-10" className="project-desc ui-text-muted">
@@ -880,7 +915,7 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
             </text>
           </g>
         </g>
-         {/* --- FIXED Navbar --- */}
+        {/* --- FIXED Navbar --- */}
         <g ref={navUiRef} transform="translate(45, 35)">
           <rect x="0" y="0" width="510" height="30" className="ui-bg" />
           <text ref={logoTextRef} x="15" y="21" className="logo-text">
@@ -900,7 +935,7 @@ export function MorphingSvg({ theme, isReadyToAnimate }: MorphingSvgProps) {
           <text x="345" y="20.5" className="nav-link ui-text-muted">
             Work
           </text>
-          <g transform="translate(480, 8)" style={{ cursor: 'pointer' }}>
+          <g transform="translate(480, 8)" style={{ cursor: "pointer" }}>
             <g ref={sunIconRef}>
               <circle
                 cx="7"
