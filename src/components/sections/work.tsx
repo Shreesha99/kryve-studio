@@ -24,12 +24,11 @@ export function Work() {
       const travel = window.innerHeight;
       const isTouch = ScrollTrigger.isTouch === 1;
 
-      // Initial positions
-      cards.forEach((card, i) => {
-        gsap.set(card, {
-          y: i === 0 ? 0 : travel,
-          scale: i === 0 ? 1 : 0.96,
-        });
+      // 🔧 IMPORTANT FIX:
+      // All cards start below, NO special-casing first card
+      gsap.set(cards, {
+        y: travel,
+        scale: 0.96,
       });
 
       const tl = gsap.timeline({
@@ -42,8 +41,6 @@ export function Work() {
           anticipatePin: 1,
           fastScrollEnd: true,
           preventOverlaps: true,
-
-          // 👇 only add snap on non-touch devices
           ...(isTouch
             ? {}
             : {
@@ -54,6 +51,13 @@ export function Work() {
                 },
               }),
         },
+      });
+
+      tl.to(cards[0], {
+        y: 0,
+        scale: 1,
+        duration: 0,
+        immediateRender: true,
       });
 
       cards.forEach((card, i) => {
@@ -115,13 +119,13 @@ export function Work() {
             >
               <div
                 className="
-    relative w-full
-    aspect-[4/5] sm:aspect-[16/9]
-    min-h-[70vh] sm:min-h-0
-    overflow-hidden
-    rounded-2xl md:rounded-3xl
-    shadow-[0_40px_120px_-25px_rgba(0,0,0,0.6)]
-  "
+                  relative w-full
+                  aspect-[4/5] sm:aspect-[16/9]
+                  min-h-[70vh] sm:min-h-0
+                  overflow-hidden
+                  rounded-2xl md:rounded-3xl
+                  shadow-[0_40px_120px_-25px_rgba(0,0,0,0.6)]
+                "
               >
                 <Image
                   src={project.imageUrl}
