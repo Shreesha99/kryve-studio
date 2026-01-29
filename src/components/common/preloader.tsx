@@ -103,9 +103,9 @@ export function Preloader({ onAnimationComplete }: PreloaderProps) {
         >
             <path
               ref={iconPathRef}
-              d="M70 30C70 43.2548 59.2548 54 46 54H30M30 70C30 56.7452 40.7452 46 54 46H70"
+              d="M65 35C65 45.4772 56.4772 54 46 54H35M35 65C35 54.5228 43.5228 46 54 46H65"
               stroke="currentColor"
-              strokeWidth="8"
+              strokeWidth="6"
               strokeLinecap="round"
               strokeLinejoin="round"
               fill="none"
