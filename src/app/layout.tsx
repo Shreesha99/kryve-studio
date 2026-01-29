@@ -53,7 +53,7 @@ export const metadata: Metadata = {
   },
 };
 
-const faviconSvg = `<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><style>text{font-family:sans-serif;font-weight:bold;font-size:24px;text-anchor:middle;dominant-baseline:central;fill:hsl(240 10% 3.9%)}@media (prefers-color-scheme:dark){text{fill:hsl(0 0% 98%)}}</style><text x="50%" y="53%">E</text></svg>`;
+const faviconSvg = `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><style>.lines{stroke:hsl(240 10% 3.9%)}@media (prefers-color-scheme:dark){.lines{stroke:hsl(0 0% 98%)}}</style><path class="lines" d="M7 8H25" stroke-width="3" stroke-linecap="round"/><path class="lines" d="M7 16H20" stroke-width="3" stroke-linecap="round"/><path class="lines" d="M7 24H25" stroke-width="3" stroke-linecap="round"/></svg>`;
 const faviconDataUri = `data:image/svg+xml,${encodeURIComponent(faviconSvg)}`;
 
 export default function RootLayout({
