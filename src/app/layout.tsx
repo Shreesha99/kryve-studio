@@ -5,6 +5,10 @@ import { cn } from "@/lib/utils";
 import { ScrollToTop } from "@/components/common/scroll-to-top";
 import { CustomCursor } from "@/components/common/custom-cursor";
 
+// A theme-aware, custom SVG favicon that represents a stylized 'E'
+const faviconSvg = `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><style>.lines{stroke:hsl(240 10% 3.9%)}@media (prefers-color-scheme:dark){.lines{stroke:hsl(0 0% 98%)}}</style><path class="lines" d="M7 8H25" stroke-width="3" stroke-linecap="round"/><path class="lines" d="M7 16H20" stroke-width="3" stroke-linecap="round"/><path class="lines" d="M7 24H25" stroke-width="3" stroke-linecap="round"/></svg>`;
+const faviconDataUri = `data:image/svg+xml,${encodeURIComponent(faviconSvg)}`;
+
 export const metadata: Metadata = {
   title: {
     default: "The Elysium Project | Engineering Elegance. Designing Impact.",
@@ -49,12 +53,9 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: faviconDataUri,
   },
 };
-
-const faviconSvg = `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><style>.lines{stroke:hsl(240 10% 3.9%)}@media (prefers-color-scheme:dark){.lines{stroke:hsl(0 0% 98%)}}</style><path class="lines" d="M7 8H25" stroke-width="3" stroke-linecap="round"/><path class="lines" d="M7 16H20" stroke-width="3" stroke-linecap="round"/><path class="lines" d="M7 24H25" stroke-width="3" stroke-linecap="round"/></svg>`;
-const faviconDataUri = `data:image/svg+xml,${encodeURIComponent(faviconSvg)}`;
 
 export default function RootLayout({
   children,
@@ -64,7 +65,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="icon" href={faviconDataUri} type="image/svg+xml" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
