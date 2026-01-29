@@ -1,94 +1,134 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { gsap } from "gsap";
+import { cn } from "@/lib/utils";
 
 interface PreloaderProps {
   onAnimationComplete: () => void;
 }
 
+function ElysiumIcon({
+  pathRef,
+  ringRef,
+  className,
+}: {
+  pathRef: React.Ref<SVGPathElement>;
+  ringRef: React.Ref<SVGCircleElement>;
+  className?: string;
+}) {
+  return (
+    <svg viewBox="0 0 120 120" className={cn("h-full w-full", className)}>
+      {/* Progress ring */}
+      <circle
+        ref={ringRef}
+        cx="60"
+        cy="60"
+        r="52"
+        stroke="currentColor"
+        strokeWidth="4"
+        fill="none"
+        opacity="1"
+      />
+
+      {/* Custom E */}
+      <path
+        ref={pathRef}
+        d="M80 30H40V50H70V70H40V90H80"
+        stroke="currentColor"
+        strokeWidth="6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </svg>
+  );
+}
+
 export function Preloader({ onAnimationComplete }: PreloaderProps) {
   const preloaderRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const iconPathRef = useRef<SVGPathElement>(null);
+  const pathRef = useRef<SVGPathElement>(null);
+  const ringRef = useRef<SVGCircleElement>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const preloader = preloaderRef.current;
     const container = containerRef.current;
-    const iconPath = iconPathRef.current;
+    const path = pathRef.current;
+    const ring = ringRef.current;
 
-    if (!preloader || !container || !iconPath) return;
+    if (!preloader || !container || !path || !ring) return;
 
-    const iconPathLength = iconPath.getTotalLength();
+    const pathLength = path.getTotalLength();
+    const ringLength = ring.getTotalLength();
 
-    // Set initial states
-    gsap.set(container, { autoAlpha: 1 });
-    gsap.set(iconPath, {
-      strokeDasharray: iconPathLength,
-      strokeDashoffset: iconPathLength,
+    // Initial states
+    gsap.set(path, {
+      strokeDasharray: pathLength,
+      strokeDashoffset: pathLength,
     });
 
-    const tl = gsap.timeline();
+    gsap.set(ring, {
+      strokeDasharray: ringLength,
+      strokeDashoffset: ringLength,
+      rotate: -90,
+      transformOrigin: "50% 50%",
+      opacity: 0, // <-- FIX
+    });
+
+    const tl = gsap.timeline({
+      defaults: { ease: "power3.out" },
+      onComplete: () => {
+        preloader.style.display = "none";
+        onAnimationComplete();
+      },
+    });
+
+    gsap.set(container, { opacity: 1 });
 
     tl
-      // 1. Draw the icon
-      .to(iconPath, {
+
+      // Draw E
+      .to(path, {
         strokeDashoffset: 0,
-        duration: 2.0,
+        duration: 1.1,
+      })
+
+      // Animate ring AFTER E completes
+      .to(ring, {
+        opacity: 1,
+        strokeDashoffset: 0,
+        duration: 1.4,
         ease: "power2.inOut",
       })
-      // 2. Hold for a moment
-      .to({}, { duration: 0.8 })
-      // 3. Exit animation
+
+      // small cinematic pause
+      .to({}, { duration: 0.35 })
+
+      // exit
       .to(container, {
+        scale: 0.92,
         opacity: 0,
-        scale: 0.8,
-        duration: 0.8,
-        ease: "power3.in",
+        duration: 0.5,
+        ease: "power2.in",
       })
       .to(
         preloader,
         {
           opacity: 0,
-          duration: 0.5,
-          onComplete: () => {
-            if (preloaderRef.current) {
-              preloaderRef.current.style.display = "none";
-            }
-            onAnimationComplete();
-          },
+          duration: 0.35,
         },
-        "-=0.5"
+        "-=0.3"
       );
-
-    return () => {
-      tl.kill();
-    };
   }, [onAnimationComplete]);
 
   return (
     <div
       ref={preloaderRef}
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background"
+      className="fixed inset-0 z-[999] flex items-center justify-center bg-background"
     >
-      <div
-        ref={containerRef}
-        className="relative h-24 w-24 text-foreground"
-      >
-        <svg
-          viewBox="0 0 100 100"
-          className="absolute inset-0 h-full w-full"
-        >
-          <path
-            ref={iconPathRef}
-            d="M75 25 C 75 42.67 65.67 52 50 52 L 25 52 M 25 75 C 25 57.33 34.33 48 50 48 L 75 48"
-            stroke="currentColor"
-            strokeWidth="6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            fill="none"
-          />
-        </svg>
+      <div ref={containerRef} className="h-20 w-20 text-foreground opacity-0">
+        <ElysiumIcon pathRef={pathRef} ringRef={ringRef} />
       </div>
     </div>
   );

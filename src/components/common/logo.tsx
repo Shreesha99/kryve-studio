@@ -1,18 +1,28 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useLayoutEffect, useRef, useState } from 'react';
-import { cn } from '@/lib/utils';
+import Link from "next/link";
+import { useLayoutEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 
 // The new SVG icon component, using currentColor to inherit text color
-function ElysiumIcon({ className }: { className?: string }) {
+function ElysiumIcon({
+  className,
+  variant = "desktop",
+}: {
+  className?: string;
+  variant?: "mobile" | "desktop";
+}) {
+  const viewBox =
+    variant === "desktop"
+      ? "0 1 24 34" // cropped for large screens
+      : "0 0 32 32"; // breathing room for small icon
+
   return (
     <svg
-      viewBox="0 0 32 32"
+      viewBox={viewBox}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={cn("h-full w-auto", className)}
-      // Preserve aspect ratio, fit within the height of the line
+      className={cn("w-auto", className)}
       preserveAspectRatio="xMidYMid meet"
     >
       <path
@@ -26,7 +36,6 @@ function ElysiumIcon({ className }: { className?: string }) {
   );
 }
 
-
 export function Logo() {
   const elysiumRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
@@ -34,26 +43,29 @@ export function Logo() {
   useLayoutEffect(() => {
     const el = elysiumRef.current;
     if (!el) return;
-    
-    // ResizeObserver is more reliable than timeouts for catching size changes from font loading
+
     const observer = new ResizeObserver(() => {
-        if(el) {
-            setWidth(el.offsetWidth);
-        }
+      if (el) {
+        setWidth(el.offsetWidth);
+      }
     });
-    
+
     observer.observe(el);
-    
+
     return () => {
-        observer.disconnect();
+      observer.disconnect();
     };
   }, []);
 
   return (
-    <Link href="/" aria-label="Return to homepage" className="flex items-center justify-center">
+    <Link
+      href="/"
+      aria-label="Return to homepage"
+      className="flex items-center justify-center"
+    >
       {/* Mobile-only Icon */}
       <div className="md:hidden">
-        <ElysiumIcon className="h-8 w-8 text-foreground" />
+        <ElysiumIcon variant="mobile" className="h-8 w-8 text-foreground" />
       </div>
 
       {/* Desktop Logo */}
@@ -66,14 +78,17 @@ export function Logo() {
           className="flex items-center justify-center font-headline text-2xl font-bold text-foreground"
         >
           {/* The new icon replaces the 'E' */}
-          <ElysiumIcon className="mr-1 h-[0.75em] mb-px" />
+          <ElysiumIcon
+            variant="desktop"
+            className="mr-1 h-[1.1em] -mb-[0.08em]"
+          />
           <span>LYSIUM</span>
         </div>
         <span
-          style={{ width: width > 0 ? `${width}px` : 'auto' }}
+          style={{ width: width > 0 ? `${width}px` : "auto" }}
           className="flex justify-between text-[0.5rem] font-light uppercase text-foreground/80"
         >
-          {'PROJECT'.split('').map((char, i) => (
+          {"PROJECT".split("").map((char, i) => (
             <span key={i}>{char}</span>
           ))}
         </span>
