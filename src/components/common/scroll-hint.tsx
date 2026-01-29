@@ -47,7 +47,7 @@ export function ScrollHint({
     if (lenis) {
       lenis.scrollTo(scrollTo, {
         duration: 2,
-        ease: (t: number) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t)), // easeOutExpo
+        easing: (t: number) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t)), // easeOutExpo
       });
     } else {
       const targetElement = document.querySelector(scrollTo);
