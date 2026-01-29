@@ -11,29 +11,21 @@ export function Preloader({ onAnimationComplete }: PreloaderProps) {
   const preloaderRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const iconPathRef = useRef<SVGPathElement>(null);
-  const ringRef = useRef<SVGCircleElement>(null);
 
   useEffect(() => {
     const preloader = preloaderRef.current;
     const container = containerRef.current;
     const iconPath = iconPathRef.current;
-    const ring = ringRef.current;
 
-    if (!preloader || !container || !iconPath || !ring) return;
+    if (!preloader || !container || !iconPath) return;
 
     const iconPathLength = iconPath.getTotalLength();
-    const ringLength = ring.getTotalLength();
 
     // Set initial states
     gsap.set(container, { autoAlpha: 1 });
     gsap.set(iconPath, {
       strokeDasharray: iconPathLength,
       strokeDashoffset: iconPathLength,
-    });
-    gsap.set(ring, {
-      strokeDasharray: ringLength,
-      strokeDashoffset: ringLength,
-      autoAlpha: 0,
     });
 
     const tl = gsap.timeline();
@@ -42,26 +34,12 @@ export function Preloader({ onAnimationComplete }: PreloaderProps) {
       // 1. Draw the icon
       .to(iconPath, {
         strokeDashoffset: 0,
-        duration: 1.5,
+        duration: 2.0,
         ease: "power2.inOut",
       })
-
-      // 2. Show and draw the ring
-      .to(ring, { autoAlpha: 1, duration: 0.1 }, "-=0.5")
-      .to(
-        ring,
-        {
-          strokeDashoffset: 0,
-          duration: 1.2,
-          ease: "power1.inOut",
-        },
-        "<"
-      )
-
-      // 3. Hold for a moment
-      .to({}, { duration: 0.5 })
-
-      // 4. Exit animation
+      // 2. Hold for a moment
+      .to({}, { duration: 0.8 })
+      // 3. Exit animation
       .to(container, {
         opacity: 0,
         scale: 0.8,
@@ -82,10 +60,10 @@ export function Preloader({ onAnimationComplete }: PreloaderProps) {
         },
         "-=0.5"
       );
-      
-      return () => {
-        tl.kill();
-      }
+
+    return () => {
+      tl.kill();
+    };
   }, [onAnimationComplete]);
 
   return (
@@ -101,25 +79,14 @@ export function Preloader({ onAnimationComplete }: PreloaderProps) {
           viewBox="0 0 100 100"
           className="absolute inset-0 h-full w-full"
         >
-            <path
-              ref={iconPathRef}
-              d="M65 35C65 45.4772 56.4772 54 46 54H35M35 65C35 54.5228 43.5228 46 54 46H65"
-              stroke="currentColor"
-              strokeWidth="6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill="none"
-            />
-          <circle
-            ref={ringRef}
-            cx="50"
-            cy="50"
-            r="45"
+          <path
+            ref={iconPathRef}
+            d="M75 25 C 75 42.67 65.67 52 50 52 L 25 52 M 25 75 C 25 57.33 34.33 48 50 48 L 75 48"
             stroke="currentColor"
-            strokeWidth="3"
-            fill="none"
+            strokeWidth="6"
             strokeLinecap="round"
-            transform="rotate(-90 50 50)"
+            strokeLinejoin="round"
+            fill="none"
           />
         </svg>
       </div>
