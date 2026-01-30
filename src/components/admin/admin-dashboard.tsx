@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useLenis } from '@/components/common/smooth-scroll-provider';
 import { Post, invalidatePostsCache, getPosts } from '@/lib/blog';
 import { Button } from '@/components/ui/button';
@@ -35,6 +35,8 @@ import { initializeFirebase } from '@/firebase';
 import { addDoc, collection, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from '@/components/ui/skeleton';
+import { Progress } from '@/components/ui/progress';
+import { gsap } from 'gsap';
 
 export function AdminDashboard() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -42,43 +44,28 @@ export function AdminDashboard() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [statusMessage, setStatusMessage] = useState("");
   const { toast } = useToast();
+  const progressRef = useRef<HTMLDivElement>(null);
+  const progressTl = useRef<gsap.core.Timeline | null>(null);
 
   const lenis = useLenis();
 
-  // Dynamic status message effect
+  // Animate progress bar
   useEffect(() => {
-    let interval: NodeJS.Timeout | undefined;
     if (isSaving) {
-        const messages = [
-            "Saving post...",
-            "Structuring content...",
-            "Updating records...",
-            "Finalizing...",
-        ];
-        let messageIndex = 0;
-        setStatusMessage(messages[messageIndex]);
-        
-        interval = setInterval(() => {
-            messageIndex++;
-            if (messageIndex < messages.length) {
-                setStatusMessage(messages[messageIndex]);
-            } else {
-                // Stop the interval once we've displayed the last message.
-                // The loader will continue to spin with the "Finalizing..." text
-                // until isSaving becomes false.
-                clearInterval(interval);
-            }
-        }, 1500);
-    }
-    return () => {
-        if (interval) {
-            clearInterval(interval);
+      progressTl.current?.kill(); // Kill any existing animation
+      progressTl.current = gsap.timeline();
+      progressTl.current.fromTo(
+        progressRef.current,
+        { scaleX: 0 },
+        {
+          scaleX: 0.9,
+          duration: 8, // Simulate a longer process
+          ease: 'power1.out',
         }
-    };
+      );
+    }
   }, [isSaving]);
-
 
   // Effect to control body scroll when modal is open
   useEffect(() => {
@@ -127,10 +114,26 @@ export function AdminDashboard() {
     setIsFormOpen(true);
   };
 
+  const completeSaveAnimation = (callback?: () => void) => {
+    if (progressTl.current) {
+        progressTl.current.to(progressRef.current, {
+            scaleX: 1,
+            duration: 0.4,
+            ease: 'power1.in',
+            onComplete: () => {
+                setIsSaving(false);
+                if (callback) callback();
+            }
+        });
+    } else {
+        setIsSaving(false);
+        if (callback) callback();
+    }
+  }
+
   const handleFormSubmit = (data: FormValues) => {
     setIsFormOpen(false);
     setIsSaving(true);
-    setStatusMessage("Saving post...");
     
     const isEditing = !!editingPost?.id;
     
@@ -145,7 +148,7 @@ export function AdminDashboard() {
       : addDoc(collection(firestore, 'posts'), postData);
 
     writePromise
-      .then(async () => {
+      .then(() => {
         toast({
           title: (
             <div className="flex items-center gap-2">
@@ -156,7 +159,7 @@ export function AdminDashboard() {
           description: `"${data.title}" has been saved.`,
         });
         invalidatePostsCache();
-        await fetchPosts();
+        completeSaveAnimation(() => fetchPosts());
       })
       .catch((e: any) => {
         console.error("Error saving post:", e);
@@ -165,17 +168,13 @@ export function AdminDashboard() {
           title: "Save failed",
           description: e.message || "Could not save the post.",
         });
-      })
-      .finally(() => {
-        setIsSaving(false);
-        setStatusMessage("");
+        completeSaveAnimation();
       });
   };
 
 
   const handleDeletePost = async (postId: string) => {
     setIsSaving(true);
-    setStatusMessage("Deleting post...");
     try {
       const { firestore } = initializeFirebase();
       await deleteDoc(doc(firestore, "posts", postId));
@@ -184,7 +183,7 @@ export function AdminDashboard() {
         description: "The blog post has been successfully removed.",
       });
       invalidatePostsCache();
-      await fetchPosts(); // Refresh list after deleting
+      completeSaveAnimation(() => fetchPosts());
     } catch (error) {
       console.error("Failed to delete post:", error);
       toast({
@@ -192,9 +191,7 @@ export function AdminDashboard() {
         title: "Deletion Failed",
         description: "Error: Could not delete post.",
       });
-    } finally {
-      setIsSaving(false);
-      setStatusMessage("");
+      completeSaveAnimation();
     }
   };
 
@@ -229,19 +226,13 @@ export function AdminDashboard() {
   return (
     <div className="container mx-auto px-4 md:px-6">
       <div className="flex items-center justify-between mb-8">
+        <h1 className="font-headline text-3xl font-semibold">Blog Posts</h1>
         <div className="flex items-center gap-4">
-          <h1 className="font-headline text-3xl font-semibold">Blog Posts</h1>
-          {isSaving && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground animate-in fade-in">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span>{statusMessage}</span>
-            </div>
-          )}
-        </div>
-        <div className="flex items-center gap-4">
-          <Button onClick={handleNewPost}><PlusCircle className="mr-2 h-4 w-4" /> Create New</Button>
+          <Button onClick={handleNewPost} disabled={isSaving}>
+            <PlusCircle className="mr-2 h-4 w-4" /> Create New
+          </Button>
           <form action={logout}>
-            <Button variant="outline" type="submit">Logout</Button>
+            <Button variant="outline" type="submit" disabled={isSaving}>Logout</Button>
           </form>
         </div>
       </div>
@@ -260,6 +251,18 @@ export function AdminDashboard() {
               </TableRow>
             </TableHeader>
             <TableBody>
+              {isSaving && (
+                <TableRow>
+                  <TableCell colSpan={4} className="p-0">
+                    <div className="relative h-1 w-full overflow-hidden">
+                      <div
+                        ref={progressRef}
+                        className="h-full origin-left bg-primary"
+                      />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
               {posts.map((post) => (
                 <TableRow key={post.id}>
                   <TableCell className="font-medium">{post.title}</TableCell>
