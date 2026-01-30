@@ -77,21 +77,18 @@ export function KeyboardAnimation({ className }: { className?: string }) {
   const textboxContainerRef = useRef<HTMLDivElement>(null);
   const hintRef = useRef<HTMLParagraphElement>(null);
 
-  const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState<boolean | null>(null);
   const [typedText, setTypedText] = useState('');
   const [interactiveHint, setInteractiveHint] = useState('');
-  const [isMounted, setIsMounted] = useState(false);
   const hasAnimatedIn = useRef(false);
-
 
   useEffect(() => {
     setIsTouchDevice(window.matchMedia("(pointer: coarse)").matches);
-    setIsMounted(true);
   }, []);
 
   // Animate textbox in/out based on typedText state
   useLayoutEffect(() => {
-    if (!isMounted || isTouchDevice) return;
+    if (isTouchDevice) return;
 
     if (typedText.length > 0 && !hasAnimatedIn.current) {
       hasAnimatedIn.current = true;
@@ -105,93 +102,93 @@ export function KeyboardAnimation({ className }: { className?: string }) {
         .to(textboxContainerRef.current, { opacity: 0, y: 20, duration: 0.4, ease: 'power3.in' })
         .to(hintRef.current, { opacity: 1, y: 0, duration: 0.4, ease: 'power3.out' }, "-=0.2");
     }
-  }, [typedText, isMounted, isTouchDevice]);
+  }, [typedText, isTouchDevice]);
 
 
-  // Looping animation for mobile
+  // Unified animation and interaction effect
   useLayoutEffect(() => {
-    if (!isMounted || !isTouchDevice) return;
+    if (isTouchDevice === null) {
+      return; // Wait until device type is determined
+    }
 
     const ctx = gsap.context(() => {
-      const animatedKeys = warmedKeys
-        .map(code => componentRef.current?.querySelector(`[data-key-code="${code}"]`))
-        .filter(Boolean);
+      if (isTouchDevice) {
+        // --- MOBILE ANIMATION LOGIC ---
+        const animatedKeys = warmedKeys
+          .map(code => componentRef.current?.querySelector(`[data-key-code="${code}"]`))
+          .filter(Boolean);
 
-      if (animatedKeys.length === 0) return;
-      
-      const tap = (key: any) => gsap.timeline()
-        .to(key, { y: 2, duration: 0.08, ease: 'power1.in' })
-        .to(key, { y: 0, duration: 0.15, ease: 'power2.out' });
-
-      const masterTl = gsap.timeline({ repeat: -1 });
-      gsap.utils.shuffle(Array.from(animatedKeys)).forEach((key, i) => {
-        masterTl.add(tap(key), i * 0.15);
-      });
-      masterTl.to({}, { duration: 2 });
-
-    }, componentRef);
-    return () => ctx.revert();
-  }, [isMounted, isTouchDevice]);
-
-  // Interactive logic for desktop
-  useLayoutEffect(() => {
-    if (!isMounted || isTouchDevice) return;
-
-    const ctx = gsap.context(() => {
-      const keyMap = new Map<string, SVGGElement>();
-      const keyNodes = componentRef.current?.querySelectorAll<SVGGElement>('[data-key-code]');
-      if (!keyNodes || keyNodes.length === 0) return;
-      
-      keyNodes.forEach(el => {
-        const code = el.dataset.keyCode;
-        if (code) keyMap.set(code, el);
-      });
-
-      const handleKeyDown = (e: KeyboardEvent) => {
-        const keyEl = keyMap.get(e.code);
-        if (keyEl) {
-          e.preventDefault();
-          
-          if (e.metaKey || e.ctrlKey) return;
+        if (animatedKeys.length === 0) return;
         
-          gsap.to(keyEl, { y: 2, duration: 0.08, ease: 'power1.in' });
-          gsap.to(keyEl.querySelector('.key-press-rect'), { opacity: 1, duration: 0.08 });
-        }
+        const tap = (key: any) => gsap.timeline()
+          .to(key, { y: 2, duration: 0.08, ease: 'power1.in' })
+          .to(key, { y: 0, duration: 0.15, ease: 'power2.out' });
 
-        if (e.key.length === 1) {
-          setTypedText(prev => (prev + e.key).slice(-150));
-        } else if (e.code === 'Backspace') {
-          setTypedText(prev => prev.slice(0, -1));
-        } else if (e.code === 'Space') {
-          setTypedText(prev => (prev + ' ').slice(-150));
-        } else if (e.code === 'Escape') {
-          setTypedText('');
-        }
-      };
+        const masterTl = gsap.timeline({ repeat: -1 });
+        gsap.utils.shuffle(Array.from(animatedKeys)).forEach((key, i) => {
+          masterTl.add(tap(key), i * 0.15);
+        });
+        masterTl.to({}, { duration: 2 });
 
-      const handleKeyUp = (e: KeyboardEvent) => {
-        const keyEl = keyMap.get(e.code);
-        if (keyEl) {
-          gsap.to(keyEl, { y: 0, duration: 0.15, ease: 'power2.out' });
-          gsap.to(keyEl.querySelector('.key-press-rect'), { opacity: 0, duration: 0.15 });
-        }
-      };
+      } else {
+        // --- DESKTOP INTERACTION LOGIC ---
+        const keyMap = new Map<string, SVGGElement>();
+        const keyNodes = componentRef.current?.querySelectorAll<SVGGElement>('[data-key-code]');
+        if (!keyNodes || keyNodes.length === 0) return;
+        
+        keyNodes.forEach(el => {
+          const code = el.dataset.keyCode;
+          if (code) keyMap.set(code, el);
+        });
 
-      window.addEventListener('keydown', handleKeyDown);
-      window.addEventListener('keyup', handleKeyUp);
-      
-      return () => {
-        window.removeEventListener('keydown', handleKeyDown);
-        window.removeEventListener('keyup', handleKeyUp);
-      };
+        const handleKeyDown = (e: KeyboardEvent) => {
+          const keyEl = keyMap.get(e.code);
+          if (keyEl) {
+            // Allow essential browser shortcuts
+            if (e.key !== 'F5' && e.key !== 'F11' && !(e.metaKey && e.key === 'r')) {
+              e.preventDefault();
+            }
+            if (e.metaKey || e.ctrlKey) return;
+          
+            gsap.to(keyEl, { y: 2, duration: 0.08, ease: 'power1.in' });
+            gsap.to(keyEl.querySelector('.key-press-rect'), { opacity: 1, duration: 0.08 });
+          }
+
+          if (e.key.length === 1) {
+            setTypedText(prev => (prev + e.key).slice(-150));
+          } else if (e.code === 'Backspace') {
+            setTypedText(prev => prev.slice(0, -1));
+          } else if (e.code === 'Space') {
+            setTypedText(prev => (prev + ' ').slice(-150));
+          } else if (e.code === 'Escape') {
+            setTypedText('');
+          }
+        };
+
+        const handleKeyUp = (e: KeyboardEvent) => {
+          const keyEl = keyMap.get(e.code);
+          if (keyEl) {
+            gsap.to(keyEl, { y: 0, duration: 0.15, ease: 'power2.out' });
+            gsap.to(keyEl.querySelector('.key-press-rect'), { opacity: 0, duration: 0.15 });
+          }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('keyup', handleKeyUp);
+        
+        return () => {
+          window.removeEventListener('keydown', handleKeyDown);
+          window.removeEventListener('keyup', handleKeyUp);
+        };
+      }
     }, componentRef);
 
     return () => ctx.revert();
-  }, [isMounted, isTouchDevice]);
+  }, [isTouchDevice]);
 
   // Effect for interactive hints
   useEffect(() => {
-    if (isTouchDevice || !typedText) {
+    if (isTouchDevice === null || isTouchDevice || !typedText) {
       setInteractiveHint('');
       return;
     }
@@ -216,7 +213,7 @@ export function KeyboardAnimation({ className }: { className?: string }) {
   return (
     <div ref={componentRef} className={cn('relative flex w-full flex-col items-center justify-center gap-6', className)}>
       
-      {isMounted && !isTouchDevice && (
+      {isTouchDevice === false && (
         <div className="flex h-24 w-full max-w-xl flex-col items-center justify-start">
           <div ref={textboxContainerRef} className="w-full opacity-0" style={{ transform: 'translateY(20px)'}}>
             <div className="relative rounded-lg border bg-card/50 p-4 shadow-inner backdrop-blur-sm">
@@ -226,7 +223,7 @@ export function KeyboardAnimation({ className }: { className?: string }) {
               </Button>
             </div>
           </div>
-          <p ref={hintRef} className="mt-2 text-center text-sm text-muted-foreground">Start typing to see the magic.</p>
+          <p ref={hintRef} className="mt-2 text-center text-sm text-muted-foreground">The stage is set. Type away...</p>
           <p className={cn("mt-2 text-center text-sm text-primary transition-opacity duration-300", interactiveHint ? 'opacity-100' : 'opacity-0')}>
             {interactiveHint || ' '}
           </p>
