@@ -1,62 +1,42 @@
-import { notFound } from 'next/navigation';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
-import { getPostBySlug, posts } from '@/lib/blog-posts';
+import { getPostBySlug, type Post } from '@/lib/blog';
 import { Header } from '@/components/common/header';
 import { Footer } from '@/components/common/footer';
-import { Metadata } from 'next';
+import { PageLoader } from '@/components/common/page-loader';
 
-type BlogPostPageProps = {
-  params: {
-    slug: string;
-  };
-};
+export default function BlogPostPage() {
+  const params = useParams();
+  const slug = params.slug as string;
+  const [post, setPost] = useState<Post | null>(null);
+  const [loading, setLoading] = useState(true);
 
-export async function generateMetadata({
-  params,
-}: BlogPostPageProps): Promise<Metadata> {
-  const post = getPostBySlug(params.slug);
+  useEffect(() => {
+    if (slug) {
+      getPostBySlug(slug)
+        .then((p) => {
+          if (p) {
+            setPost(p);
+            document.title = `${p.title} | The Elysium Project`;
+          } else {
+            notFound();
+          }
+        })
+        .catch(() => notFound())
+        .finally(() => setLoading(false));
+    }
+  }, [slug]);
 
-  if (!post) {
-    return {
-      title: 'Post Not Found',
-    };
+  if (loading) {
+    return <PageLoader />;
   }
 
-  const url = `/blog/${post.slug}`;
-
-  return {
-    title: post.title,
-    description: post.excerpt,
-    openGraph: {
-      title: post.title,
-      description: post.excerpt,
-      type: 'article',
-      url: url,
-      images: [
-        {
-          url: post.imageUrl,
-          width: 1200,
-          height: 800,
-          alt: post.title,
-        },
-      ],
-      publishedTime: post.date,
-      authors: [post.author],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: post.title,
-      description: post.excerpt,
-      images: [post.imageUrl],
-    },
-  };
-}
-
-export default function BlogPostPage({ params }: BlogPostPageProps) {
-  const post = getPostBySlug(params.slug);
-
   if (!post) {
-    notFound();
+    // This will be handled by notFound(), but as a fallback:
+    return null;
   }
 
   return (
@@ -98,10 +78,4 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
       <Footer />
     </div>
   );
-}
-
-export async function generateStaticParams() {
-  return posts.map((post) => ({
-    slug: post.slug,
-  }));
 }

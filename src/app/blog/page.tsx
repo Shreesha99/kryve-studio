@@ -2,12 +2,12 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
 import { Header } from '@/components/common/header';
 import { Footer } from '@/components/common/footer';
-import { posts, type Post } from '@/lib/blog-posts';
+import { getPosts, type Post } from '@/lib/blog';
 import {
   Card,
   CardContent,
@@ -19,15 +19,11 @@ import {
 import { AnimateOnScroll } from '@/components/common/animate-on-scroll';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
 import { AnimatedGradient } from '@/components/common/animated-gradient';
 import { BlogGenerator } from '@/components/blog/blog-generator';
 
 gsap.registerPlugin(ScrollTrigger);
-
-// The featured post is the most recent one
-const featuredPost = posts[0];
-const otherPosts = posts.slice(1);
 
 function PostCard({ post, index }: { post: Post; index: number }) {
   return (
@@ -71,7 +67,6 @@ function FeaturedPostCard({ post }: { post: Post }) {
         const image = card.querySelector('img');
         if (!image) return;
 
-        // Parallax effect for the image
         gsap.to(image, {
             yPercent: -15,
             ease: 'none',
@@ -130,9 +125,25 @@ function FeaturedPostCard({ post }: { post: Post }) {
 }
 
 export default function BlogPage() {
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
   const sectionRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const paragraphRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    async function fetchPosts() {
+      try {
+        const fetchedPosts = await getPosts();
+        setPosts(fetchedPosts);
+      } catch (error) {
+        console.error("Failed to fetch posts:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchPosts();
+  }, []);
 
   useEffect(() => {
     const tl = gsap.timeline({
@@ -149,6 +160,9 @@ export default function BlogPage() {
       ScrollTrigger.getAll().forEach((t) => t.kill());
     };
   }, []);
+
+  const featuredPost = posts[0];
+  const otherPosts = posts.slice(1);
 
   return (
     <div className="relative flex min-h-screen flex-col bg-background">
@@ -175,16 +189,28 @@ export default function BlogPage() {
           </div>
 
           <div className="mt-16 space-y-16">
-              {featuredPost && <FeaturedPostCard post={featuredPost} />}
-
-              {otherPosts.length > 0 && (
+              {loading ? (
+                <div className="flex justify-center items-center h-64">
+                  <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                </div>
+              ) : (
                 <>
-                    <h2 className="font-headline text-3xl font-semibold tracking-tight">More Articles</h2>
-                    <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 lg:gap-12">
-                        {otherPosts.map((post, index) => (
-                        <PostCard key={post.slug} post={post} index={index} />
-                        ))}
-                    </div>
+                  {featuredPost && <FeaturedPostCard post={featuredPost} />}
+
+                  {otherPosts.length > 0 && (
+                    <>
+                        <h2 className="font-headline text-3xl font-semibold tracking-tight mt-16">More Articles</h2>
+                        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 lg:gap-12">
+                            {otherPosts.map((post, index) => (
+                            <PostCard key={post.slug} post={post} index={index} />
+                            ))}
+                        </div>
+                    </>
+                  )}
+
+                  {!featuredPost && !loading && (
+                    <p className='text-center text-muted-foreground'>No posts yet. Stay tuned!</p>
+                  )}
                 </>
               )}
           </div>

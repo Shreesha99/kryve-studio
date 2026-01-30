@@ -20,6 +20,56 @@
         "email",
         "subscribedAt"
       ]
+    },
+    "Post": {
+      "title": "Blog Post",
+      "description": "Represents a blog post article.",
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string",
+          "description": "The URL-friendly slug for the post."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the blog post."
+        },
+        "excerpt": {
+          "type": "string",
+          "description": "A short summary of the blog post."
+        },
+        "content": {
+          "type": "string",
+          "description": "The full content of the blog post in HTML format."
+        },
+        "author": {
+          "type": "string",
+          "description": "The name of the post's author."
+        },
+        "date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The publication date of the post."
+        },
+        "imageUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the post's feature image."
+        },
+        "imageHint": {
+          "type": "string",
+          "description": "Hint for AI image generation services."
+        }
+      },
+      "required": [
+        "slug",
+        "title",
+        "excerpt",
+        "content",
+        "author",
+        "date",
+        "imageUrl"
+      ]
     }
   },
   "auth": {
@@ -31,6 +81,12 @@
         "$ref": "#/backend/entities/NewsletterSubscriber"
       },
       "description": "Collection of newsletter subscribers."
+    },
+    "/posts/{postId}": {
+      "schema": {
+        "$ref": "#/backend/entities/Post"
+      },
+      "description": "Collection of blog posts."
     }
   }
 }
