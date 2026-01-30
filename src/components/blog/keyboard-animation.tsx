@@ -85,6 +85,10 @@ export function KeyboardAnimation({ className }: { className?: string }) {
   const [interactiveHint, setInteractiveHint] = useState('');
   const hasAnimatedIn = useRef(false);
 
+  const [wpm, setWpm] = useState(0);
+  const [typingStartTime, setTypingStartTime] = useState<number | null>(null);
+  const [wpmMessage, setWpmMessage] = useState('');
+
   useEffect(() => {
     setIsTouchDevice(window.matchMedia("(pointer: coarse)").matches);
   }, []);
@@ -110,8 +114,6 @@ export function KeyboardAnimation({ className }: { className?: string }) {
 
   // Unified animation and interaction effect
   useLayoutEffect(() => {
-    // This check is crucial. We must wait until we know the device type
-    // before setting up animations or event listeners.
     if (isTouchDevice === null) {
       return;
     }
@@ -133,7 +135,7 @@ export function KeyboardAnimation({ className }: { className?: string }) {
         gsap.utils.shuffle(Array.from(animatedKeys)).forEach((key, i) => {
           masterTl.add(tap(key), i * 0.15);
         });
-        masterTl.to({}, { duration: 2 }); // Add a pause at the end of the sequence
+        masterTl.to({}, { duration: 2 }); 
 
       } else {
         // --- DESKTOP INTERACTION LOGIC ---
@@ -147,7 +149,15 @@ export function KeyboardAnimation({ className }: { className?: string }) {
         });
 
         const handleKeyDown = (e: KeyboardEvent) => {
-          // Allow essential browser shortcuts
+          const target = e.target as HTMLElement;
+          if (
+            target.tagName === 'INPUT' ||
+            target.tagName === 'TEXTAREA' ||
+            target.isContentEditable
+          ) {
+            return;
+          }
+
           if (e.key === 'F5' || e.key === 'F11' || (e.metaKey && e.key === 'r')) {
               return;
           }
@@ -160,15 +170,34 @@ export function KeyboardAnimation({ className }: { className?: string }) {
             gsap.to(keyEl.querySelector('.key-press-rect'), { opacity: 1, duration: 0.08 });
           }
 
-          if (e.key.length === 1) {
-            setTypedText(prev => (prev + e.key).slice(-150));
-          } else if (e.code === 'Backspace') {
-            setTypedText(prev => prev.slice(0, -1));
-          } else if (e.code === 'Space') {
-            setTypedText(prev => (prev + ' ').slice(-150));
-          } else if (e.code === 'Escape') {
-            setTypedText('');
-          }
+          setTypedText(prev => {
+            if (e.key.length === 1) {
+              if (prev.length === 0) {
+                setTypingStartTime(Date.now());
+              }
+              return (prev + e.key).slice(-150);
+            }
+            if (e.code === 'Space') {
+               if (prev.length === 0) {
+                setTypingStartTime(Date.now());
+              }
+              return (prev + ' ').slice(-150);
+            }
+            if (e.code === 'Backspace') {
+              const newText = prev.slice(0, -1);
+              if (newText.length === 0) {
+                setTypingStartTime(null);
+                setWpm(0);
+              }
+              return newText;
+            }
+            if (e.code === 'Escape') {
+              setTypingStartTime(null);
+              setWpm(0);
+              return '';
+            }
+            return prev;
+          });
         };
 
         const handleKeyUp = (e: KeyboardEvent) => {
@@ -190,7 +219,7 @@ export function KeyboardAnimation({ className }: { className?: string }) {
     }, componentRef);
 
     return () => ctx.revert();
-  }, [isTouchDevice]); // This effect now correctly depends on isTouchDevice
+  }, [isTouchDevice]);
 
   // Effect for interactive hints
   useEffect(() => {
@@ -209,29 +238,69 @@ export function KeyboardAnimation({ className }: { className?: string }) {
         }
       }
       setInteractiveHint(foundHint);
-    }, 500); // Debounce time
+    }, 500);
 
     return () => {
       clearTimeout(handler);
     };
   }, [typedText, isTouchDevice]);
+  
+  // Effect for WPM calculation
+  useEffect(() => {
+    if (!typingStartTime || typedText.length === 0) {
+        setWpm(0);
+        return;
+    }
+    const wpmInterval = setInterval(() => {
+        const elapsedMinutes = (Date.now() - typingStartTime) / 1000 / 60;
+        if (elapsedMinutes > 0) {
+            const wordCount = typedText.length / 5;
+            setWpm(Math.round(wordCount / elapsedMinutes));
+        }
+    }, 500);
+    return () => clearInterval(wpmInterval);
+  }, [typedText, typingStartTime]);
+
+  // Effect for WPM message
+  useEffect(() => {
+    if (wpm === 0) {
+        setWpmMessage('');
+        return;
+    }
+    let message = '';
+    if (wpm > 80) message = "Are you a wizard?! 🔥";
+    else if (wpm > 50) message = "Wow, speedy fingers!";
+    else if (wpm > 20) message = "Nice rhythm!";
+    else message = "Keep going, you got this!";
+    
+    setWpmMessage(message);
+  }, [wpm]);
+  
+  const handleClear = () => {
+    setTypedText('');
+    setTypingStartTime(null);
+    setWpm(0);
+  };
 
   return (
     <div ref={componentRef} className={cn('relative flex w-full flex-col items-center justify-center gap-6', className)}>
       
       {isTouchDevice === false && (
-        <div className="flex h-24 w-full max-w-xl flex-col items-center justify-start">
+        <div className="flex h-28 w-full max-w-xl flex-col items-center justify-start">
           <div ref={textboxContainerRef} className="w-full opacity-0" style={{ transform: 'translateY(20px)'}}>
             <div className="relative rounded-lg border bg-card/50 p-4 shadow-inner backdrop-blur-sm">
               <p className="min-h-[2.5em] font-mono text-foreground break-words">{typedText}<span className="animate-pulse">|</span></p>
-              <Button variant="ghost" size="icon" className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setTypedText('')}>
+              <Button variant="ghost" size="icon" className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8" onClick={handleClear}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
           </div>
           <p ref={hintRef} className="mt-2 text-center text-sm text-muted-foreground">The stage is set. Type away...</p>
-          <p className={cn("mt-2 text-center text-sm text-primary transition-opacity duration-300", interactiveHint ? 'opacity-100' : 'opacity-0')}>
+          <p className={cn("mt-2 h-4 text-center text-sm text-primary transition-opacity duration-300", interactiveHint ? 'opacity-100' : 'opacity-0')}>
             {interactiveHint || ' '}
+          </p>
+          <p className={cn("mt-1 h-4 text-center text-sm text-muted-foreground transition-opacity duration-300", wpmMessage ? 'opacity-100' : 'opacity-0')}>
+            {wpm > 0 ? `${wpm} WPM - ${wpmMessage}` : ' '}
           </p>
         </div>
       )}

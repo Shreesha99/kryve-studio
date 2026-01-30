@@ -10,6 +10,7 @@ const hints = [
   "A little bird told me that typing 'gsap' or 'nextjs' on the blog keyboard reveals something.",
   "Whispers on the digital wind say 'firebase' is a magic word on the blog page's keyboard.",
   "Unlock a little secret by typing 'tailwind' on the interactive keyboard.",
+  "The interactive keyboard measures typing speed. Try to beat your high score!",
 ];
 
 export function EasterEggHint() {
