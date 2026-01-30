@@ -1,5 +1,5 @@
 'use server';
-import { initializeFirebase } from '@/firebase';
+import { initializeFirebase } from '@/firebase/init';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import nodemailer from 'nodemailer';
 
@@ -12,7 +12,7 @@ export async function addSubscriber(email: string) {
       subscribedAt: serverTimestamp(),
     });
   } catch (error) {
-    console.error('Error adding subscriber: ', error);
+    console.error('Error adding subscriber to Firestore: ', error);
     // Re-throw the error so the client-side catch block can handle it
     throw new Error('Could not add subscriber to the database.');
   }

@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import { gsap } from 'gsap';
 import { cn } from '@/lib/utils';
 import { MessageSquareQuote } from 'lucide-react';
+import { getPosts, type Post } from '@/lib/blog';
 
 const hints = [
   "Psst... the keyboard on the blog page has secrets. Try typing 'elysium'.",
@@ -16,11 +18,27 @@ const hints = [
 export function EasterEggHint() {
     const [isVisible, setIsVisible] = useState(false);
     const [currentHint, setCurrentHint] = useState('');
+    const [posts, setPosts] = useState<Post[]>([]);
+    const [postsLoaded, setPostsLoaded] = useState(false);
     const hintIndexRef = useRef(0);
     const containerRef = useRef<HTMLDivElement>(null);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const pathname = usePathname();
+    
+    useEffect(() => {
+        getPosts().then(fetchedPosts => {
+            setPosts(fetchedPosts);
+            setPostsLoaded(true);
+        }).catch(() => {
+            setPostsLoaded(true); // Still mark as loaded on error
+        });
+    }, []);
 
     useEffect(() => {
+        if (!postsLoaded || (postsLoaded && posts.length > 0)) {
+            return;
+        }
+
         const scheduleNextHint = () => {
             // Clear any existing timer
             if (timeoutRef.current) {
@@ -58,7 +76,11 @@ export function EasterEggHint() {
                 clearTimeout(timeoutRef.current);
             }
         };
-    }, []);
+    }, [posts, postsLoaded]);
+
+    if (pathname.startsWith('/admin') || (postsLoaded && posts.length > 0)) {
+        return null;
+    }
 
     return (
         <div

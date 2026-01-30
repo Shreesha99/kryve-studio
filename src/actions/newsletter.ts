@@ -1,6 +1,6 @@
 'use server';
 
-import { initializeFirebase } from '@/firebase';
+import { initializeFirebase } from '@/firebase/init';
 import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { z } from 'zod';
 

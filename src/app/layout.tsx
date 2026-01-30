@@ -116,6 +116,7 @@ export default function RootLayout({
           </AppProviders>
           <CookieBanner />
           <Toaster />
+          <EasterEggHint />
         </FirebaseClientProvider>
       </body>
     </html>
