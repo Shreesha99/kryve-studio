@@ -230,7 +230,9 @@ export default function BlogPage() {
                     <AnimateOnScroll>
                       <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-muted bg-card/50 p-12 text-center">
                         <KeyboardAnimation className="mb-4" />
-                        <h2 className="font-headline text-3xl font-semibold">Type to warm our keys up for our first blog article. Who knows, we might consider it in one of our blogs 😉</h2>
+                        <h2 className="font-headline text-3xl font-semibold">
+                          Have a great idea for an article? Type it out! We might just feature it. <span className="inline-block animate-wink">😉</span>
+                        </h2>
                         <p className="mt-3 max-w-md text-muted-foreground md:text-lg">
                         </p>
                       </div>

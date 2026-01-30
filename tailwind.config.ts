@@ -93,7 +93,11 @@ export default {
             '70%': { transform: 'translateX(5px) scale(1.1)' },
             '80%': { transform: 'translateX(0) scale(1.1)' },
             '100%': { transform: 'scale(1)' },
-        }
+        },
+        'wink': {
+          '0%, 15%, 100%': { transform: 'scaleY(1)' },
+          '7.5%': { transform: 'scaleY(0.1)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -102,6 +106,7 @@ export default {
         'path-draw': 'path-draw 3s ease-out 0.8s forwards',
         'toast-success-icon': 'toast-success-icon 0.6s ease-out forwards',
         'toast-destructive-icon': 'toast-destructive-icon 0.8s ease-out forwards',
+        'wink': 'wink 4s infinite',
       },
     },
   },
