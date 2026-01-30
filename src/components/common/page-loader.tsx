@@ -1,0 +1,110 @@
+'use client';
+
+import { useEffect, useRef } from 'react';
+import { gsap } from 'gsap';
+import { cn } from "@/lib/utils";
+
+function ElysiumIcon({
+  pathRef,
+  ringRef,
+  className,
+}: {
+  pathRef: React.Ref<SVGPathElement>;
+  ringRef: React.Ref<SVGCircleElement>;
+  className?: string;
+}) {
+  return (
+    <svg viewBox="0 0 120 120" className={cn("h-full w-full", className)}>
+      <circle
+        ref={ringRef}
+        cx="60"
+        cy="60"
+        r="52"
+        stroke="currentColor"
+        strokeWidth="4"
+        fill="none"
+        opacity="1"
+      />
+      <path
+        ref={pathRef}
+        d="M80 30H40V50H70V70H40V90H80"
+        stroke="currentColor"
+        strokeWidth="6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </svg>
+  );
+}
+
+export function PageLoader() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const pathRef = useRef<SVGPathElement>(null);
+  const ringRef = useRef<SVGCircleElement>(null);
+
+  useEffect(() => {
+    const path = pathRef.current;
+    const ring = ringRef.current;
+
+    if (!path || !ring) return;
+
+    const pathLength = path.getTotalLength();
+    const ringLength = ring.getTotalLength();
+
+    // Initial states
+    gsap.set(path, {
+      strokeDasharray: pathLength,
+      strokeDashoffset: pathLength,
+    });
+    gsap.set(ring, {
+      strokeDasharray: ringLength,
+      strokeDashoffset: ringLength,
+      rotate: -90,
+      transformOrigin: "50% 50%",
+    });
+    
+    const tl = gsap.timeline({
+        repeat: -1,
+        repeatDelay: 0.5,
+    });
+
+    tl
+      // Animate in
+      .to(path, {
+        strokeDashoffset: 0,
+        duration: 1.1,
+        ease: 'power2.inOut',
+      })
+      .to(ring, {
+        strokeDashoffset: 0,
+        duration: 1.4,
+        ease: 'power2.inOut',
+      }, '-=0.5')
+      // Pause
+      .to({}, { duration: 0.5 })
+      // Animate out
+      .to(path, {
+        strokeDashoffset: pathLength,
+        duration: 1.1,
+        ease: 'power2.inOut',
+      })
+      .to(ring, {
+          strokeDashoffset: ringLength,
+          duration: 1.4,
+          ease: 'power2.inOut',
+      }, '-=1.1');
+      
+    return () => {
+        tl.kill();
+    }
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-background">
+      <div ref={containerRef} className="h-20 w-20 text-foreground">
+        <ElysiumIcon pathRef={pathRef} ringRef={ringRef} />
+      </div>
+    </div>
+  );
+}
