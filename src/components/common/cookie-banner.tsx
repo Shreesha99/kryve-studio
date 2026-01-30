@@ -4,29 +4,10 @@ import { useState, useEffect, useRef } from 'react';
 import Cookies from 'js-cookie';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { X } from 'lucide-react';
+import { X, Cookie } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { gsap } from 'gsap';
-
-// New BouncingCookieIcon component
-function BouncingCookieIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className={cn("h-full w-full", className)}
-    >
-      <circle cx="12" cy="12" r="10" />
-      <circle cx="8.5" cy="8.5" r="1.2" fill="hsl(var(--card))" />
-      <circle cx="16" cy="15.5" r="1" fill="hsl(var(--card))" />
-      <circle cx="12" cy="12" r="0.9" fill="hsl(var(--card))" />
-      <circle cx="15.5" cy="8.5" r="1.1" fill="hsl(var(--card))" />
-      <circle cx="8.5" cy="15.5" r="0.8" fill="hsl(var(--card))" />
-    </svg>
-  );
-}
-
 
 export function CookieBanner() {
   const [isVisible, setIsVisible] = useState(false);
@@ -89,7 +70,7 @@ export function CookieBanner() {
         </Button>
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-6">
           <div ref={iconRef} className="flex-shrink-0">
-            <BouncingCookieIcon className="h-10 w-10 text-primary" />
+            <Cookie className="h-10 w-10 text-primary" />
           </div>
           <div className="flex-grow text-center sm:text-left">
             <h3 className="font-headline text-lg font-semibold">Regarding Your Privacy</h3>
