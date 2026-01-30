@@ -77,7 +77,7 @@ export function PostForm({
         .replace(/\s+/g, '-');
       form.setValue('slug', slug, { shouldValidate: true });
     }
-  }, [watchedTitle, form.setValue, post?.id]);
+  }, [watchedTitle, form, post?.id]);
 
   const handleFormSubmit: SubmitHandler<FormValues> = data => {
     onSubmit(data);
@@ -85,9 +85,12 @@ export function PostForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
-        <ScrollArea className="h-[60vh]">
-          <div className="space-y-6 pr-6 py-1">
+      <form
+        onSubmit={form.handleSubmit(handleFormSubmit)}
+        className="flex-grow flex flex-col min-h-0"
+      >
+        <ScrollArea className="flex-grow pr-6 -mr-6">
+          <div className="space-y-6 py-1">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <FormField
                 control={form.control}
@@ -193,7 +196,7 @@ export function PostForm({
             />
           </div>
         </ScrollArea>
-        <div className="flex justify-end gap-4 pt-4">
+        <div className="flex-shrink-0 flex justify-end gap-4 pt-4 border-t mt-auto">
           <Button
             type="button"
             variant="outline"

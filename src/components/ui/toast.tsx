@@ -53,8 +53,8 @@ const Toast = React.forwardRef<
       className={cn(toastVariants({ variant }), className)}
       {...props}
     >
-        {variant === 'success' && <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0 animate-icon-pop-in text-emerald-500" />}
-        {variant === 'destructive' && <AlertTriangle className="mt-0.5 h-6 w-6 shrink-0 animate-icon-pop-in text-destructive" />}
+        {variant === 'success' && <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0 animate-toast-success-icon text-emerald-500" />}
+        {variant === 'destructive' && <AlertTriangle className="mt-0.5 h-6 w-6 shrink-0 animate-toast-destructive-icon text-destructive" />}
         <div className="flex-grow grid gap-1">{children}</div>
     </ToastPrimitives.Root>
   )
