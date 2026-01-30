@@ -12,7 +12,6 @@ const keyHeight = 12;
 const keyGap = 3;
 const cornerRadius = 2.5;
 
-// Added `code` property for mapping hardware key presses
 const rows = [
   { y: 0, keys: [
     { x: 0, w: 1, s: 'F1', code: 'F1' }, { x: 1, w: 1, s: 'F2', code: 'F2' }, { x: 2, w: 1, s: 'F3', code: 'F3' }, { x: 3, w: 1, s: 'F4', code: 'F4' },
@@ -93,52 +92,52 @@ export function KeyboardAnimation({ className }: { className?: string }) {
   useLayoutEffect(() => {
     if (!isMounted || isTouchDevice) return;
 
-    const keyMap = new Map<string, SVGGElement>();
-    const keyElements = componentRef.current?.querySelectorAll<SVGGElement>('[data-key-code]');
-    keyElements?.forEach(el => {
-      const code = el.dataset.keyCode;
-      if (code) keyMap.set(code, el);
-    });
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey) return;
+    const ctx = gsap.context(() => {
+      const keyMap = new Map<string, SVGGElement>();
+      const keyElements = componentRef.current?.querySelectorAll<SVGGElement>('[data-key-code]');
+      if (!keyElements || keyElements.length === 0) return;
       
-      const keyEl = keyMap.get(e.code);
-      if (keyEl) {
-        gsap.to(keyEl.querySelector('rect:last-of-type'), {
-          y: 2,
-          fill: 'hsl(var(--primary))',
-          duration: 0.08,
-        });
-      }
+      keyElements.forEach(el => {
+        const code = el.dataset.keyCode;
+        if (code) keyMap.set(code, el);
+      });
 
-      if (e.key.length === 1) {
-        setTypedText(prev => prev + e.key);
-      } else if (e.code === 'Backspace') {
-        setTypedText(prev => prev.slice(0, -1));
-      } else if (e.code === 'Space') {
-        setTypedText(prev => prev + ' ');
-      }
-    };
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.metaKey || e.ctrlKey) return;
+        
+        const keyEl = keyMap.get(e.code);
+        if (keyEl) {
+          gsap.to(keyEl, { y: 2, duration: 0.08, ease: 'power1.in' });
+          gsap.to(keyEl.querySelector('.key-press-rect'), { opacity: 1, duration: 0.08 });
+        }
 
-    const handleKeyUp = (e: KeyboardEvent) => {
-      const keyEl = keyMap.get(e.code);
-      if (keyEl) {
-        gsap.to(keyEl.querySelector('rect:last-of-type'), {
-          y: 0,
-          fill: 'url(#key-gradient)',
-          duration: 0.15,
-          ease: 'power2.out'
-        });
-      }
-    };
+        if (e.key.length === 1) {
+          setTypedText(prev => prev + e.key);
+        } else if (e.code === 'Backspace') {
+          setTypedText(prev => prev.slice(0, -1));
+        } else if (e.code === 'Space') {
+          setTypedText(prev => prev + ' ');
+        }
+      };
 
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-    };
+      const handleKeyUp = (e: KeyboardEvent) => {
+        const keyEl = keyMap.get(e.code);
+        if (keyEl) {
+          gsap.to(keyEl, { y: 0, duration: 0.15, ease: 'power2.out' });
+          gsap.to(keyEl.querySelector('.key-press-rect'), { opacity: 0, duration: 0.15 });
+        }
+      };
+
+      window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener('keyup', handleKeyUp);
+      
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+        window.removeEventListener('keyup', handleKeyUp);
+      };
+    }, componentRef);
+
+    return () => ctx.revert();
   }, [isMounted, isTouchDevice]);
 
   return (
@@ -198,7 +197,10 @@ export function KeyboardAnimation({ className }: { className?: string }) {
                     data-key-code={key.code}
                     data-warmed={key.warmed}
                   >
+                    {/* Shadow Layer */}
                     <rect x={xPos} y={yPos + 2} width={currentKeyWidth} height={keyHeight} rx={cornerRadius} className="fill-foreground/10"/>
+                    
+                    {/* Base Key Layer */}
                     <rect
                       x={xPos}
                       y={yPos}
@@ -209,6 +211,21 @@ export function KeyboardAnimation({ className }: { className?: string }) {
                       strokeWidth="0.5"
                       fill={(isTouchDevice && key.warmed) ? "url(#warmed-key-gradient)" : "url(#key-gradient)"}
                     />
+
+                    {/* Pressed State Overlay */}
+                    <rect
+                      className="key-press-rect"
+                      x={xPos}
+                      y={yPos}
+                      width={currentKeyWidth}
+                      height={keyHeight}
+                      rx={cornerRadius}
+                      fill="hsl(var(--primary))"
+                      opacity="0"
+                      style={{ pointerEvents: 'none' }}
+                    />
+                    
+                    {/* Key Text */}
                     {key.s && (
                       <text
                         x={xPos + currentKeyWidth / 2}
