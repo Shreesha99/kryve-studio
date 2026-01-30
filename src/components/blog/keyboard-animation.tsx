@@ -149,6 +149,7 @@ export function KeyboardAnimation({ className }: { className?: string }) {
         });
 
         const handleKeyDown = (e: KeyboardEvent) => {
+          // 1. Ignore typing if user is in an input field
           const target = e.target as HTMLElement;
           if (
             target.tagName === 'INPUT' ||
@@ -158,46 +159,51 @@ export function KeyboardAnimation({ className }: { className?: string }) {
             return;
           }
 
+          // 2. Allow critical browser shortcuts
           if (e.key === 'F5' || e.key === 'F11' || (e.metaKey && e.key === 'r')) {
-              return;
+            return;
           }
-          e.preventDefault();
-          
+
+          // 3. Animate the key press visually if it exists on the SVG
           const keyEl = keyMap.get(e.code);
           if (keyEl) {
-            if (e.metaKey || e.ctrlKey) return;
+            if (e.metaKey || e.ctrlKey) return; // Ignore complex shortcuts for now
             gsap.to(keyEl.querySelector('.key-base'), { y: 2, duration: 0.08, ease: 'power1.in' });
             gsap.to(keyEl.querySelector('.key-press-rect'), { opacity: 1, duration: 0.08 });
           }
 
-          setTypedText(prev => {
-            if (e.key.length === 1) {
-              if (prev.length === 0) {
-                setTypingStartTime(Date.now());
-              }
+          // 4. Handle text input and prevent default actions ONLY for keys we are capturing
+          if (e.key.length === 1) {
+            e.preventDefault();
+            setTypedText(prev => {
+              if (prev.length === 0) setTypingStartTime(Date.now());
               return (prev + e.key).slice(-150);
-            }
-            if (e.code === 'Space') {
-               if (prev.length === 0) {
-                setTypingStartTime(Date.now());
-              }
+            });
+          } else if (e.code === 'Space') {
+            e.preventDefault();
+            setTypedText(prev => {
+              if (prev.length === 0) setTypingStartTime(Date.now());
               return (prev + ' ').slice(-150);
-            }
-            if (e.code === 'Backspace') {
+            });
+          } else if (e.code === 'Backspace') {
+            e.preventDefault();
+            setTypedText(prev => {
               const newText = prev.slice(0, -1);
               if (newText.length === 0) {
                 setTypingStartTime(null);
                 setWpm(0);
               }
               return newText;
-            }
-            if (e.code === 'Escape') {
+            });
+          } else if (e.code === 'Escape') {
+            e.preventDefault();
+            setTypedText(() => {
               setTypingStartTime(null);
               setWpm(0);
               return '';
-            }
-            return prev;
-          });
+            });
+          }
+          // For all other keys (Enter, Arrows, etc.), we do nothing and let the browser handle it.
         };
 
         const handleKeyUp = (e: KeyboardEvent) => {
@@ -398,5 +404,7 @@ export function KeyboardAnimation({ className }: { className?: string }) {
     </div>
   );
 }
+
+    
 
     
