@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { Header } from '@/components/common/header';
 import { Footer } from '@/components/common/footer';
 import { AnimateOnScroll } from '@/components/common/animate-on-scroll';
+import { ClientDate } from '@/components/common/client-date';
 
 export const metadata: Metadata = {
   title: 'Disclaimer',
@@ -22,7 +23,7 @@ export default function DisclaimerPage() {
             <h1 className="font-headline text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl">
               Disclaimer
             </h1>
-            <p className="mt-4 text-muted-foreground">Last updated: {new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+            <p className="mt-4 text-muted-foreground">Last updated: <ClientDate /></p>
             
             <div className="prose prose-lg dark:prose-invert mx-auto mt-12 max-w-none [&_h2]:font-headline [&_h2]:text-2xl [&_h2]:font-semibold [&_p]:leading-relaxed [&_a]:text-primary hover:[&_a]:underline">
                 <p>
