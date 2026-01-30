@@ -32,6 +32,8 @@ export async function addSubscriber(
       success: false,
       message: 'Could not connect to the database. Please try again.',
     };
+    // This is now a more specific error. The previous 'Could not connect' was misleading.
+    return { success: false, message: 'Failed to write to the subscribers database. Please check Firestore rules.' };
   }
 
   const { SMTP_USER, SMTP_PASS } = process.env;
@@ -52,6 +54,9 @@ export async function addSubscriber(
 =======
     service: 'gmail',
 >>>>>>> c863216 (i dont have such email and my app password is correct)
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // use SSL
     auth: {
       user: SMTP_USER,
       pass: SMTP_PASS,
@@ -227,7 +232,9 @@ export async function sendBulkNewsletter(
   }
 
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // use SSL
     auth: {
       user: SMTP_USER,
       pass: SMTP_PASS,
