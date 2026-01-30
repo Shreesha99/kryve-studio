@@ -7,6 +7,7 @@ import { CustomCursor } from "@/components/common/custom-cursor";
 import { CookieBanner } from "@/components/common/cookie-banner";
 import { FirebaseClientProvider } from "@/firebase/client-provider";
 import { Toaster } from "@/components/ui/toaster";
+import { EasterEggHint } from "@/components/common/easter-egg-hint";
 
 const siteConfig = {
   name: "The Elysium Project",
@@ -108,6 +109,7 @@ export default function RootLayout({
             {children}
             <ScrollToTop />
           </AppProviders>
+          <EasterEggHint />
           <CookieBanner />
           <Toaster />
         </FirebaseClientProvider>

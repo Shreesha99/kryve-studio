@@ -231,7 +231,7 @@ export default function BlogPage() {
                       <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-muted bg-card/50 p-12 text-center">
                         <KeyboardAnimation className="mb-4" />
                         <h2 className="font-headline text-3xl font-semibold">
-                          Have a great idea for an article? Type it out! We might just feature it. <span className="inline-block animate-wink">😉</span>
+                          Have a great idea for an article? Type it out! We might just feature it. <span className="inline-block">😉</span>
                         </h2>
                         <p className="mt-3 max-w-md text-muted-foreground md:text-lg">
                         </p>
