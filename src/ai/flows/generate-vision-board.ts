@@ -84,7 +84,7 @@ const generateVisionBoardFlow = ai.defineFlow(
       prompt: `A high-resolution, artistic, and visually stunning image representing the concept: "${input.topic}". Mood: ${textOutput.mood}. Photographic style.`,
     });
 
-    if (!media.url) {
+    if (!media || !media.url) {
       throw new Error('Failed to generate an image for the vision board.');
     }
 
