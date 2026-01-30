@@ -36,7 +36,7 @@ import { addDoc, collection, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-
+import { Progress } from '@/components/ui/progress';
 
 const TableSkeleton = () => (
   <div className="rounded-lg border">
@@ -66,7 +66,6 @@ const TableSkeleton = () => (
   </div>
 );
 
-
 export function AdminDashboard() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [listLoading, setListLoading] = useState(true);
@@ -87,10 +86,6 @@ export function AdminDashboard() {
   }, [isFormOpen, lenis]);
 
   const fetchPosts = useCallback(async () => {
-    // Keep listLoading true only on the very first fetch
-    if (posts.length === 0) {
-      setListLoading(true);
-    }
     try {
       const fetchedPosts = await getPosts(true); // Force refresh for admin
       setPosts(fetchedPosts);
@@ -104,32 +99,27 @@ export function AdminDashboard() {
     } finally {
       setListLoading(false);
     }
-  }, [toast, posts.length]);
+  }, [toast]);
 
   useEffect(() => {
     let isMounted = true;
     const initialLoad = async () => {
+        setListLoading(true);
         // Optimistically show cached posts first if they exist
         const cached = await getPosts(false);
         if (isMounted && cached.length > 0) {
             setPosts(cached);
-            setListLoading(false);
-            // Then fetch fresh posts in the background
-            const freshPosts = await getPosts(true);
-            if (isMounted) {
-                setPosts(freshPosts);
-            }
-        } else {
-            // If no cache, perform a full load
-            await fetchPosts();
+            setListLoading(false); // Stop loading indicator after showing cached data
         }
+        // Then fetch fresh posts in the background
+        await fetchPosts();
     };
     initialLoad();
     return () => {
         isMounted = false;
     }
-  }, [fetchPosts]);
-
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleNewPost = () => {
     setEditingPost(null);
@@ -141,47 +131,65 @@ export function AdminDashboard() {
     setIsFormOpen(true);
   };
 
-  const handleFormSubmit = (data: FormValues) => {
+  const handleFormSubmit = async (data: FormValues) => {
     setIsFormOpen(false);
     const isEditing = !!editingPost?.id;
     
     const { id: toastId } = toast({
-      title: <div className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /><span>{isEditing ? 'Updating post...' : 'Creating post...'}</span></div>,
-      description: `"${data.title}"`,
+        title: <div className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /><span>Preparing...</span></div>,
+        description: <Progress value={0} className="w-full" />,
     });
 
-    const { firestore } = initializeFirebase();
-    const postData = {
-      ...data,
-      date: new Date().toISOString(),
-    };
+    try {
+        const { firestore } = initializeFirebase();
+        const postData = {
+          ...data,
+          date: new Date().toISOString(),
+        };
 
-    const saveOperation = isEditing
-      ? setDoc(doc(firestore, 'posts', editingPost!.id!), postData, { merge: true })
-      : addDoc(collection(firestore, 'posts'), postData);
-
-    saveOperation
-      .then(() => {
+        // Stage 1: Validation (simulated)
+        await new Promise(res => setTimeout(res, 400));
         toast({
-          id: toastId,
-          title: <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /><span>{isEditing ? 'Post Updated!' : 'Post Created!'}</span></div>,
-          description: `"${data.title}" has been successfully saved.`,
+            id: toastId,
+            title: <div className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /><span>Validating data...</span></div>,
+            description: <Progress value={33} className="w-full" />,
         });
+
+        // Stage 2: Saving to DB
+        await new Promise(res => setTimeout(res, 600));
+        toast({
+            id: toastId,
+            title: <div className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /><span>Saving content...</span></div>,
+            description: <Progress value={66} className="w-full" />,
+        });
+
+        if (isEditing) {
+            await setDoc(doc(firestore, 'posts', editingPost!.id!), postData, { merge: true });
+        } else {
+            await addDoc(collection(firestore, 'posts'), postData);
+        }
+
+        // Stage 3: Finalizing
         invalidatePostsCache();
-        fetchPosts();
-      })
-      .catch((e: any) => {
+        await fetchPosts();
+
+        toast({
+            id: toastId,
+            title: <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /><span>{isEditing ? 'Post Updated!' : 'Post Created!'}</span></div>,
+            description: `"${data.title}" has been saved.`,
+        });
+
+    } catch (e: any) {
         console.error("Error saving post:", e);
         toast({
-          id: toastId,
-          variant: "destructive",
-          title: "Save Failed",
-          description: e.message || "Could not save the post to the database.",
+            id: toastId,
+            variant: "destructive",
+            title: "Save Failed",
+            description: e.message || "Could not save the post to the database.",
         });
-      })
-      .finally(() => {
+    } finally {
         setEditingPost(null);
-      });
+    }
   };
 
   const handleDeletePost = async (postId: string, postTitle: string) => {
@@ -201,18 +209,17 @@ export function AdminDashboard() {
       });
 
       invalidatePostsCache();
-      fetchPosts();
-    } catch (error) {
+      await fetchPosts();
+    } catch (error: any) {
       console.error("Failed to delete post:", error);
       toast({
         id: toastId,
         variant: "destructive",
         title: "Deletion Failed",
-        description: "Could not delete post from the database.",
+        description: error.message || "Could not delete post from the database.",
       });
     }
   };
-
 
   return (
     <div className="container mx-auto px-4 md:px-6">
