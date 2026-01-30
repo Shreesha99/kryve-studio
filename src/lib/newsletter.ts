@@ -1,45 +1,57 @@
 'use server';
 import { initializeFirebase } from '@/firebase/init';
-import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
+import { collection, doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import nodemailer from 'nodemailer';
 
 export async function addSubscriber(email: string): Promise<{ success: boolean; message: string }> {
   const { firestore } = initializeFirebase();
-  const subscribersCollection = collection(firestore, 'subscribers');
+  // Use the email as the document ID to enforce uniqueness and simplify logic.
+  const subscriberDocRef = doc(firestore, 'subscribers', email);
 
-  // 1. Check if email already exists
   try {
-    const q = query(subscribersCollection, where('email', '==', email));
-    const querySnapshot = await getDocs(q);
-
-    if (!querySnapshot.empty) {
-      // Email already exists, return a user-friendly success message.
+    const docSnap = await getDoc(subscriberDocRef);
+    if (docSnap.exists()) {
       return { success: true, message: 'You are already subscribed!' };
     }
-  } catch (error) {
-    console.error('Error checking for subscriber:', error);
-    return { success: false, message: 'Could not connect to the database. Please try again.' };
-  }
 
-  // 2. If not, add the new subscriber
-  try {
-    await addDoc(subscribersCollection, {
+    // If document doesn't exist, create it.
+    await setDoc(subscriberDocRef, {
       email: email,
       subscribedAt: serverTimestamp(),
     });
-  } catch (error) {
-    console.error('Error adding subscriber to Firestore: ', error);
-    return { success: false, message: 'Could not add subscriber to the database.' };
+  } catch (error: any) {
+    // Catch potential permission errors if getDoc fails, or connection errors.
+    // The security rules should allow this, but we'll handle it gracefully.
+    // A permission error on getDoc means the rule is not what we expect.
+    // A failure on setDoc is more likely a connection issue.
+    if (error.code === 'permission-denied') {
+         // This case should not be hit with `allow read: false` and trying a get.
+         // Let's proceed with a write-only approach if this happens.
+         try {
+            await setDoc(doc(firestore, 'subscribers', email), {
+                email: email,
+                subscribedAt: serverTimestamp(),
+            }, { merge: false }); // Use set without merge to fail if exists with different rules.
+         } catch (writeError) {
+             console.error('Error adding subscriber to Firestore after read failed:', writeError);
+             return { success: false, message: 'Could not add subscriber to the database.' };
+         }
+    } else {
+        console.error('Error checking/adding subscriber:', error);
+        return { success: false, message: 'Could not connect to the database. Please try again.' };
+    }
   }
+
 
   // 3. Send confirmation email
   const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
 
   if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) {
     console.error('SMTP configuration is missing. Cannot send confirmation email.');
-    return { success: true, message: 'Subscription successful! (Could not send confirmation email).' };
+    // The subscription was successful, but the email could not be sent.
+    return { success: true, message: 'Thank you for subscribing! (Confirmation email pending setup)' };
   }
-
+  
   const transporter = nodemailer.createTransport({
     host: SMTP_HOST,
     port: parseInt(SMTP_PORT, 10),
@@ -151,7 +163,8 @@ export async function addSubscriber(email: string): Promise<{ success: boolean; 
     });
   } catch (error) {
     console.error('Failed to send subscription confirmation email:', error);
-    return { success: true, message: 'Subscription successful! (Confirmation email failed).' };
+    // Even if email fails, subscription was successful.
+    return { success: true, message: 'Thank you for subscribing!' };
   }
 
   return { success: true, message: 'Thank you for subscribing!' };

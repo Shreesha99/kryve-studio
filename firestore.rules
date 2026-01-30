@@ -20,10 +20,10 @@ service cloud.firestore {
     }
     
     match /subscribers/{subscriberId} {
-      // Anyone can sign up for the newsletter
-      allow create: if true;
-      // Nobody can read or modify the subscriber list from the client-side
-      allow read, update, delete: if false;
+      // Allow creation and updates (for idempotency), and deletion for unsubscribing.
+      allow create, update, delete: if true;
+      // Nobody can read the subscriber list from the client-side.
+      allow read: if false;
     }
   }
 }
