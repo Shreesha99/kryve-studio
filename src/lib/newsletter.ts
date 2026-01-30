@@ -1,31 +1,43 @@
 'use server';
 import { initializeFirebase } from '@/firebase/init';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import nodemailer from 'nodemailer';
 
-export async function addSubscriber(email: string) {
+export async function addSubscriber(email: string): Promise<{ success: boolean; message: string }> {
   const { firestore } = initializeFirebase();
+  const subscribersCollection = collection(firestore, 'subscribers');
+
+  // 1. Check if email already exists
   try {
-    const subscribersCollection = collection(firestore, 'subscribers');
+    const q = query(subscribersCollection, where('email', '==', email));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      // Email already exists, return a user-friendly success message.
+      return { success: true, message: 'You are already subscribed!' };
+    }
+  } catch (error) {
+    console.error('Error checking for subscriber:', error);
+    return { success: false, message: 'Could not connect to the database. Please try again.' };
+  }
+
+  // 2. If not, add the new subscriber
+  try {
     await addDoc(subscribersCollection, {
       email: email,
       subscribedAt: serverTimestamp(),
     });
   } catch (error) {
     console.error('Error adding subscriber to Firestore: ', error);
-    // Re-throw the error so the client-side catch block can handle it
-    throw new Error('Could not add subscriber to the database.');
+    return { success: false, message: 'Could not add subscriber to the database.' };
   }
 
-  // Send confirmation email
+  // 3. Send confirmation email
   const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
 
   if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) {
-    // This won't be sent to the client, but it's crucial for server logs
     console.error('SMTP configuration is missing. Cannot send confirmation email.');
-    // We don't throw an error here because the main action (subscribing) was successful.
-    // The user is subscribed, even if the email fails.
-    return;
+    return { success: true, message: 'Subscription successful! (Could not send confirmation email).' };
   }
 
   const transporter = nodemailer.createTransport({
@@ -110,13 +122,13 @@ export async function addSubscriber(email: string) {
     <body>
         <div class="email-container">
             <div class="header">
-                <img src="https://www.the-elysium-project.in/logo.png" alt="The Elysium Project Logo" class="logo">
+                <img src="https://www.the-elysium-project.in/og-image.png" alt="The Elysium Project Logo" class="logo">
             </div>
             <div class="content">
                 <h1>Welcome to the Fold!</h1>
                 <p>You've officially joined the inner circle. We're thrilled to have you with us on our journey of engineering elegance and designing impact.</p>
                 <div class="gif-container">
-                    <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZGphZHNmYmJ5N2Y2cHVyOGFwdmNqYTg2cnRkZzU1MGF5NjN0b2Y5OCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/Be9bY8c2iS39W1y2Wb/giphy.gif" alt="Celebratory Sparkles">
+                    <img src="https://media.giphy.com/media/l41YimAQAbyhQkL7i/giphy.gif" alt="Celebratory Sparkles">
                 </div>
                 <p>Expect to receive exclusive insights, project showcases, and stories from our studio—delivered right to your inbox.</p>
             </div>
@@ -139,6 +151,8 @@ export async function addSubscriber(email: string) {
     });
   } catch (error) {
     console.error('Failed to send subscription confirmation email:', error);
-    // Again, don't throw, as the user is already subscribed.
+    return { success: true, message: 'Subscription successful! (Confirmation email failed).' };
   }
+
+  return { success: true, message: 'Thank you for subscribing!' };
 }

@@ -55,22 +55,23 @@ export function NewsletterForm() {
     setStatus('loading');
     setMessage('');
 
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Request timed out')), 10000)
-    );
-
     try {
-      await Promise.race([addSubscriber(data.email), timeoutPromise]);
-      setStatus('success');
-      setMessage('Thank you for subscribing!');
-      reset();
+      const result = await addSubscriber(data.email);
+
+      if (result.success) {
+        setStatus('success');
+        setMessage(result.message);
+        // Only reset the form if it was a new subscription, not if they were already subscribed.
+        if (result.message.includes('Thank you')) {
+          reset();
+        }
+      } else {
+        setStatus('error');
+        setMessage(result.message);
+      }
     } catch (error: any) {
       setStatus('error');
-      if (error.message === 'Request timed out') {
-        setMessage('Request timed out. Please try again later.');
-      } else {
-        setMessage('Something went wrong. Please try again.');
-      }
+      setMessage('Something went wrong. Please try again.');
       console.error(error);
     }
   };
