@@ -18,6 +18,13 @@ export function KeyboardAnimation({ className }: { className?: string }) {
   const keyboardWidth = 14 * keyWidth + 13 * keyGap;
   const keyboardHeight = 5 * keyHeight + 4 * keyGap + 20;
 
+  // Static "warmed-up" keys
+  const warmedKeys = [
+    { row: 1, key: 4 }, // E key
+    { row: 2, key: 3 }, // D key
+    { row: 3, key: 2 }, // S key
+  ];
+
   return (
     <div className={cn('relative flex items-center justify-center', className)}>
       <svg
@@ -41,6 +48,11 @@ export function KeyboardAnimation({ className }: { className?: string }) {
                 <stop offset="0%" stopColor="hsl(var(--muted))" stopOpacity="0.5"/>
                 <stop offset="100%" stopColor="hsl(var(--muted))" stopOpacity="0.8"/>
             </linearGradient>
+            {/* New gradient for the "warmed up" keys */}
+            <linearGradient id="warmed-key-gradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.1" />
+                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.25" />
+            </linearGradient>
         </defs>
 
         {rows.map((row, rowIndex) => {
@@ -51,6 +63,10 @@ export function KeyboardAnimation({ className }: { className?: string }) {
             const currentKeyWidth = keySize * keyWidth;
             const keyX = xOffset + (row.offset * (keyWidth + keyGap));
             xOffset += currentKeyWidth + keyGap;
+
+            const isWarmed = warmedKeys.some(
+              (wk) => wk.row === rowIndex && wk.key === keyIndex
+            );
 
             return (
               <g key={`${rowIndex}-${keyIndex}`}>
@@ -70,9 +86,11 @@ export function KeyboardAnimation({ className }: { className?: string }) {
                   width={currentKeyWidth}
                   height={keyHeight}
                   rx="3"
-                  className="stroke-foreground/10"
+                  className={cn("stroke-foreground/10", {
+                    'stroke-primary/40': isWarmed
+                  })}
                   strokeWidth="0.5"
-                  fill="url(#key-gradient)"
+                  fill={isWarmed ? "url(#warmed-key-gradient)" : "url(#key-gradient)"}
                 />
               </g>
             );
