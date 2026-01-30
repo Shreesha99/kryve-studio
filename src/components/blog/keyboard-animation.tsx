@@ -5,7 +5,6 @@ import { gsap } from 'gsap';
 import { cn } from '@/lib/utils';
 import { X } from 'lucide-react';
 import { Button } from '../ui/button';
-import { AnimateOnScroll } from '../common/animate-on-scroll';
 
 const keyWidth = 12;
 const keyHeight = 12;
@@ -31,15 +30,15 @@ const rows = [
   ]},
   // Row 2: QWERTY
   { y: 2, keys: [
-    { x: 0, w: 1.5, s: 'Tab', code: 'Tab' }, { x: 1.5, w: 1, s: 'Q', code: 'KeyQ' }, { x: 2.5, w: 1, s: 'W', code: 'KeyW', warmed: true }, { x: 3.5, w: 1, s: 'E', code: 'KeyE' },
+    { x: 0, w: 1.5, s: 'Tab', code: 'Tab' }, { x: 1.5, w: 1, s: 'Q', code: 'KeyQ' }, { x: 2.5, w: 1, s: 'W', code: 'KeyW' }, { x: 3.5, w: 1, s: 'E', code: 'KeyE' },
     { x: 4.5, w: 1, s: 'R', code: 'KeyR' }, { x: 5.5, w: 1, s: 'T', code: 'KeyT' }, { x: 6.5, w: 1, s: 'Y', code: 'KeyY' }, { x: 7.5, w: 1, s: 'U', code: 'KeyU' },
     { x: 8.5, w: 1, s: 'I', code: 'KeyI' }, { x: 9.5, w: 1, s: 'O', code: 'KeyO' }, { x: 10.5, w: 1, s: 'P', code: 'KeyP' }, { x: 11.5, w: 1, s: '[', code: 'BracketLeft' },
     { x: 12.5, w: 1.5, s: ']', code: 'BracketRight' },
   ]},
   // Row 3: ASDF
   { y: 3, keys: [
-    { x: 0, w: 1.75, s: 'Caps', code: 'CapsLock' }, { x: 1.75, w: 1, s: 'A', code: 'KeyA', warmed: true }, { x: 2.75, w: 1, s: 'S', code: 'KeyS', warmed: true },
-    { x: 3.75, w: 1, s: 'D', code: 'KeyD', warmed: true }, { x: 4.75, w: 1, s: 'F', code: 'KeyF' }, { x: 5.75, w: 1, s: 'G', code: 'KeyG' }, { x: 6.75, w: 1, s: 'H', code: 'KeyH' },
+    { x: 0, w: 1.75, s: 'Caps', code: 'CapsLock' }, { x: 1.75, w: 1, s: 'A', code: 'KeyA' }, { x: 2.75, w: 1, s: 'S', code: 'KeyS' },
+    { x: 3.75, w: 1, s: 'D', code: 'KeyD' }, { x: 4.75, w: 1, s: 'F', code: 'KeyF' }, { x: 5.75, w: 1, s: 'G', code: 'KeyG' }, { x: 6.75, w: 1, s: 'H', code: 'KeyH' },
     { x: 7.75, w: 1, s: 'J', code: 'KeyJ' }, { x: 8.75, w: 1, s: 'K', code: 'KeyK' }, { x: 9.75, w: 1, s: 'L', code: 'KeyL' }, { x: 10.75, w: 1, s: ';', code: 'Semicolon' },
     { x: 11.75, w: 2.25, s: 'Enter', code: 'Enter' },
   ]},
@@ -53,36 +52,62 @@ const rows = [
   // Row 5: Bottom row
   { y: 5, keys: [
     { x: 0, w: 1.25, s: 'Ctrl', code: 'ControlLeft' }, { x: 1.25, w: 1.25, s: 'Alt', code: 'AltLeft' },
-    { x: 2.5, w: 5.5, s: 'Space', code: 'Space', warmed: true },
+    { x: 2.5, w: 5.5, s: 'Space', code: 'Space' },
     { x: 8, w: 1.25, s: 'Alt', code: 'AltRight' }, { x: 9.25, w: 1.25 }, { x: 10.5, w: 1.25, s: 'Ctrl', code: 'ControlRight' },
     { x: 14.25, w: 1, s: '←', code: 'ArrowLeft' }, { x: 15.25, w: 1, s: '↓', code: 'ArrowDown' }, { x: 16.25, w: 1, s: '→', code: 'ArrowRight' },
   ]},
 ];
+
+const warmedKeys = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space'];
 
 const totalWidth = 17.25 * keyWidth + 16.25 * keyGap + 20;
 const totalHeight = 6 * keyHeight + 5 * keyGap + 20;
 
 export function KeyboardAnimation({ className }: { className?: string }) {
   const componentRef = useRef<HTMLDivElement>(null);
+  const textboxContainerRef = useRef<HTMLDivElement>(null);
+  const hintRef = useRef<HTMLParagraphElement>(null);
+
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [typedText, setTypedText] = useState('');
   const [isMounted, setIsMounted] = useState(false);
+  const hasAnimatedIn = useRef(false);
+
 
   useEffect(() => {
     setIsTouchDevice(window.matchMedia("(pointer: coarse)").matches);
     setIsMounted(true);
   }, []);
 
+  // Animate textbox in/out based on typedText state
+  useLayoutEffect(() => {
+    if (!isMounted || isTouchDevice) return;
+
+    if (typedText.length > 0 && !hasAnimatedIn.current) {
+      hasAnimatedIn.current = true;
+      gsap.timeline()
+        .to(hintRef.current, { opacity: 0, y: -10, duration: 0.3, ease: 'power3.in' })
+        .to(textboxContainerRef.current, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, "-=0.1");
+
+    } else if (typedText.length === 0 && hasAnimatedIn.current) {
+      hasAnimatedIn.current = false;
+      gsap.timeline()
+        .to(textboxContainerRef.current, { opacity: 0, y: 20, duration: 0.4, ease: 'power3.in' })
+        .to(hintRef.current, { opacity: 1, y: 0, duration: 0.4, ease: 'power3.out' }, "-=0.2");
+    }
+  }, [typedText, isMounted, isTouchDevice]);
+
+
   // Looping animation for mobile
   useLayoutEffect(() => {
     if (!isMounted || !isTouchDevice) return;
 
     const ctx = gsap.context(() => {
-      // Guard against running animation if no keys are found
-      const animatedKeys = componentRef.current?.querySelectorAll('[data-warmed="true"]');
-      if (!animatedKeys || animatedKeys.length === 0) {
-          return;
-      }
+      const animatedKeys = warmedKeys
+        .map(code => componentRef.current?.querySelector(`[data-key-code="${code}"]`))
+        .filter(Boolean);
+
+      if (animatedKeys.length === 0) return;
       
       const tap = (key: any) => gsap.timeline()
         .to(key, { y: 2, duration: 0.08, ease: 'power1.in' })
@@ -104,21 +129,18 @@ export function KeyboardAnimation({ className }: { className?: string }) {
 
     const ctx = gsap.context(() => {
       const keyMap = new Map<string, SVGGElement>();
-      const keyElements = componentRef.current?.querySelectorAll<SVGGElement>('[data-key-code]');
-      if (!keyElements || keyElements.length === 0) {
-        return;
-      }
+      const keyNodes = componentRef.current?.querySelectorAll<SVGGElement>('[data-key-code]');
+      if (!keyNodes || keyNodes.length === 0) return;
       
-      keyElements.forEach(el => {
+      keyNodes.forEach(el => {
         const code = el.dataset.keyCode;
         if (code) keyMap.set(code, el);
       });
 
       const handleKeyDown = (e: KeyboardEvent) => {
-        // We only want to intercept keys that are visually on our SVG keyboard
         const keyEl = keyMap.get(e.code);
         if (keyEl) {
-          e.preventDefault(); // This is the fix for F1 and other special keys
+          e.preventDefault();
           
           if (e.metaKey || e.ctrlKey) return;
         
@@ -161,15 +183,17 @@ export function KeyboardAnimation({ className }: { className?: string }) {
     <div ref={componentRef} className={cn('relative flex w-full flex-col items-center justify-center gap-6', className)}>
       
       {isMounted && !isTouchDevice && (
-        <AnimateOnScroll className="w-full max-w-xl">
-          <div className="relative rounded-lg border bg-card/50 p-4 shadow-inner backdrop-blur-sm">
-            <p className="min-h-[2.5em] font-mono text-foreground">{typedText}<span className="animate-pulse">|</span></p>
-            <Button variant="ghost" size="icon" className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setTypedText('')}>
-              <X className="h-4 w-4" />
-            </Button>
+        <div className="flex h-24 w-full max-w-xl flex-col items-center justify-start">
+          <div ref={textboxContainerRef} className="w-full opacity-0" style={{ transform: 'translateY(20px)'}}>
+            <div className="relative rounded-lg border bg-card/50 p-4 shadow-inner backdrop-blur-sm">
+              <p className="min-h-[2.5em] font-mono text-foreground">{typedText}<span className="animate-pulse">|</span></p>
+              <Button variant="ghost" size="icon" className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setTypedText('')}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-          <p className="mt-2 text-center text-sm text-muted-foreground">The stage is set. Type away...</p>
-        </AnimateOnScroll>
+          <p ref={hintRef} className="mt-2 text-center text-sm text-muted-foreground">Start typing to see the magic.</p>
+        </div>
       )}
 
       <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl">
@@ -206,12 +230,12 @@ export function KeyboardAnimation({ className }: { className?: string }) {
                 const currentKeyWidth = key.w * keyWidth + (key.w - 1) * keyGap;
                 const fontSize = key.s && key.s.length > 2 ? 4 : 5;
                 const isArrow = ['↑', '↓', '←', '→'].includes(key.s || '');
+                const isWarmed = isTouchDevice && warmedKeys.includes(key.code || '');
 
                 return (
                   <g 
                     key={`${rowIndex}-${keyIndex}`} 
                     data-key-code={key.code}
-                    data-warmed={key.warmed}
                   >
                     {/* Shadow Layer */}
                     <rect x={xPos} y={yPos + 2} width={currentKeyWidth} height={keyHeight} rx={cornerRadius} className="fill-foreground/10"/>
@@ -223,9 +247,9 @@ export function KeyboardAnimation({ className }: { className?: string }) {
                       width={currentKeyWidth}
                       height={keyHeight}
                       rx={cornerRadius}
-                      className={cn("stroke-foreground/10", { 'stroke-primary/40': key.warmed })}
+                      className={cn("stroke-foreground/10", { 'stroke-primary/40': isWarmed })}
                       strokeWidth="0.5"
-                      fill={(isTouchDevice && key.warmed) ? "url(#warmed-key-gradient)" : "url(#key-gradient)"}
+                      fill={isWarmed ? "url(#warmed-key-gradient)" : "url(#key-gradient)"}
                     />
 
                     {/* Pressed State Overlay */}
