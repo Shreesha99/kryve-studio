@@ -60,7 +60,7 @@ export function ScrollHint({
   };
 
   return (
-    <div className={cn('absolute bottom-8 left-1/2 z-30 -translate-x-1/2', className)}>
+    <div className={cn('absolute z-30 right-8 top-1/2 -translate-y-1/2 md:bottom-8 md:left-1/2 md:right-auto md:top-auto md:-translate-x-1/2 md:translate-y-0', className)}>
       <button
         ref={containerRef}
         onClick={handleClick}
