@@ -23,7 +23,7 @@ import { ArrowRight } from 'lucide-react';
 import { AnimatedGradient } from '@/components/common/animated-gradient';
 import { BlogGenerator } from '@/components/blog/blog-generator';
 import { BlogPageSkeleton } from '@/components/blog/blog-page-skeleton';
-import { InkwellAnimation } from '@/components/blog/inkwell-animation';
+import { KeyboardAnimation } from '@/components/blog/keyboard-animation';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -215,7 +215,7 @@ export default function BlogPage() {
                   {!featuredPost && !loading && (
                     <AnimateOnScroll>
                       <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-muted bg-card/50 p-12 text-center">
-                        <InkwellAnimation className="mb-2" />
+                        <KeyboardAnimation className="mb-2" />
                         <h2 className="font-headline text-3xl font-semibold">The Ink is Still Dry</h2>
                         <p className="mt-3 max-w-md text-muted-foreground md:text-lg">
                           We're currently crafting some new articles. Please check back soon for fresh insights and stories!
