@@ -28,12 +28,33 @@ export type Post = {
 // Convert Firestore timestamp to a serializable format (ISO string)
 const postFromDoc = (doc: any): Post => {
   const data = doc.data();
+  // Ensure date is always a string. Handle Timestamps and string dates.
+  let date;
+  if (data.date instanceof Timestamp) {
+    date = data.date.toDate().toISOString();
+  } else if (typeof data.date === 'string') {
+    date = data.date;
+  } else if (data.date && typeof data.date.seconds === 'number') {
+    // Handle serialized Timestamps
+    date = new Timestamp(data.date.seconds, data.date.nanoseconds).toDate().toISOString();
+  } else {
+    // Fallback for unexpected formats
+    date = new Date().toISOString();
+  }
+
   return {
     id: doc.id,
-    ...data,
-    date: data.date instanceof Timestamp ? data.date.toDate().toISOString() : new Date(data.date).toISOString(),
+    slug: data.slug,
+    title: data.title,
+    excerpt: data.excerpt,
+    content: data.content,
+    author: data.author,
+    date: date,
+    imageUrl: data.imageUrl,
+    imageHint: data.imageHint,
   } as Post;
 };
+
 
 let cachedPosts: Post[] | null = null;
 let lastFetchTime: number | null = null;

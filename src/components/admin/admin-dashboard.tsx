@@ -1,10 +1,10 @@
 'use client';
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useLenis } from '@/components/common/smooth-scroll-provider';
 import { Post, invalidatePostsCache, getPosts } from '@/lib/blog';
 import { Button } from '@/components/ui/button';
 import { logout } from '@/actions/auth';
-import { Loader2, PlusCircle, Trash2, FileEdit, Check } from 'lucide-react';
+import { PlusCircle, Trash2, FileEdit, Check } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -36,33 +36,32 @@ import { addDoc, collection, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
-import { gsap } from 'gsap';
 
 const TableSkeleton = () => (
   <div className="rounded-lg border">
-      <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Title</TableHead>
-              <TableHead>Author</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-              {[...Array(5)].map((_, i) => (
-                  <TableRow key={i}>
-                      <TableCell><Skeleton className="h-5 w-3/4 rounded-md" /></TableCell>
-                      <TableCell><Skeleton className="h-5 w-2/3 rounded-md" /></TableCell>
-                      <TableCell><Skeleton className="h-5 w-1/2 rounded-md" /></TableCell>
-                      <TableCell className="flex justify-end gap-2">
-                          <Skeleton className="h-8 w-8 rounded-md" />
-                          <Skeleton className="h-8 w-8 rounded-md" />
-                      </TableCell>
-                  </TableRow>
-              ))}
-          </TableBody>
-      </Table>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Title</TableHead>
+          <TableHead>Author</TableHead>
+          <TableHead>Date</TableHead>
+          <TableHead className="text-right">Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {[...Array(5)].map((_, i) => (
+          <TableRow key={i}>
+            <TableCell><Skeleton className="h-5 w-3/4 rounded-md" /></TableCell>
+            <TableCell><Skeleton className="h-5 w-2/3 rounded-md" /></TableCell>
+            <TableCell><Skeleton className="h-5 w-1/2 rounded-md" /></TableCell>
+            <TableCell className="flex justify-end gap-2">
+              <Skeleton className="h-8 w-8 rounded-md" />
+              <Skeleton className="h-8 w-8 rounded-md" />
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   </div>
 );
 
@@ -77,7 +76,6 @@ const ProgressRow = ({ progress, text }: { progress: number; text: string }) => 
   </TableRow>
 );
 
-
 export function AdminDashboard() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [listLoading, setListLoading] = useState(true);
@@ -87,9 +85,7 @@ export function AdminDashboard() {
   const [progress, setProgress] = useState(0);
   const [progressText, setProgressText] = useState('');
   const { toast } = useToast();
-
   const lenis = useLenis();
-  const progressTl = useRef<gsap.core.Timeline | null>(null);
 
   useEffect(() => {
     if (isFormOpen) {
@@ -105,11 +101,11 @@ export function AdminDashboard() {
   const fetchPosts = useCallback(async () => {
     setListLoading(true);
     try {
-      const fetchedPosts = await getPosts(true);
+      const fetchedPosts = await getPosts(true); // Force refresh for admin
       setPosts(fetchedPosts);
     } catch (error) {
       console.error("Failed to fetch posts:", error);
-       toast({
+      toast({
         variant: "destructive",
         title: "Failed to load posts",
         description: "Could not retrieve blog posts from the database.",
@@ -122,125 +118,99 @@ export function AdminDashboard() {
   useEffect(() => {
     fetchPosts();
   }, [fetchPosts]);
-  
+
   const handleNewPost = () => {
     setEditingPost(null);
     setIsFormOpen(true);
   };
-  
+
   const handleEditPost = (post: Post) => {
     setEditingPost(post);
     setIsFormOpen(true);
   };
 
-  const handleFormSubmit = (data: FormValues) => {
+  const handleFormSubmit = async (data: FormValues) => {
     setIsFormOpen(false);
     setIsSaving(true);
-    setProgress(0);
-    setProgressText('Starting...');
-  
     const isEditing = !!editingPost?.id;
-  
-    progressTl.current?.kill();
-    progressTl.current = gsap.timeline({
-      onComplete: () => {
-        const { firestore } = initializeFirebase();
-        const postData = {
-          ...data,
-          date: new Date().toISOString(), // Use ISO string for consistency
-        };
-  
-        const writePromise = isEditing
-          ? setDoc(doc(firestore, 'posts', editingPost!.id!), postData, { merge: true })
-          : addDoc(collection(firestore, 'posts'), postData);
-  
-        writePromise
-          .then(() => {
-            const progressProxy = { value: 90 };
-            gsap.to(progressProxy, {
-              value: 100,
-              duration: 0.5,
-              onUpdate: function() { setProgress(this.targets()[0].value); },
-              onComplete: () => {
-                toast({
-                  title: <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /><span>{isEditing ? 'Post Updated!' : 'Post Created!'}</span></div>,
-                  description: `"${data.title}" has been saved.`,
-                });
-                invalidatePostsCache();
-                fetchPosts();
-                setIsSaving(false);
-              }
-            });
-          })
-          .catch((e: any) => {
-            console.error("Error saving post:", e);
-            progressTl.current?.kill();
-            toast({
-              variant: "destructive",
-              title: "Save failed",
-              description: e.message || "Could not save the post. Check console for details.",
-            });
-            setIsSaving(false);
-          });
+    const { firestore } = initializeFirebase();
+
+    try {
+      // --- Stage 1: Validation ---
+      setProgressText('Validating data...');
+      setProgress(25);
+      await new Promise(res => setTimeout(res, 400));
+
+      // --- Stage 2: Saving ---
+      setProgressText('Saving content...');
+      setProgress(60);
+      const postData = {
+        ...data,
+        date: new Date().toISOString(),
+      };
+      
+      if (isEditing) {
+        await setDoc(doc(firestore, 'posts', editingPost!.id!), postData, { merge: true });
+      } else {
+        await addDoc(collection(firestore, 'posts'), postData);
       }
-    });
-  
-    const progressProxy = { value: 0 };
-    progressTl.current
-      .to(progressProxy, {
-        value: 25, duration: 0.5, ease: 'none',
-        onStart: () => setProgressText('Validating data...'),
-        onUpdate: () => setProgress(progressProxy.value),
-      })
-      .to(progressProxy, {
-        value: 60, duration: 1.0, ease: 'none',
-        onStart: () => setProgressText('Saving content...'),
-        onUpdate: () => setProgress(progressProxy.value),
-      })
-      .to(progressProxy, {
-        value: 90, duration: 1.0, ease: 'none',
-        onStart: () => setProgressText('Finalizing...'),
-        onUpdate: () => setProgress(progressProxy.value),
+
+      // --- Stage 3: Finalizing ---
+      setProgressText('Finalizing...');
+      setProgress(90);
+      invalidatePostsCache();
+      await fetchPosts();
+
+      // --- Complete ---
+      setProgress(100);
+      await new Promise(res => setTimeout(res, 500)); // Let user see 100%
+
+      toast({
+        title: <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /><span>{isEditing ? 'Post Updated!' : 'Post Created!'}</span></div>,
+        description: `"${data.title}" has been saved.`,
       });
+    } catch (e: any) {
+      console.error("Error saving post:", e);
+      toast({
+        variant: "destructive",
+        title: "Save failed",
+        description: e.message || "Could not save the post to the database.",
+      });
+    } finally {
+      setIsSaving(false);
+      setEditingPost(null);
+    }
   };
 
-  const handleDeletePost = (postId: string, postTitle: string) => {
+  const handleDeletePost = async (postId: string, postTitle: string) => {
     setIsSaving(true);
-    setProgress(0);
-    setProgressText('Starting delete...');
+    try {
+      setProgressText('Deleting post...');
+      setProgress(50);
+      
+      const { firestore } = initializeFirebase();
+      await deleteDoc(doc(firestore, "posts", postId));
+      
+      setProgress(100);
+      await new Promise(res => setTimeout(res, 500));
 
-    progressTl.current?.kill();
-    progressTl.current = gsap.timeline();
-    const progressProxy = { value: 0 };
-    
-    progressTl.current.to(progressProxy, {
-      value: 100,
-      duration: 1.5,
-      ease: 'power1.out',
-      onUpdate: () => setProgress(progressProxy.value),
-      onStart: () => setProgressText('Removing post...'),
-      onComplete: async () => {
-        try {
-          const { firestore } = initializeFirebase();
-          await deleteDoc(doc(firestore, "posts", postId));
-          toast({
-            title: "Post Deleted",
-            description: `"${postTitle}" has been removed.`,
-          });
-          invalidatePostsCache();
-          fetchPosts();
-        } catch (error) {
-          console.error("Failed to delete post:", error);
-          toast({
-            variant: "destructive",
-            title: "Deletion Failed",
-            description: "Error: Could not delete post.",
-          });
-        } finally {
-          setIsSaving(false);
-        }
-      }
-    });
+      toast({
+        title: "Post Deleted",
+        description: `"${postTitle}" has been removed.`,
+      });
+
+      invalidatePostsCache();
+      fetchPosts();
+    } catch (error) {
+      console.error("Failed to delete post:", error);
+      toast({
+        variant: "destructive",
+        title: "Deletion Failed",
+        description: "Could not delete post from the database.",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -257,7 +227,7 @@ export function AdminDashboard() {
         </div>
       </div>
       
-      {listLoading ? (
+      {listLoading && !isSaving ? (
         <TableSkeleton />
       ) : (
         <div className="rounded-lg border">
@@ -271,7 +241,7 @@ export function AdminDashboard() {
               </TableRow>
             </TableHeader>
             <TableBody>
-               {isSaving && <ProgressRow progress={progress} text={progressText} />}
+              {isSaving && <ProgressRow progress={progress} text={progressText} />}
               {posts.map((post) => (
                 <TableRow key={post.id}>
                   <TableCell className="font-medium">{post.title}</TableCell>
@@ -308,12 +278,17 @@ export function AdminDashboard() {
         </div>
       )}
 
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+      <Dialog open={isFormOpen} onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          setEditingPost(null);
+        }
+        setIsFormOpen(isOpen);
+      }}>
         <DialogContent className="sm:max-w-3xl">
           <DialogHeader>
             <DialogTitle>{editingPost ? 'Edit Post' : 'Create New Post'}</DialogTitle>
           </DialogHeader>
-           <div className="overflow-y-auto max-h-[70vh] pr-6 -mr-6">
+          <div className="overflow-y-auto max-h-[70vh] pr-6 -mr-6">
             <PostForm
               key={editingPost?.id || 'new'}
               post={editingPost}
