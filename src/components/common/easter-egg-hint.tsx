@@ -78,7 +78,11 @@ export function EasterEggHint() {
         };
     }, [posts, postsLoaded]);
 
-    if (pathname.startsWith('/admin') || (postsLoaded && posts.length > 0)) {
+    if (
+      pathname.startsWith('/admin') ||
+      pathname.startsWith('/unsubscribe') ||
+      (postsLoaded && posts.length > 0)
+    ) {
         return null;
     }
 
