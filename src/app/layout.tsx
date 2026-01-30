@@ -6,6 +6,7 @@ import { ScrollToTop } from "@/components/common/scroll-to-top";
 import { CustomCursor } from "@/components/common/custom-cursor";
 import { CookieBanner } from "@/components/common/cookie-banner";
 import { FirebaseClientProvider } from "@/firebase/client-provider";
+import { Toaster } from "@/components/ui/toaster";
 
 const siteConfig = {
   name: "The Elysium Project",
@@ -108,6 +109,7 @@ export default function RootLayout({
             <ScrollToTop />
           </AppProviders>
           <CookieBanner />
+          <Toaster />
         </FirebaseClientProvider>
       </body>
     </html>

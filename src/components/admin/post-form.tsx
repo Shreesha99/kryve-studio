@@ -1,5 +1,5 @@
 'use client';
-import { useForm, type SubmitHandler } from 'react-hook-form';
+import { useForm, type SubmitHandler, useFormState } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { type Post } from '@/lib/blog';
@@ -25,12 +25,10 @@ export type FormValues = z.infer<typeof formSchema>;
 interface PostFormProps {
   post?: Post | null;
   onSubmit: (data: FormValues) => void;
-  isSubmitting: boolean;
-  error: string | null;
 }
 
-export function PostForm({ post, onSubmit, isSubmitting, error }: PostFormProps) {
-  const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm<FormValues>({
+export function PostForm({ post, onSubmit }: PostFormProps) {
+  const { register, handleSubmit, formState: { errors }, watch, setValue, control } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: post?.title || '',
@@ -42,6 +40,8 @@ export function PostForm({ post, onSubmit, isSubmitting, error }: PostFormProps)
       imageHint: post?.imageHint || 'abstract',
     }
   });
+
+  const { isSubmitting } = useFormState({ control });
 
   // Auto-generate slug from title for new posts
   const watchedTitle = watch('title');
@@ -101,8 +101,6 @@ export function PostForm({ post, onSubmit, isSubmitting, error }: PostFormProps)
         <Textarea id="content" {...register("content")} rows={8} placeholder="Enter content as HTML paragraphs, e.g. <p>Your text here.</p>" />
         {errors.content && <p className="text-sm text-destructive">{errors.content?.message}</p>}
       </div>
-
-      {error && <p className="text-sm text-destructive">{error}</p>}
       
       <div className="flex justify-end pt-4">
         <Button type="submit" disabled={isSubmitting}>

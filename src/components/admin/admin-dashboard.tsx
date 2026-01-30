@@ -33,14 +33,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { initializeFirebase } from '@/firebase';
 import { addDoc, collection, doc, setDoc, serverTimestamp, deleteDoc } from 'firebase/firestore';
+import { useToast } from "@/components/ui/use-toast";
 
 export function AdminDashboard() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [listLoading, setListLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
-  const [formSubmitting, setFormSubmitting] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const lenis = useLenis();
 
@@ -78,47 +78,64 @@ export function AdminDashboard() {
   
   const handleNewPost = () => {
     setEditingPost(null);
-    setFormError(null);
     setIsFormOpen(true);
   };
   
   const handleEditPost = (post: Post) => {
     setEditingPost(post);
-    setFormError(null);
     setIsFormOpen(true);
   };
 
   const handleFormSubmit = async (data: FormValues) => {
-    setFormSubmitting(true);
-    setFormError(null);
-    try {
-      const { firestore } = initializeFirebase();
-      
-      const postData = {
-        ...data,
-        // Use serverTimestamp for new posts, preserve date for existing ones
-        date: editingPost?.id ? new Date(editingPost.date) : serverTimestamp(),
-      };
+    setIsFormOpen(false); // Optimistically close the modal
 
-      if (editingPost?.id) {
-        // Editing existing post
-        const postRef = doc(firestore, 'posts', editingPost.id);
-        await setDoc(postRef, postData, { merge: true });
-      } else {
-        // Creating new post
-        const postsCollection = collection(firestore, 'posts');
-        await addDoc(postsCollection, postData);
-      }
-      
-      invalidatePostsCache();
-      setIsFormOpen(false); // Close modal on success
-      await fetchPosts(); // Refresh list
+    const { firestore } = initializeFirebase();
+    
+    const postData = {
+      ...data,
+      date: editingPost?.id ? new Date(editingPost.date) : serverTimestamp(),
+    };
 
-    } catch (e: any) {
-      console.error("Error saving post:", e);
-      setFormError(`An error occurred: ${e.message || 'Please try again.'}`);
-    } finally {
-      setFormSubmitting(false);
+    if (editingPost?.id) {
+      // Editing existing post
+      const postRef = doc(firestore, 'posts', editingPost.id);
+      setDoc(postRef, postData, { merge: true })
+        .then(() => {
+          toast({
+            title: "Post Updated!",
+            description: `"${data.title}" has been saved.`,
+          });
+          invalidatePostsCache();
+          fetchPosts(); // Refresh list on success
+        })
+        .catch((e) => {
+          console.error("Error updating post:", e);
+          toast({
+            variant: "destructive",
+            title: "Update failed",
+            description: e.message || "Could not save changes to the post.",
+          });
+        });
+    } else {
+      // Creating new post
+      const postsCollection = collection(firestore, 'posts');
+      addDoc(postsCollection, postData)
+        .then(() => {
+          toast({
+            title: "Post Created!",
+            description: `"${data.title}" has been added to your blog.`,
+          });
+          invalidatePostsCache();
+          fetchPosts(); // Refresh list on success
+        })
+        .catch((e) => {
+          console.error("Error creating post:", e);
+          toast({
+            variant: "destructive",
+            title: "Creation failed",
+            description: e.message || "Could not create the new post.",
+          });
+        });
     }
   };
 
@@ -127,11 +144,19 @@ export function AdminDashboard() {
     try {
       const { firestore } = initializeFirebase();
       await deleteDoc(doc(firestore, "posts", postId));
+      toast({
+        title: "Post Deleted",
+        description: "The blog post has been successfully removed.",
+      });
       invalidatePostsCache();
       fetchPosts(); // Refresh list after deleting
     } catch (error) {
       console.error("Failed to delete post:", error);
-      alert("Error: Could not delete post.");
+      toast({
+        variant: "destructive",
+        title: "Deletion Failed",
+        description: "Error: Could not delete post.",
+      });
     }
   };
 
@@ -209,8 +234,6 @@ export function AdminDashboard() {
               key={editingPost?.id || 'new-post'}
               post={editingPost}
               onSubmit={handleFormSubmit}
-              isSubmitting={formSubmitting}
-              error={formError}
             />
           </div>
         </DialogContent>
