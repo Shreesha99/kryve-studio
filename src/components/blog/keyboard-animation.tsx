@@ -25,8 +25,8 @@ const rows = [
     { x: 0, w: 1, s: '~', code: 'Backquote' }, { x: 1, w: 1, s: '1', code: 'Digit1' }, { x: 2, w: 1, s: '2', code: 'Digit2' }, { x: 3, w: 1, s: '3', code: 'Digit3' },
     { x: 4, w: 1, s: '4', code: 'Digit4' }, { x: 5, w: 1, s: '5', code: 'Digit5' }, { x: 6, w: 1, s: '6', code: 'Digit6' }, { x: 7, w: 1, s: '7', code: 'Digit7' },
     { x: 8, w: 1, s: '8', code: 'Digit8' }, { x: 9, w: 1, s: '9', code: 'Digit9' }, { x: 10, w: 1, s: '0', code: 'Digit0' }, { x: 11, w: 1, s: '-', code: 'Minus' },
-    { x: 12, w: 1, s: '=', code: 'Equal' }, { x: 13, w: 1, s: 'BS', code: 'Backspace' },
-    { x: 14.25, w: 1, s: 'Home', code: 'Home' }, { x: 15.25, w: 1, s: 'End', code: 'End' },
+    { x: 12, w: 1, s: '=', code: 'Equal' }, { x: 13, w: 2, s: 'BS', code: 'Backspace' },
+    { x: 15.25, w: 1, s: 'Home', code: 'Home' }, { x: 16.25, w: 1, s: 'End', code: 'End' },
   ]},
   // Row 2: QWERTY
   { y: 2, keys: [
@@ -52,8 +52,8 @@ const rows = [
   // Row 5: Bottom row
   { y: 5, keys: [
     { x: 0, w: 1.25, s: 'Ctrl', code: 'ControlLeft' }, { x: 1.25, w: 1.25, s: 'Alt', code: 'AltLeft' },
-    { x: 2.5, w: 5.5, s: 'Space', code: 'Space' },
-    { x: 8, w: 1.25, s: 'Alt', code: 'AltRight' }, { x: 9.25, w: 1.25, s: 'Win', code: 'MetaRight' }, { x: 10.5, w: 1.25, s: 'Ctrl', code: 'ControlRight' },
+    { x: 2.5, w: 6.25, s: 'Space', code: 'Space' },
+    { x: 8.75, w: 1.25, s: 'Alt', code: 'AltRight' }, { x: 10, w: 1.25, s: 'Win', code: 'MetaRight' }, { x: 11.25, w: 1.25, s: 'Ctrl', code: 'ControlRight' },
     { x: 14.25, w: 1, s: '←', code: 'ArrowLeft' }, { x: 15.25, w: 1, s: '↓', code: 'ArrowDown' }, { x: 16.25, w: 1, s: '→', code: 'ArrowRight' },
   ]},
 ];
@@ -67,6 +67,9 @@ const hintTriggers: { [key: string]: string } = {
   'react': 'The foundation of our UIs.',
   'nextjs': 'Powering this very site.',
   'magic': 'I know, right? It feels like magic.',
+  'firebase': 'Powering our backend.',
+  'tailwind': 'Our favorite way to style.',
+  'genkit': 'The AI magic behind our blog generator.',
 };
 
 const totalWidth = 17.25 * keyWidth + 16.25 * keyGap + 20;
@@ -107,8 +110,10 @@ export function KeyboardAnimation({ className }: { className?: string }) {
 
   // Unified animation and interaction effect
   useLayoutEffect(() => {
+    // This check is crucial. We must wait until we know the device type
+    // before setting up animations or event listeners.
     if (isTouchDevice === null) {
-      return; // Wait until device type is determined
+      return;
     }
 
     const ctx = gsap.context(() => {
@@ -121,14 +126,14 @@ export function KeyboardAnimation({ className }: { className?: string }) {
         if (animatedKeys.length === 0) return;
         
         const tap = (key: any) => gsap.timeline()
-          .to(key, { y: 2, duration: 0.08, ease: 'power1.in' })
-          .to(key, { y: 0, duration: 0.15, ease: 'power2.out' });
+          .to(key.querySelector('.key-base'), { y: 2, duration: 0.08, ease: 'power1.in' })
+          .to(key.querySelector('.key-base'), { y: 0, duration: 0.15, ease: 'power2.out' });
 
         const masterTl = gsap.timeline({ repeat: -1 });
         gsap.utils.shuffle(Array.from(animatedKeys)).forEach((key, i) => {
           masterTl.add(tap(key), i * 0.15);
         });
-        masterTl.to({}, { duration: 2 });
+        masterTl.to({}, { duration: 2 }); // Add a pause at the end of the sequence
 
       } else {
         // --- DESKTOP INTERACTION LOGIC ---
@@ -142,15 +147,16 @@ export function KeyboardAnimation({ className }: { className?: string }) {
         });
 
         const handleKeyDown = (e: KeyboardEvent) => {
+          // Allow essential browser shortcuts
+          if (e.key === 'F5' || e.key === 'F11' || (e.metaKey && e.key === 'r')) {
+              return;
+          }
+          e.preventDefault();
+          
           const keyEl = keyMap.get(e.code);
           if (keyEl) {
-            // Allow essential browser shortcuts
-            if (e.key !== 'F5' && e.key !== 'F11' && !(e.metaKey && e.key === 'r')) {
-              e.preventDefault();
-            }
             if (e.metaKey || e.ctrlKey) return;
-          
-            gsap.to(keyEl, { y: 2, duration: 0.08, ease: 'power1.in' });
+            gsap.to(keyEl.querySelector('.key-base'), { y: 2, duration: 0.08, ease: 'power1.in' });
             gsap.to(keyEl.querySelector('.key-press-rect'), { opacity: 1, duration: 0.08 });
           }
 
@@ -168,7 +174,7 @@ export function KeyboardAnimation({ className }: { className?: string }) {
         const handleKeyUp = (e: KeyboardEvent) => {
           const keyEl = keyMap.get(e.code);
           if (keyEl) {
-            gsap.to(keyEl, { y: 0, duration: 0.15, ease: 'power2.out' });
+            gsap.to(keyEl.querySelector('.key-base'), { y: 0, duration: 0.15, ease: 'power2.out' });
             gsap.to(keyEl.querySelector('.key-press-rect'), { opacity: 0, duration: 0.15 });
           }
         };
@@ -184,7 +190,7 @@ export function KeyboardAnimation({ className }: { className?: string }) {
     }, componentRef);
 
     return () => ctx.revert();
-  }, [isTouchDevice]);
+  }, [isTouchDevice]); // This effect now correctly depends on isTouchDevice
 
   // Effect for interactive hints
   useEffect(() => {
@@ -252,7 +258,7 @@ export function KeyboardAnimation({ className }: { className?: string }) {
 
           <g transform="matrix(1, var(--kb-skew), 0, 1, 0, 0)">
             <rect x="20" y="0" width="50" height="10" rx={cornerRadius + 1} className="fill-card stroke-border" />
-            <rect x={totalWidth - 70} y="0" width="50" height="10" rx={cornerRadius + 1} className="fill-card stroke-border" />
+            <rect x={totalWidth - 120} y="0" width="100" height="10" rx={cornerRadius + 1} className="fill-card stroke-border" />
           </g>
 
           <g transform="matrix(1, var(--kb-skew), 0, 1, 0, 8)" style={{ filter: 'url(#kb-shadow)' }}>
@@ -270,6 +276,7 @@ export function KeyboardAnimation({ className }: { className?: string }) {
                   <g 
                     key={`${rowIndex}-${keyIndex}`} 
                     data-key-code={key.code}
+                    className="key-base"
                   >
                     {/* Shadow Layer */}
                     <rect x={xPos} y={yPos + 2} width={currentKeyWidth} height={keyHeight} rx={cornerRadius} className="fill-foreground/10"/>

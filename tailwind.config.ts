@@ -95,8 +95,8 @@ export default {
             '100%': { transform: 'scale(1)' },
         },
         'wink': {
-          '0%, 15%, 100%': { transform: 'scaleY(1)' },
-          '7.5%': { transform: 'scaleY(0.1)' },
+          '0%, 90%, 100%': { transform: 'scaleY(1)' },
+          '95%': { transform: 'scaleY(0.1)' },
         },
       },
       animation: {
@@ -106,7 +106,7 @@ export default {
         'path-draw': 'path-draw 3s ease-out 0.8s forwards',
         'toast-success-icon': 'toast-success-icon 0.6s ease-out forwards',
         'toast-destructive-icon': 'toast-destructive-icon 0.8s ease-out forwards',
-        'wink': 'wink 4s infinite',
+        'wink': 'wink 3s infinite',
       },
     },
   },
