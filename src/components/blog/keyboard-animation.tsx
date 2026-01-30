@@ -256,15 +256,16 @@ export function KeyboardAnimation({ className }: { className?: string }) {
   
   // Effect for WPM calculation
   useEffect(() => {
-    if (!typingStartTime || typedText.trim().length === 0) {
+    if (!typingStartTime || typedText.length === 0) {
         setWpm(0);
         return;
     }
     const wpmInterval = setInterval(() => {
         const elapsedMinutes = (Date.now() - typingStartTime) / 1000 / 60;
         if (elapsedMinutes > 0) {
-            // Trim the text, split by any whitespace, and filter out empty strings
-            const wordCount = typedText.trim().split(/\s+/).filter(Boolean).length;
+            // A "word" is standardized to 5 characters, including spaces.
+            // This is the standard formula for calculating WPM and avoids loopholes.
+            const wordCount = typedText.length / 5;
             setWpm(Math.round(wordCount / elapsedMinutes));
         }
     }, 500);
@@ -408,6 +409,8 @@ export function KeyboardAnimation({ className }: { className?: string }) {
     </div>
   );
 }
+
+    
 
     
 
