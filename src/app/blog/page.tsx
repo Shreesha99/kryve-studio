@@ -7,7 +7,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
 import { Header } from '@/components/common/header';
 import { Footer } from '@/components/common/footer';
-import { VisionBoardGenerator } from '@/components/blog/vision-board-generator';
+import { PreflightCheck } from '@/components/blog/preflight-check';
 import { posts, type Post } from '@/lib/blog-posts';
 import {
   Card,
@@ -192,7 +192,7 @@ export default function BlogPage() {
         <div className="container mx-auto max-w-4xl">
           <Separator className="my-16" />
         </div>
-        <VisionBoardGenerator />
+        <PreflightCheck />
       </main>
       <Footer />
     </div>

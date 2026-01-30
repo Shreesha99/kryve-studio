@@ -1,4 +1,4 @@
 import { config } from 'dotenv';
 config();
 
-import '@/ai/flows/generate-vision-board.ts';
+import '@/ai/flows/generate-blog-post.ts';
