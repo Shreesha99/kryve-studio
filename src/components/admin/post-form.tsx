@@ -2,7 +2,7 @@
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Post } from '@/lib/blog';
+import { Post, invalidatePostsCache } from '@/lib/blog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -54,18 +54,19 @@ export function PostForm({ post, onSuccess }: PostFormProps) {
       
       const postData = {
         ...data,
-        date: post?.date ? new Date(post.date) : serverTimestamp(),
+        date: post?.id ? new Date(post.date) : serverTimestamp(),
       }
 
       if (post?.id) {
-        // Editing existing post: merge new data with existing document
+        // Editing existing post
         const postRef = doc(firestore, 'posts', post.id);
         await setDoc(postRef, postData, { merge: true });
       } else {
-        // Creating new post: add form data and creation date
+        // Creating new post
         const postsCollection = collection(firestore, 'posts');
         await addDoc(postsCollection, postData);
       }
+      invalidatePostsCache();
       onSuccess();
     } catch (e: any) {
       console.error("Error saving post:", e);
@@ -76,7 +77,7 @@ export function PostForm({ post, onSuccess }: PostFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 p-1 pr-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="space-y-1">
           <Label htmlFor="title">Title</Label>
@@ -123,7 +124,7 @@ export function PostForm({ post, onSuccess }: PostFormProps) {
 
       {error && <p className="text-sm text-destructive">{error}</p>}
       
-      <div className="flex justify-end pt-4 sticky bottom-0 bg-background/90 pb-2">
+      <div className="flex justify-end pt-4">
         <Button type="submit" disabled={loading}>
           {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save Post'}
         </Button>

@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
-import { Post, getPosts } from '@/lib/blog';
+import { Post, getPosts, invalidatePostsCache } from '@/lib/blog';
 import { Button } from '@/components/ui/button';
 import { logout } from '@/actions/auth';
 import { Loader2, PlusCircle, Trash2, FileEdit } from 'lucide-react';
@@ -42,7 +42,7 @@ export function AdminDashboard() {
   const fetchPosts = useCallback(async () => {
     setLoading(true);
     try {
-      const fetchedPosts = await getPosts();
+      const fetchedPosts = await getPosts(true);
       setPosts(fetchedPosts);
     } catch (error) {
       console.error("Failed to fetch posts:", error);
@@ -69,6 +69,7 @@ export function AdminDashboard() {
     try {
       const { firestore } = initializeFirebase();
       await deleteDoc(doc(firestore, "posts", postId));
+      invalidatePostsCache();
       fetchPosts(); // Refresh list after deleting
     } catch (error) {
       console.error("Failed to delete post:", error);
@@ -146,12 +147,16 @@ export function AdminDashboard() {
       )}
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="sm:max-w-3xl">
+        <DialogContent className="sm:max-w-3xl flex flex-col max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>{editingPost ? 'Edit Post' : 'Create New Post'}</DialogTitle>
           </DialogHeader>
-          <div className="py-4 overflow-y-auto">
-            <PostForm post={editingPost} onSuccess={onFormSuccess} />
+          <div className="flex-grow overflow-y-auto -mr-6 pr-6">
+            <PostForm
+              key={editingPost?.id || 'new-post'}
+              post={editingPost}
+              onSuccess={onFormSuccess}
+            />
           </div>
         </DialogContent>
       </Dialog>

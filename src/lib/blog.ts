@@ -35,16 +35,42 @@ const postFromDoc = (doc: any): Post => {
   } as Post;
 };
 
+let cachedPosts: Post[] | null = null;
+let lastFetchTime: number | null = null;
+const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes
 
-export async function getPosts(): Promise<Post[]> {
+export function invalidatePostsCache() {
+  cachedPosts = null;
+  lastFetchTime = null;
+}
+
+export async function getPosts(forceRefresh = false): Promise<Post[]> {
+  const now = Date.now();
+  if (!forceRefresh && cachedPosts && lastFetchTime && now - lastFetchTime < CACHE_DURATION) {
+    return cachedPosts;
+  }
+
   const { firestore } = initializeFirebase();
   const postsCollection = collection(firestore, 'posts');
   const q = query(postsCollection, orderBy('date', 'desc'));
   const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(postFromDoc);
+
+  const posts = querySnapshot.docs.map(postFromDoc);
+  cachedPosts = posts;
+  lastFetchTime = now;
+  
+  return posts;
 }
 
 export async function getPostBySlug(slug: string): Promise<Post | null> {
+  // Check cache first for faster individual post loading
+  if (cachedPosts) {
+    const cachedPost = cachedPosts.find(p => p.slug === slug);
+    if (cachedPost) {
+      return cachedPost;
+    }
+  }
+
   const { firestore } = initializeFirebase();
   const postsCollection = collection(firestore, 'posts');
   const q = query(postsCollection, where('slug', '==', slug), limit(1));
