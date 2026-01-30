@@ -116,7 +116,24 @@ export function AdminDashboard() {
   }, [toast]);
 
   useEffect(() => {
-    fetchPosts();
+    let isMounted = true;
+    const initialLoad = async () => {
+        const cached = await getPosts(false);
+        if (isMounted && cached.length > 0) {
+            setPosts(cached);
+            setListLoading(false);
+            const freshPosts = await getPosts(true);
+            if (isMounted) {
+                setPosts(freshPosts);
+            }
+        } else {
+            await fetchPosts();
+        }
+    };
+    initialLoad();
+    return () => {
+        isMounted = false;
+    }
   }, [fetchPosts]);
 
   const handleNewPost = () => {
