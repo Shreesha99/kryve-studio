@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useTransition } from 'react';
 import { useLenis } from '@/components/common/smooth-scroll-provider';
 import { Post, invalidatePostsCache, getPosts } from '@/lib/blog';
 import { Button } from '@/components/ui/button';
@@ -85,9 +85,10 @@ export function AdminDashboard() {
     };
   }, [isFormOpen, lenis]);
 
-  const fetchPosts = useCallback(async () => {
+  const fetchPosts = useCallback(async (forceRefresh = false) => {
+    if (forceRefresh) invalidatePostsCache();
     try {
-      const fetchedPosts = await getPosts(true); // Force refresh for admin
+      const fetchedPosts = await getPosts(forceRefresh);
       setPosts(fetchedPosts);
     } catch (error) {
       console.error("Failed to fetch posts:", error);
@@ -105,21 +106,18 @@ export function AdminDashboard() {
     let isMounted = true;
     const initialLoad = async () => {
         setListLoading(true);
-        // Optimistically show cached posts first if they exist
-        const cached = await getPosts(false);
+        const cached = await getPosts();
         if (isMounted && cached.length > 0) {
             setPosts(cached);
-            setListLoading(false); // Stop loading indicator after showing cached data
+            setListLoading(false);
         }
-        // Then fetch fresh posts in the background
-        await fetchPosts();
+        await fetchPosts(true);
     };
     initialLoad();
     return () => {
         isMounted = false;
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchPosts]);
 
   const handleNewPost = () => {
     setEditingPost(null);
@@ -136,32 +134,49 @@ export function AdminDashboard() {
     const isEditing = !!editingPost?.id;
     
     const { id: toastId, update } = toast({
-        title: <div className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /><span>Preparing...</span></div>,
-        description: <Progress value={0} className="w-full" />,
+        className: "p-0 items-start",
+        title: <div className="w-full">
+            <div className="p-6 pr-8 pt-4 pb-2">
+                <div className="flex items-center gap-2 font-semibold">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Preparing...</span>
+                </div>
+            </div>
+            <Progress value={0} className="h-1 rounded-none rounded-b-md" />
+        </div>,
+        description: null,
     });
-
+    
     try {
+        const stages = [
+            { text: "Validating data", progress: 33 },
+            { text: "Saving content", progress: 66 },
+            { text: "Finalizing", progress: 100 },
+        ];
+
+        for (const [index, stage] of stages.entries()) {
+            await new Promise(res => setTimeout(res, 400 + index * 200));
+            update({
+                id: toastId,
+                className: "p-0 items-start",
+                title: <div className="w-full">
+                    <div className="p-6 pr-8 pt-4 pb-2">
+                        <div className="flex items-center gap-2 font-semibold">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>{stage.text}...</span>
+                        </div>
+                    </div>
+                    <Progress value={stage.progress} className="h-1 rounded-none rounded-b-md" />
+                </div>,
+                description: null,
+            });
+        }
+        
         const { firestore } = initializeFirebase();
         const postData = {
           ...data,
           date: new Date().toISOString(),
         };
-
-        // Stage 1: Validation (simulated)
-        await new Promise(res => setTimeout(res, 400));
-        update({
-            id: toastId,
-            title: <div className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /><span>Validating data...</span></div>,
-            description: <Progress value={33} className="w-full" />,
-        });
-
-        // Stage 2: Saving to DB
-        await new Promise(res => setTimeout(res, 600));
-        update({
-            id: toastId,
-            title: <div className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /><span>Saving content...</span></div>,
-            description: <Progress value={66} className="w-full" />,
-        });
 
         if (isEditing) {
             await setDoc(doc(firestore, 'posts', editingPost!.id!), postData, { merge: true });
@@ -169,12 +184,11 @@ export function AdminDashboard() {
             await addDoc(collection(firestore, 'posts'), postData);
         }
 
-        // Stage 3: Finalizing
-        invalidatePostsCache();
-        await fetchPosts();
+        await fetchPosts(true);
 
         update({
             id: toastId,
+            className: "", // Reset class
             title: <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /><span>{isEditing ? 'Post Updated!' : 'Post Created!'}</span></div>,
             description: `"${data.title}" has been saved.`,
         });
@@ -183,6 +197,7 @@ export function AdminDashboard() {
         console.error("Error saving post:", e);
         update({
             id: toastId,
+            className: "", // Reset class
             variant: "destructive",
             title: "Save Failed",
             description: e.message || "Could not save the post to the database.",
@@ -208,8 +223,7 @@ export function AdminDashboard() {
         description: `"${postTitle}" has been removed.`,
       });
 
-      invalidatePostsCache();
-      await fetchPosts();
+      await fetchPosts(true);
     } catch (error: any) {
       console.error("Failed to delete post:", error);
       update({
