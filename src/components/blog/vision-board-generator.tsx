@@ -112,6 +112,8 @@ export function VisionBoardGenerator() {
         <p className="text-muted-foreground md:text-xl">
           Stuck for inspiration? Describe a concept, and let our AI generate a
           mood, color palette, and image to kickstart your creative process.
+          <br />
+          <span className="mt-2 block text-sm">Note: Image generation is an advanced feature and may require a billed Google AI account.</span>
         </p>
       </div>
 

@@ -7,7 +7,6 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
 import { Header } from '@/components/common/header';
 import { Footer } from '@/components/common/footer';
-import { PreflightCheck } from '@/components/blog/preflight-check';
 import { posts, type Post } from '@/lib/blog-posts';
 import {
   Card,
@@ -22,6 +21,8 @@ import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { AnimatedGradient } from '@/components/common/animated-gradient';
+import { BlogGenerator } from '@/components/blog/blog-generator';
+import { VisionBoardGenerator } from '@/components/blog/vision-board-generator';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -192,7 +193,11 @@ export default function BlogPage() {
         <div className="container mx-auto max-w-4xl">
           <Separator className="my-16" />
         </div>
-        <PreflightCheck />
+        <BlogGenerator />
+        <div className="container mx-auto max-w-4xl">
+          <Separator className="my-16" />
+        </div>
+        <VisionBoardGenerator />
       </main>
       <Footer />
     </div>
