@@ -115,15 +115,15 @@ export function Footer() {
         </div>
 
         <div className="mt-24 flex flex-col-reverse items-center justify-between gap-6 border-t border-background/20 pt-8 text-sm text-background/70 sm:flex-row">
-            <p>&copy; {new Date().getFullYear()} The Elysium Project. All Rights Reserved. <Link href="/admin" className="transition-colors hover:text-background/80 underline">Admin</Link></p>
+            <p>&copy; {new Date().getFullYear()} The Elysium Project. All Rights Reserved. <Link href="/admin" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-background/80 underline">Admin</Link></p>
             <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
-                <Link href="/legal/terms-and-conditions" className="transition-colors hover:text-background/80">
+                <Link href="/legal/terms-and-conditions" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-background/80">
                 Terms of Service
                 </Link>
-                <Link href="/legal/privacy-policy" className="transition-colors hover:text-background/80">
+                <Link href="/legal/privacy-policy" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-background/80">
                 Privacy Policy
                 </Link>
-                <Link href="/legal/disclaimer" className="transition-colors hover:text-background/80">
+                <Link href="/legal/disclaimer" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-background/80">
                 Disclaimer
                 </Link>
             </div>
