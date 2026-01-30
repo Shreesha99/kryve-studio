@@ -4,7 +4,7 @@ import { useLenis } from '@/components/common/smooth-scroll-provider';
 import { getPosts, invalidatePostsCache, type Post } from '@/lib/blog';
 import { Button } from '@/components/ui/button';
 import { logout } from '@/actions/auth';
-import { FileEdit, LogOut, PlusCircle, Trash2 } from 'lucide-react';
+import { FileEdit, LogOut, PlusCircle, Trash2, Upload } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -21,6 +21,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { FormValues, PostForm } from './post-form';
+import { PdfUploadForm } from './pdf-upload-form';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -110,6 +111,7 @@ export function AdminDashboard() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [listLoading, setListLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isPdfFormOpen, setIsPdfFormOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const { toast } = useToast();
   const lenis = useLenis();
@@ -122,7 +124,7 @@ export function AdminDashboard() {
   }>({ status: 'idle', message: '', progress: 0 });
 
   useEffect(() => {
-    if (isFormOpen) {
+    if (isFormOpen || isPdfFormOpen) {
       lenis?.stop();
     } else {
       lenis?.start();
@@ -130,7 +132,7 @@ export function AdminDashboard() {
     return () => {
       lenis?.start();
     };
-  }, [isFormOpen, lenis]);
+  }, [isFormOpen, isPdfFormOpen, lenis]);
 
   const fetchPosts = useCallback(
     async (forceRefresh = false) => {
@@ -180,6 +182,26 @@ export function AdminDashboard() {
 
   const handleEditPost = (post: Post) => {
     setEditingPost(post);
+    setIsFormOpen(true);
+  };
+
+  const handlePdfSuccess = (data: { title: string; content: string }) => {
+    setIsPdfFormOpen(false);
+    const newPostFromPdf: Partial<Post> = {
+      title: data.title,
+      content: data.content,
+      slug: data.title
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .trim()
+        .replace(/\s+/g, '-'),
+      author: 'The Elysium Project',
+      excerpt:
+        data.content.substring(0, 150).replace(/<[^>]+>/g, '') + '...',
+      imageUrl: 'https://picsum.photos/seed/default/1200/800',
+      imageHint: 'abstract',
+    };
+    setEditingPost(newPostFromPdf as Post);
     setIsFormOpen(true);
   };
 
@@ -303,6 +325,13 @@ export function AdminDashboard() {
       <div className="mb-8 flex items-center justify-between">
         <h1 className="font-headline text-3xl font-semibold">Blog Posts</h1>
         <div className="flex items-center gap-4">
+          <Button
+            onClick={() => setIsPdfFormOpen(true)}
+            disabled={isCreateDisabled}
+            variant="outline"
+          >
+            <Upload className="mr-2 h-4 w-4" /> Create from PDF
+          </Button>
           <Button onClick={handleNewPost} disabled={isCreateDisabled}>
             <PlusCircle className="mr-2 h-4 w-4" /> Create New
           </Button>
@@ -414,10 +443,10 @@ export function AdminDashboard() {
         <DialogContent className="sm:max-w-4xl">
           <DialogHeader>
             <DialogTitle>
-              {editingPost ? 'Edit Post' : 'Create New Post'}
+              {editingPost?.id ? 'Edit Post' : 'Create New Post'}
             </DialogTitle>
             <DialogDescription>
-              {editingPost
+              {editingPost?.id
                 ? 'Update the details for this blog post.'
                 : "Fill in the details for your new blog post. Click save when you're done."}
             </DialogDescription>
@@ -428,6 +457,22 @@ export function AdminDashboard() {
             onSubmit={handleFormSubmit}
             onCancel={() => setIsFormOpen(false)}
             isSubmitting={submissionState.status === 'saving'}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isPdfFormOpen} onOpenChange={setIsPdfFormOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Create Post from PDF</DialogTitle>
+            <DialogDescription>
+              Upload a PDF file to automatically generate a blog post from its
+              content.
+            </DialogDescription>
+          </DialogHeader>
+          <PdfUploadForm
+            onSuccess={handlePdfSuccess}
+            onCancel={() => setIsPdfFormOpen(false)}
           />
         </DialogContent>
       </Dialog>

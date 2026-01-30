@@ -8,7 +8,14 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
+import Image from 'next/image';
 
 const formSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
@@ -25,7 +32,7 @@ const formSchema = z.object({
     .min(10, 'Excerpt is required')
     .max(300, 'Excerpt cannot be more than 300 characters'),
   content: z.string().min(20, 'Content is required'),
-  imageUrl: z.string().url('Must be a valid URL'),
+  imageUrl: z.string().url('Must be a valid URL or a Data URL'),
   imageHint: z.string().optional(),
 });
 
@@ -44,7 +51,17 @@ export function PostForm({
   onCancel,
   isSubmitting,
 }: PostFormProps) {
-  const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<FormValues>({
+  const [imagePreview, setImagePreview] = useState<string | null>(
+    post?.imageUrl || 'https://picsum.photos/seed/default/1200/800'
+  );
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+  } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: post?.title || '',
@@ -57,11 +74,28 @@ export function PostForm({
     },
   });
 
-  // Auto-generate slug from title for new posts
+  const watchedImageUrl = watch('imageUrl');
+  useEffect(() => {
+    if (watchedImageUrl) {
+      setImagePreview(watchedImageUrl);
+    }
+  }, [watchedImageUrl]);
+
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setValue('imageUrl', result, { shouldValidate: true });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const watchedTitle = watch('title');
   useEffect(() => {
     if (!post?.id && watchedTitle) {
-      // Only for new posts
       const slug = watchedTitle
         .toLowerCase()
         .replace(/[^a-z0-9\s-]/g, '')
@@ -85,14 +119,18 @@ export function PostForm({
           <Label htmlFor="title">Title</Label>
           <Input id="title" {...register('title')} />
           {errors.title && (
-            <p className="mt-1 text-sm text-destructive">{errors.title.message}</p>
+            <p className="mt-1 text-sm text-destructive">
+              {errors.title.message}
+            </p>
           )}
         </div>
         <div>
           <Label htmlFor="slug">Slug</Label>
           <Input id="slug" {...register('slug')} />
           {errors.slug && (
-            <p className="mt-1 text-sm text-destructive">{errors.slug.message}</p>
+            <p className="mt-1 text-sm text-destructive">
+              {errors.slug.message}
+            </p>
           )}
         </div>
       </div>
@@ -101,21 +139,66 @@ export function PostForm({
         <Label htmlFor="author">Author</Label>
         <Input id="author" {...register('author')} />
         {errors.author && (
-          <p className="mt-1 text-sm text-destructive">{errors.author.message}</p>
+          <p className="mt-1 text-sm text-destructive">
+            {errors.author.message}
+          </p>
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div>
-          <Label htmlFor="imageUrl">Image URL</Label>
-          <Input id="imageUrl" {...register('imageUrl')} />
-          {errors.imageUrl && (
-            <p className="mt-1 text-sm text-destructive">{errors.imageUrl.message}</p>
-          )}
-        </div>
-        <div>
+      <div className="space-y-2">
+        <Label>Image</Label>
+        <Tabs defaultValue="url" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="url">From URL</TabsTrigger>
+            <TabsTrigger value="upload">Upload</TabsTrigger>
+          </TabsList>
+          <TabsContent value="url" className="relative mt-4">
+            <Label htmlFor="imageUrl" className="sr-only">
+              Image URL
+            </Label>
+            <Input
+              id="imageUrl"
+              placeholder="https://example.com/image.jpg"
+              {...register('imageUrl')}
+            />
+            {errors.imageUrl && (
+              <p className="mt-1 text-sm text-destructive">
+                {errors.imageUrl.message}
+              </p>
+            )}
+          </TabsContent>
+          <TabsContent value="upload" className="relative mt-4">
+            <Label htmlFor="imageUpload" className="sr-only">
+              Upload Image File
+            </Label>
+            <Input
+              id="imageUpload"
+              type="file"
+              accept="image/*"
+              onChange={handleImageFileChange}
+              className="file:text-foreground"
+            />
+          </TabsContent>
+        </Tabs>
+        {imagePreview && imagePreview.length > 0 && (
+          <div className="mt-4 overflow-hidden rounded-md border">
+            <div className="relative aspect-video w-full">
+              <Image
+                src={imagePreview}
+                alt="Image preview"
+                fill
+                className="object-cover"
+              />
+            </div>
+          </div>
+        )}
+        <div className="pt-2">
           <Label htmlFor="imageHint">Image Hint (for AI)</Label>
-          <Input id="imageHint" {...register('imageHint')} placeholder="e.g. abstract tech" />
+          <Input
+            id="imageHint"
+            {...register('imageHint')}
+            placeholder="e.g. abstract tech"
+          />
         </div>
       </div>
 
@@ -123,7 +206,9 @@ export function PostForm({
         <Label htmlFor="excerpt">Excerpt</Label>
         <Textarea id="excerpt" {...register('excerpt')} rows={3} />
         {errors.excerpt && (
-          <p className="mt-1 text-sm text-destructive">{errors.excerpt.message}</p>
+          <p className="mt-1 text-sm text-destructive">
+            {errors.excerpt.message}
+          </p>
         )}
       </div>
 
@@ -136,7 +221,9 @@ export function PostForm({
           placeholder="Enter content as HTML paragraphs, e.g. <p>Your text here.</p>"
         />
         {errors.content && (
-          <p className="mt-1 text-sm text-destructive">{errors.content.message}</p>
+          <p className="mt-1 text-sm text-destructive">
+            {errors.content.message}
+          </p>
         )}
       </div>
 
