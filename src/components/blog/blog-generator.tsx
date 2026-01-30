@@ -7,7 +7,6 @@ import { z } from 'zod';
 import { gsap } from 'gsap';
 import {
   generateBlogPost,
-  provideBlogPostFeedback,
   type GenerateBlogPostOutput,
 } from '@/ai/flows/generate-blog-post';
 import { Button } from '@/components/ui/button';
@@ -32,8 +31,6 @@ import {
   Copy,
   Download,
   Check,
-  ThumbsUp,
-  ThumbsDown,
 } from 'lucide-react';
 import { AnimateOnScroll } from '../common/animate-on-scroll';
 import { cn } from '@/lib/utils';
@@ -88,12 +85,6 @@ function GeneratedPostSkeleton() {
 
 function GeneratedPostResult({ post }: { post: GenerateBlogPostOutput }) {
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
-  const [feedbackStatus, setFeedbackStatus] = useState<
-    'idle' | 'loading' | 'submitted'
-  >('idle');
-  const [feedbackChoice, setFeedbackChoice] = useState<
-    'liked' | 'disliked' | null
-  >(null);
   const resultRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -164,23 +155,6 @@ function GeneratedPostResult({ post }: { post: GenerateBlogPostOutput }) {
     doc.save(`${post.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').substring(0, 30)}.pdf`);
   };
 
-  const handleFeedback = async (rating: 'liked' | 'disliked') => {
-    if (!post.traceId || feedbackStatus !== 'idle') return;
-
-    setFeedbackStatus('loading');
-    try {
-      await provideBlogPostFeedback({
-        traceId: post.traceId,
-        rating: rating,
-      });
-      setFeedbackStatus('submitted');
-      setFeedbackChoice(rating);
-    } catch (e) {
-      console.error('Failed to submit feedback', e);
-      setFeedbackStatus('idle'); // Reset on error to allow retry
-    }
-  };
-
   return (
     <article
       ref={resultRef}
@@ -192,48 +166,8 @@ function GeneratedPostResult({ post }: { post: GenerateBlogPostOutput }) {
           <Button
             variant="outline"
             size="icon"
-            onClick={() => handleFeedback('liked')}
-            disabled={feedbackStatus !== 'idle'}
-            aria-label="Like post"
-            className={cn(
-              'transition-colors',
-              feedbackStatus === 'submitted' &&
-                feedbackChoice === 'liked' &&
-                'border-green-500 bg-green-500/10 text-green-500 hover:bg-green-500/20'
-            )}
-          >
-            {feedbackStatus === 'loading' ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              <ThumbsUp className="h-5 w-5" />
-            )}
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => handleFeedback('disliked')}
-            disabled={feedbackStatus !== 'idle'}
-            aria-label="Dislike post"
-            className={cn(
-              'transition-colors',
-              feedbackStatus === 'submitted' &&
-                feedbackChoice === 'disliked' &&
-                'border-destructive bg-destructive/10 text-destructive hover:bg-destructive/20'
-            )}
-          >
-            {feedbackStatus === 'loading' ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              <ThumbsDown className="h-5 w-5" />
-            )}
-          </Button>
-          <div className="mx-2 h-8 w-px bg-border" />
-          <Button
-            variant="outline"
-            size="icon"
             onClick={handleCopy}
             aria-label="Copy post"
-            disabled={feedbackStatus === 'loading'}
           >
             {copyStatus === 'copied' ? (
               <Check className="h-5 w-5 text-green-500" />
@@ -246,7 +180,6 @@ function GeneratedPostResult({ post }: { post: GenerateBlogPostOutput }) {
             size="icon"
             onClick={handleDownload}
             aria-label="Download post"
-            disabled={feedbackStatus === 'loading'}
           >
             <Download className="h-5 w-5" />
           </Button>
