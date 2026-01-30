@@ -36,7 +36,9 @@ export function CookieBanner() {
         duration: 0.8
       });
 
-      return () => tl.kill();
+      return () => {
+        tl.kill();
+      };
     }
   }, [isVisible]);
 
