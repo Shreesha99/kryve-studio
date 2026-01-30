@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
+import { useLenis } from '@/components/common/smooth-scroll-provider';
 import { Post, getPosts, invalidatePostsCache } from '@/lib/blog';
 import { Button } from '@/components/ui/button';
 import { logout } from '@/actions/auth';
@@ -38,6 +39,15 @@ export function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const lenis = useLenis();
+
+  useEffect(() => {
+    if (isFormOpen) {
+      lenis?.stop();
+    } else {
+      lenis?.start();
+    }
+  }, [isFormOpen, lenis]);
 
   const fetchPosts = useCallback(async () => {
     setLoading(true);

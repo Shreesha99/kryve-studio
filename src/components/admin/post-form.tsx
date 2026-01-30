@@ -67,11 +67,11 @@ export function PostForm({ post, onSuccess }: PostFormProps) {
         await addDoc(postsCollection, postData);
       }
       invalidatePostsCache();
+      setLoading(false);
       onSuccess();
     } catch (e: any) {
       console.error("Error saving post:", e);
       setError(`An error occurred: ${e.message || 'Please try again.'}`);
-    } finally {
       setLoading(false);
     }
   };

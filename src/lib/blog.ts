@@ -37,7 +37,7 @@ const postFromDoc = (doc: any): Post => {
 
 let cachedPosts: Post[] | null = null;
 let lastFetchTime: number | null = null;
-const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes
+const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 
 export function invalidatePostsCache() {
   cachedPosts = null;
