@@ -8,6 +8,7 @@ import {
   getDoc,
 } from 'firebase/firestore';
 import nodemailer from 'nodemailer';
+import { z } from 'zod';
 
 export async function addSubscriber(
   email: string
@@ -32,8 +33,6 @@ export async function addSubscriber(
       success: false,
       message: 'Could not connect to the database. Please try again.',
     };
-    // This is now a more specific error. The previous 'Could not connect' was misleading.
-    return { success: false, message: 'Failed to write to the subscribers database. Please check Firestore rules.' };
   }
 
   const { SMTP_USER, SMTP_PASS } = process.env;
@@ -47,13 +46,6 @@ export async function addSubscriber(
   }
 
   const transporter = nodemailer.createTransport({
-<<<<<<< HEAD
-    host: SMTP_HOST,
-    port: parseInt(SMTP_PORT, 10),
-    secure: parseInt(SMTP_PORT, 10) === 465, // true for 465, false for other ports
-=======
-    service: 'gmail',
->>>>>>> c863216 (i dont have such email and my app password is correct)
     host: 'smtp.gmail.com',
     port: 465,
     secure: true, // use SSL
@@ -202,8 +194,6 @@ export async function addSubscriber(
 
   return { success: true, message: 'Thank you for subscribing!' };
 }
-<<<<<<< HEAD
-=======
 
 const bulkNewsletterSchema = z.object({
   subject: z.string().min(1, 'Subject is required.'),
@@ -259,4 +249,3 @@ export async function sendBulkNewsletter(
     return { success: false, message: 'Failed to send emails.' };
   }
 }
->>>>>>> c863216 (i dont have such email and my app password is correct)

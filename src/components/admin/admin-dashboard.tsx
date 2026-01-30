@@ -58,6 +58,8 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { Loader2 } from 'lucide-react';
 import { signOut } from 'firebase/auth';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { NewsletterForm } from './newsletter-form';
 
 const TableSkeleton = () => (
   <div className="rounded-lg border">
@@ -350,118 +352,131 @@ export function AdminDashboard() {
         </TooltipProvider>
       </div>
 
-      <div className="space-y-6">
-        <div className="mb-6 flex items-center justify-between gap-4">
-            <h2 className='font-headline text-2xl font-semibold'>Blog Posts</h2>
-            <div className='flex items-center gap-4'>
-              <Button
-                onClick={() => setIsPdfFormOpen(true)}
-                disabled={isCreateDisabled}
-                variant="outline"
-              >
-                <Upload className="mr-2 h-4 w-4" /> Create from PDF
-              </Button>
-              <Button onClick={handleNewPost} disabled={isCreateDisabled}>
-                <PlusCircle className="mr-2 h-4 w-4" /> Create New Post
-              </Button>
+      <Tabs defaultValue="blog" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="blog">Blog Posts</TabsTrigger>
+          <TabsTrigger value="newsletter">Newsletter</TabsTrigger>
+        </TabsList>
+        <TabsContent value="blog">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between gap-4">
+                <h2 className='font-headline text-2xl font-semibold'>Manage Posts</h2>
+                <div className='flex items-center gap-4'>
+                  <Button
+                    onClick={() => setIsPdfFormOpen(true)}
+                    disabled={isCreateDisabled}
+                    variant="outline"
+                  >
+                    <Upload className="mr-2 h-4 w-4" /> Create from PDF
+                  </Button>
+                  <Button onClick={handleNewPost} disabled={isCreateDisabled}>
+                    <PlusCircle className="mr-2 h-4 w-4" /> Create New Post
+                  </Button>
+                </div>
             </div>
-        </div>
 
-        {listLoading ? (
-          <TableSkeleton />
-        ) : posts.length > 0 || isOperationInProgress ? (
-          <div className="rounded-lg border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Author</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isOperationInProgress && (
-                  <ProgressRow
-                    message={submissionState.message}
-                    progress={submissionState.progress}
-                  />
-                )}
-                {posts.map(post => (
-                  <TableRow key={post.id}>
-                    <TableCell className="font-medium">
-                      {post.title}
-                    </TableCell>
-                    <TableCell>{post.author}</TableCell>
-                    <TableCell>
-                      {new Date(post.date).toLocaleString('en-US', {
-                        dateStyle: 'medium',
-                        timeStyle: 'short',
-                      })}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEditPost(post)}
-                        disabled={isOperationInProgress}
-                      >
-                        <FileEdit className="h-4 w-4" />
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
+            {listLoading ? (
+              <TableSkeleton />
+            ) : posts.length > 0 || isOperationInProgress ? (
+              <div className="rounded-lg border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Author</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {isOperationInProgress && (
+                      <ProgressRow
+                        message={submissionState.message}
+                        progress={submissionState.progress}
+                      />
+                    )}
+                    {posts.map(post => (
+                      <TableRow key={post.id}>
+                        <TableCell className="font-medium">
+                          {post.title}
+                        </TableCell>
+                        <TableCell>{post.author}</TableCell>
+                        <TableCell>
+                          {new Date(post.date).toLocaleString('en-US', {
+                            dateStyle: 'medium',
+                            timeStyle: 'short',
+                          })}
+                        </TableCell>
+                        <TableCell className="text-right">
                           <Button
                             variant="ghost"
                             size="icon"
+                            onClick={() => handleEditPost(post)}
                             disabled={isOperationInProgress}
                           >
-                            <Trash2 className="h-4 w-4 text-destructive" />
+                            <FileEdit className="h-4 w-4" />
                           </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>
-                              Are you sure?
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This will permanently delete the post "
-                              {post.title}
-                              ". This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() =>
-                                handleDeletePost(post.id!, post.title)
-                              }
-                              className="bg-destructive hover:bg-destructive/90"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                disabled={isOperationInProgress}
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Are you sure?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This will permanently delete the post "
+                                  {post.title}
+                                  ". This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() =>
+                                    handleDeletePost(post.id!, post.title)
+                                  }
+                                  className="bg-destructive hover:bg-destructive/90"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed py-24 text-center">
+                <h2 className="text-2xl font-semibold tracking-tight">
+                  No Posts Found
+                </h2>
+                <p className="text-muted-foreground">
+                  It looks like you haven't created any posts yet.
+                </p>
+                <Button onClick={handleNewPost} disabled={isOperationInProgress}>
+                  <PlusCircle className="mr-2 h-4 w-4" /> Create Your First Post
+                </Button>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed py-24 text-center">
-            <h2 className="text-2xl font-semibold tracking-tight">
-              No Posts Found
-            </h2>
-            <p className="text-muted-foreground">
-              It looks like you haven't created any posts yet.
-            </p>
-            <Button onClick={handleNewPost} disabled={isOperationInProgress}>
-              <PlusCircle className="mr-2 h-4 w-4" /> Create Your First Post
-            </Button>
-          </div>
-        )}
-      </div>
+        </TabsContent>
+        <TabsContent value="newsletter">
+            <h2 className='font-headline text-2xl font-semibold mb-4'>Compose Newsletter</h2>
+            <NewsletterForm />
+        </TabsContent>
+      </Tabs>
+
 
       <Dialog
         open={isFormOpen}
