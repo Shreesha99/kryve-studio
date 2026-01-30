@@ -6,17 +6,9 @@ import { type Post } from '@/lib/blog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { useEffect } from 'react';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 const formSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
@@ -52,7 +44,7 @@ export function PostForm({
   onCancel,
   isSubmitting,
 }: PostFormProps) {
-  const form = useForm<FormValues>({
+  const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: post?.title || '',
@@ -66,7 +58,7 @@ export function PostForm({
   });
 
   // Auto-generate slug from title for new posts
-  const watchedTitle = form.watch('title');
+  const watchedTitle = watch('title');
   useEffect(() => {
     if (!post?.id && watchedTitle) {
       // Only for new posts
@@ -75,145 +67,96 @@ export function PostForm({
         .replace(/[^a-z0-9\s-]/g, '')
         .trim()
         .replace(/\s+/g, '-');
-      form.setValue('slug', slug, { shouldValidate: true });
+      setValue('slug', slug, { shouldValidate: true });
     }
-  }, [watchedTitle, form, post?.id]);
+  }, [watchedTitle, setValue, post?.id]);
 
   const handleFormSubmit: SubmitHandler<FormValues> = data => {
     onSubmit(data);
   };
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(handleFormSubmit)}
-        className="flex h-full flex-col"
-      >
-        <ScrollArea className="flex-auto">
-          <div className="space-y-6 px-1 py-1 pr-6">
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Title</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="slug"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Slug</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="author"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Author</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="imageUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Image URL</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="imageHint"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Image Hint (for AI)</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="e.g. abstract tech" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="excerpt"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Excerpt</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} rows={3} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="content"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Content (HTML)</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      {...field}
-                      rows={10}
-                      placeholder="Enter content as HTML paragraphs, e.g. <p>Your text here.</p>"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </ScrollArea>
-        <div className="flex flex-shrink-0 justify-end gap-4 border-t pt-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onCancel}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              'Save Post'
-            )}
-          </Button>
+    <form
+      onSubmit={handleSubmit(handleFormSubmit)}
+      className="space-y-4 overflow-y-auto max-h-[60vh] p-1"
+    >
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div>
+          <Label htmlFor="title">Title</Label>
+          <Input id="title" {...register('title')} />
+          {errors.title && (
+            <p className="mt-1 text-sm text-destructive">{errors.title.message}</p>
+          )}
         </div>
-      </form>
-    </Form>
+        <div>
+          <Label htmlFor="slug">Slug</Label>
+          <Input id="slug" {...register('slug')} />
+          {errors.slug && (
+            <p className="mt-1 text-sm text-destructive">{errors.slug.message}</p>
+          )}
+        </div>
+      </div>
+
+      <div>
+        <Label htmlFor="author">Author</Label>
+        <Input id="author" {...register('author')} />
+        {errors.author && (
+          <p className="mt-1 text-sm text-destructive">{errors.author.message}</p>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div>
+          <Label htmlFor="imageUrl">Image URL</Label>
+          <Input id="imageUrl" {...register('imageUrl')} />
+          {errors.imageUrl && (
+            <p className="mt-1 text-sm text-destructive">{errors.imageUrl.message}</p>
+          )}
+        </div>
+        <div>
+          <Label htmlFor="imageHint">Image Hint (for AI)</Label>
+          <Input id="imageHint" {...register('imageHint')} placeholder="e.g. abstract tech" />
+        </div>
+      </div>
+
+      <div>
+        <Label htmlFor="excerpt">Excerpt</Label>
+        <Textarea id="excerpt" {...register('excerpt')} rows={3} />
+        {errors.excerpt && (
+          <p className="mt-1 text-sm text-destructive">{errors.excerpt.message}</p>
+        )}
+      </div>
+
+      <div>
+        <Label htmlFor="content">Content (HTML)</Label>
+        <Textarea
+          id="content"
+          {...register('content')}
+          rows={10}
+          placeholder="Enter content as HTML paragraphs, e.g. <p>Your text here.</p>"
+        />
+        {errors.content && (
+          <p className="mt-1 text-sm text-destructive">{errors.content.message}</p>
+        )}
+      </div>
+
+      <div className="flex justify-end gap-4 border-t pt-4">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={isSubmitting}
+        >
+          Cancel
+        </Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            'Save Post'
+          )}
+        </Button>
+      </div>
+    </form>
   );
 }
