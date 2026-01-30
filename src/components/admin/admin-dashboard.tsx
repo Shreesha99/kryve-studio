@@ -40,6 +40,8 @@ export function AdminDashboard() {
   const [listLoading, setListLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [statusMessage, setStatusMessage] = useState("");
   const { toast } = useToast();
 
   const lenis = useLenis();
@@ -87,19 +89,11 @@ export function AdminDashboard() {
   };
 
   const handleFormSubmit = async (data: FormValues) => {
-    setIsFormOpen(false); // Close the modal immediately
-
-    const isEditing = !!editingPost?.id;
+    setIsFormOpen(false);
+    setIsSaving(true);
+    setStatusMessage("Saving post...");
     
-    const toastController = toast({
-      title: (
-        <div className="flex items-center gap-2">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span>{isEditing ? 'Updating post...' : 'Creating post...'}</span>
-        </div>
-      ),
-      description: `Saving "${data.title}"`,
-    });
+    const isEditing = !!editingPost?.id;
     
     const { firestore } = initializeFirebase();
     const postData = {
@@ -116,8 +110,7 @@ export function AdminDashboard() {
         await addDoc(postsCollection, postData);
       }
 
-      toastController.update({
-        id: toastController.id,
+      toast({
         title: (
           <div className="flex items-center gap-2">
             <Check className="h-4 w-4 text-green-500" />
@@ -131,8 +124,7 @@ export function AdminDashboard() {
       fetchPosts();
     } catch (e: any) {
       console.error("Error saving post:", e);
-      toastController.update({
-        id: toastController.id,
+      toast({
         variant: "destructive",
         title: (
           <div className="flex items-center gap-2">
@@ -142,6 +134,9 @@ export function AdminDashboard() {
         ),
         description: e.message || "Could not save the post.",
       });
+    } finally {
+      setIsSaving(false);
+      setStatusMessage("");
     }
   };
 
@@ -169,7 +164,15 @@ export function AdminDashboard() {
   return (
     <div className="container mx-auto px-4 md:px-6">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="font-headline text-3xl font-semibold">Blog Posts</h1>
+        <div className="flex items-center gap-4">
+          <h1 className="font-headline text-3xl font-semibold">Blog Posts</h1>
+          {isSaving && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground animate-in fade-in">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>{statusMessage}</span>
+            </div>
+          )}
+        </div>
         <div className="flex items-center gap-4">
           <Button onClick={handleNewPost}><PlusCircle className="mr-2 h-4 w-4" /> Create New</Button>
           <form action={logout}>
