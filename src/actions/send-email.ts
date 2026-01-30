@@ -38,9 +38,9 @@ export async function sendEmail(
   }
 
   const { name, email, message } = validatedFields.data;
-  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
+  const { SMTP_USER, SMTP_PASS } = process.env;
 
-  if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) {
+  if (!SMTP_USER || !SMTP_PASS) {
     console.error('SMTP configuration is missing from .env.local');
     return {
       success: false,
@@ -49,9 +49,7 @@ export async function sendEmail(
   }
 
   const transporter = nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: parseInt(SMTP_PORT, 10),
-    secure: parseInt(SMTP_PORT, 10) === 465,
+    service: 'gmail',
     auth: {
       user: SMTP_USER,
       pass: SMTP_PASS,

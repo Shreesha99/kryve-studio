@@ -34,9 +34,9 @@ export async function addSubscriber(
     };
   }
 
-  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
+  const { SMTP_USER, SMTP_PASS } = process.env;
 
-  if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) {
+  if (!SMTP_USER || !SMTP_PASS) {
     console.error('SMTP configuration is missing. Cannot send confirmation email.');
     return {
       success: true,
@@ -45,9 +45,13 @@ export async function addSubscriber(
   }
 
   const transporter = nodemailer.createTransport({
+<<<<<<< HEAD
     host: SMTP_HOST,
     port: parseInt(SMTP_PORT, 10),
     secure: parseInt(SMTP_PORT, 10) === 465, // true for 465, false for other ports
+=======
+    service: 'gmail',
+>>>>>>> c863216 (i dont have such email and my app password is correct)
     auth: {
       user: SMTP_USER,
       pass: SMTP_PASS,
@@ -193,3 +197,59 @@ export async function addSubscriber(
 
   return { success: true, message: 'Thank you for subscribing!' };
 }
+<<<<<<< HEAD
+=======
+
+const bulkNewsletterSchema = z.object({
+  subject: z.string().min(1, 'Subject is required.'),
+  content: z.string().min(1, 'Content is required.'),
+  subscribers: z.array(z.string().email()),
+});
+
+export async function sendBulkNewsletter(
+  data: z.infer<typeof bulkNewsletterSchema>
+): Promise<{ success: boolean; message: string }> {
+  const validation = bulkNewsletterSchema.safeParse(data);
+  if (!validation.success) {
+    return { success: false, message: 'Invalid newsletter data provided.' };
+  }
+
+  const { subject, content, subscribers } = validation.data;
+
+  if (subscribers.length === 0) {
+    return { success: true, message: 'There are no subscribers to send to.' };
+  }
+
+  const { SMTP_USER, SMTP_PASS } = process.env;
+  if (!SMTP_USER || !SMTP_PASS) {
+    console.error('SMTP configuration is missing.');
+    return { success: false, message: 'Email server is not configured.' };
+  }
+
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: SMTP_USER,
+      pass: SMTP_PASS,
+    },
+  });
+
+  try {
+    await transporter.sendMail({
+      from: `"The Elysium Project" <${SMTP_USER}>`,
+      to: SMTP_USER, // Send to self
+      bcc: subscribers, // BCC all subscribers for privacy
+      subject: subject,
+      html: content,
+    });
+
+    return {
+      success: true,
+      message: `Newsletter sent to ${subscribers.length} subscriber(s).`,
+    };
+  } catch (error) {
+    console.error('Failed to send bulk newsletter:', error);
+    return { success: false, message: 'Failed to send emails.' };
+  }
+}
+>>>>>>> c863216 (i dont have such email and my app password is correct)
