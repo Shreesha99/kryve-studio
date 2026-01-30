@@ -1,5 +1,5 @@
-import { PageLoader } from '@/components/common/page-loader';
+import { BlogPageSkeleton } from '@/components/blog/blog-page-skeleton';
 
 export default function Loading() {
-  return <PageLoader />;
+  return <BlogPageSkeleton />;
 }
