@@ -265,7 +265,7 @@ export function AdminDashboard() {
                 <TableRow key={post.id}>
                   <TableCell className="font-medium">{post.title}</TableCell>
                   <TableCell>{post.author}</TableCell>
-                  <TableCell>{new Date(post.date).toLocaleDateString()}</TableCell>
+                  <TableCell>{new Date(post.date).toLocaleString()}</TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="icon" onClick={() => handleEditPost(post)} disabled={isSaving}>
                       <FileEdit className="h-4 w-4" />

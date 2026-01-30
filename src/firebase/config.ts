@@ -3,10 +3,10 @@
 // https://firebase.google.com/docs/web/setup#add_firebase_to_your_app
 
 export const firebaseConfig = {
-  apiKey: "REPLACE_WITH_YOUR_API_KEY",
-  authDomain: "REPLACE_WITH_YOUR_AUTH_DOMAIN",
-  projectId: "REPLACE_WITH_YOUR_PROJECT_ID",
-  storageBucket: "REPLACE_WITH_YOUR_STORAGE_BUCKET",
-  messagingSenderId: "REPLACE_WITH_YOUR_MESSAGING_SENDER_ID",
-  appId: "REPLACE_WITH_YOUR_APP_ID",
+  apiKey: "AIzaSyBKyhG5uHwWl23-6T6ueiYiGBhiSzTbJPA",
+  authDomain: "studio-544175764-b8623.firebaseapp.com",
+  projectId: "studio-544175764-b8623",
+  storageBucket: "studio-544175764-b8623.appspot.com",
+  messagingSenderId: "261401370625",
+  appId: "1:261401370625:web:0a840806e11c944efe2000",
 };
