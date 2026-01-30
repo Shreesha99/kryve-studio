@@ -9,11 +9,9 @@ export function InkwellAnimation({ className }: { className?: string }) {
   const penRef = useRef<SVGGElement>(null);
   const lineRef = useRef<SVGPathElement>(null);
   
-  // A ref to hold the animation timeline
   const tlRef = useRef<gsap.core.Timeline | null>(null);
 
   useEffect(() => {
-    // Kill any existing animation on re-render
     if (tlRef.current) {
       tlRef.current.kill();
     }
@@ -32,12 +30,13 @@ export function InkwellAnimation({ className }: { className?: string }) {
     
     const startPoint = line.getPointAtLength(0);
     // Position pen so the nib is at the start of the line.
-    // These offsets depend on the pen's SVG structure.
-    // Pen's nib is at approx (25, 75) in its own coordinate system.
+    // Offsets are calibrated to the new pen SVG's nib position.
     gsap.set(pen, {
-        x: startPoint.x - 25,
-        y: startPoint.y - 75,
+        x: startPoint.x - 20,
+        y: startPoint.y - 70,
         opacity: 0,
+        rotation: 15,
+        transformOrigin: "20px 70px"
     });
 
     const masterTl = gsap.timeline({
@@ -48,7 +47,6 @@ export function InkwellAnimation({ className }: { className?: string }) {
     
     tlRef.current = masterTl;
 
-    // Timeline for the pen following the path
     const penFollowsLine = gsap.timeline();
     const progress = { value: 0 };
     penFollowsLine.to(progress, {
@@ -57,16 +55,22 @@ export function InkwellAnimation({ className }: { className?: string }) {
         ease: 'none',
         onUpdate: () => {
             const point = line.getPointAtLength(progress.value * lineLength);
-            gsap.set(pen, { x: point.x - 25, y: point.y - 75 });
+            const tangent = line.getPointAtLength(progress.value * lineLength + 0.1);
+            const angle = Math.atan2(tangent.y - point.y, tangent.x - point.x) * 180 / Math.PI;
+            gsap.set(pen, { 
+                x: point.x - 20,
+                y: point.y - 70,
+                rotation: angle + 15 // Keep the pen angled relative to the path
+            });
         }
     });
 
     masterTl
       .to(pen, { opacity: 1, duration: 0.5, ease: 'power2.out' })
       .to(line, { strokeDashoffset: 0, duration: 1.5, ease: 'none' })
-      .add(penFollowsLine, '<') // Animate pen movement simultaneously with line drawing
+      .add(penFollowsLine, '<') 
       .to(pen, { opacity: 0, y: '-=20', duration: 0.5, ease: 'power2.out' }, '+=0.5')
-      .set(line, { strokeDashoffset: lineLength }); // Reset for the next loop
+      .set(line, { strokeDashoffset: lineLength }); 
 
     return () => {
       tlRef.current?.kill();
@@ -85,15 +89,19 @@ export function InkwellAnimation({ className }: { className?: string }) {
             <path d="M 15 60 h 70" className="stroke-muted-foreground/30" strokeWidth="0.5" />
             <path d="M 15 68 h 70" className="stroke-muted-foreground/30" strokeWidth="0.5" />
             
-            {/* The line to be written */}
-            <path ref={lineRef} d="M30 46 C 40 50, 60 42, 70 46" className="fill-none stroke-primary" strokeWidth="2" strokeLinecap="round"/>
+            {/* The line to be written - a more elegant curve */}
+            <path ref={lineRef} d="M30 55 C 40 45, 60 60, 70 50" className="fill-none stroke-primary" strokeWidth="2" strokeLinecap="round"/>
             
-            {/* New Pen SVG */}
+            {/* New, detailed Ink Pen SVG */}
             <g ref={penRef}>
-                <path d="M 70 20 L 80 30 L 40 70 L 30 60 Z" className="fill-foreground"/>
-                <path d="M 40 70 L 30 60 L 25 65 L 35 75 Z" className="fill-muted-foreground"/>
-                <path d="M 25 65 L 35 75 L 28 82 L 18 72 Z" className="fill-primary"/>
-                <path d="M 65 25 L 75 35 L 55 55 L 45 45 Z" className="fill-primary/50"/>
+                {/* Main body of the pen */}
+                <path d="M75 10 L80 15 L35 60 L30 55 Z" className="fill-foreground" />
+                {/* Decorative golden band */}
+                <path d="M72 13 L77 18 L72 23 L67 18 Z" className="fill-primary/50" />
+                {/* Grip section */}
+                <path d="M35 60 L30 55 L22 63 L27 68 Z" className="fill-muted-foreground" />
+                {/* The Nib itself */}
+                <path d="M22 63 L20 70 L27 68 L22 63 Z" className="fill-primary" />
             </g>
         </svg>
     </div>
