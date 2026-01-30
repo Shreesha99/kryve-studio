@@ -25,10 +25,11 @@ export type FormValues = z.infer<typeof formSchema>;
 interface PostFormProps {
   post?: Post | null;
   onSubmit: (data: FormValues) => void;
+  onCancel: () => void;
 }
 
-export function PostForm({ post, onSubmit }: PostFormProps) {
-  const { register, handleSubmit, formState: { errors }, watch, setValue, control } = useForm<FormValues>({
+export function PostForm({ post, onSubmit, onCancel }: PostFormProps) {
+  const { register, handleSubmit, formState: { errors, isSubmitting }, watch, setValue, control } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: post?.title || '',
@@ -40,8 +41,6 @@ export function PostForm({ post, onSubmit }: PostFormProps) {
       imageHint: post?.imageHint || 'abstract',
     }
   });
-
-  const { isSubmitting } = useFormState({ control });
 
   // Auto-generate slug from title for new posts
   const watchedTitle = watch('title');
@@ -55,9 +54,14 @@ export function PostForm({ post, onSubmit }: PostFormProps) {
       setValue('slug', slug, { shouldValidate: true });
     }
   }, [watchedTitle, setValue, post?.id]);
+  
+  const handleFormSubmit: SubmitHandler<FormValues> = (data) => {
+    onSubmit(data);
+  };
+
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="space-y-1">
           <Label htmlFor="title">Title</Label>
@@ -102,7 +106,10 @@ export function PostForm({ post, onSubmit }: PostFormProps) {
         {errors.content && <p className="text-sm text-destructive">{errors.content?.message}</p>}
       </div>
       
-      <div className="flex justify-end pt-4">
+      <div className="flex justify-end pt-4 gap-4">
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+          Cancel
+        </Button>
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save Post'}
         </Button>

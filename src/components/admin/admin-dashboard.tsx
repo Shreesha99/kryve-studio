@@ -4,7 +4,7 @@ import { useLenis } from '@/components/common/smooth-scroll-provider';
 import { Post, invalidatePostsCache, getPosts } from '@/lib/blog';
 import { Button } from '@/components/ui/button';
 import { logout } from '@/actions/auth';
-import { PlusCircle, Trash2, FileEdit, Check } from 'lucide-react';
+import { PlusCircle, Trash2, FileEdit, Check, Loader2, LogOut } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -35,7 +35,8 @@ import { initializeFirebase } from '@/firebase';
 import { addDoc, collection, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from '@/components/ui/skeleton';
-import { Progress } from '@/components/ui/progress';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
 
 const TableSkeleton = () => (
   <div className="rounded-lg border">
@@ -65,25 +66,12 @@ const TableSkeleton = () => (
   </div>
 );
 
-const ProgressRow = ({ progress, text }: { progress: number; text: string }) => (
-  <TableRow className="bg-muted/50">
-    <TableCell colSpan={4} className="p-0">
-      <div className="flex items-center gap-4 p-4">
-        <div className="w-40 text-right text-sm font-medium text-muted-foreground">{text}</div>
-        <Progress value={progress} className="h-2 flex-1" />
-      </div>
-    </TableCell>
-  </TableRow>
-);
 
 export function AdminDashboard() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [listLoading, setListLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [progressText, setProgressText] = useState('');
   const { toast } = useToast();
   const lenis = useLenis();
 
@@ -99,7 +87,10 @@ export function AdminDashboard() {
   }, [isFormOpen, lenis]);
 
   const fetchPosts = useCallback(async () => {
-    setListLoading(true);
+    // Keep listLoading true only on the very first fetch
+    if (posts.length === 0) {
+      setListLoading(true);
+    }
     try {
       const fetchedPosts = await getPosts(true); // Force refresh for admin
       setPosts(fetchedPosts);
@@ -113,20 +104,23 @@ export function AdminDashboard() {
     } finally {
       setListLoading(false);
     }
-  }, [toast]);
+  }, [toast, posts.length]);
 
   useEffect(() => {
     let isMounted = true;
     const initialLoad = async () => {
+        // Optimistically show cached posts first if they exist
         const cached = await getPosts(false);
         if (isMounted && cached.length > 0) {
             setPosts(cached);
             setListLoading(false);
+            // Then fetch fresh posts in the background
             const freshPosts = await getPosts(true);
             if (isMounted) {
                 setPosts(freshPosts);
             }
         } else {
+            // If no cache, perform a full load
             await fetchPosts();
         }
     };
@@ -135,6 +129,7 @@ export function AdminDashboard() {
         isMounted = false;
     }
   }, [fetchPosts]);
+
 
   const handleNewPost = () => {
     setEditingPost(null);
@@ -146,72 +141,61 @@ export function AdminDashboard() {
     setIsFormOpen(true);
   };
 
-  const handleFormSubmit = async (data: FormValues) => {
+  const handleFormSubmit = (data: FormValues) => {
     setIsFormOpen(false);
-    setIsSaving(true);
     const isEditing = !!editingPost?.id;
+    
+    const { id: toastId } = toast({
+      title: <div className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /><span>{isEditing ? 'Updating post...' : 'Creating post...'}</span></div>,
+      description: `"${data.title}"`,
+    });
+
     const { firestore } = initializeFirebase();
+    const postData = {
+      ...data,
+      date: new Date().toISOString(),
+    };
 
-    try {
-      // --- Stage 1: Validation ---
-      setProgressText('Validating data...');
-      setProgress(25);
-      await new Promise(res => setTimeout(res, 400));
+    const saveOperation = isEditing
+      ? setDoc(doc(firestore, 'posts', editingPost!.id!), postData, { merge: true })
+      : addDoc(collection(firestore, 'posts'), postData);
 
-      // --- Stage 2: Saving ---
-      setProgressText('Saving content...');
-      setProgress(60);
-      const postData = {
-        ...data,
-        date: new Date().toISOString(),
-      };
-      
-      if (isEditing) {
-        await setDoc(doc(firestore, 'posts', editingPost!.id!), postData, { merge: true });
-      } else {
-        await addDoc(collection(firestore, 'posts'), postData);
-      }
-
-      // --- Stage 3: Finalizing ---
-      setProgressText('Finalizing...');
-      setProgress(90);
-      invalidatePostsCache();
-      await fetchPosts();
-
-      // --- Complete ---
-      setProgress(100);
-      await new Promise(res => setTimeout(res, 500)); // Let user see 100%
-
-      toast({
-        title: <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /><span>{isEditing ? 'Post Updated!' : 'Post Created!'}</span></div>,
-        description: `"${data.title}" has been saved.`,
+    saveOperation
+      .then(() => {
+        toast({
+          id: toastId,
+          title: <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /><span>{isEditing ? 'Post Updated!' : 'Post Created!'}</span></div>,
+          description: `"${data.title}" has been successfully saved.`,
+        });
+        invalidatePostsCache();
+        fetchPosts();
+      })
+      .catch((e: any) => {
+        console.error("Error saving post:", e);
+        toast({
+          id: toastId,
+          variant: "destructive",
+          title: "Save Failed",
+          description: e.message || "Could not save the post to the database.",
+        });
+      })
+      .finally(() => {
+        setEditingPost(null);
       });
-    } catch (e: any) {
-      console.error("Error saving post:", e);
-      toast({
-        variant: "destructive",
-        title: "Save failed",
-        description: e.message || "Could not save the post to the database.",
-      });
-    } finally {
-      setIsSaving(false);
-      setEditingPost(null);
-    }
   };
 
   const handleDeletePost = async (postId: string, postTitle: string) => {
-    setIsSaving(true);
+    const { id: toastId } = toast({
+        title: <div className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /><span>Deleting Post...</span></div>,
+        description: `"${postTitle}"`,
+    });
+    
     try {
-      setProgressText('Deleting post...');
-      setProgress(50);
-      
       const { firestore } = initializeFirebase();
       await deleteDoc(doc(firestore, "posts", postId));
       
-      setProgress(100);
-      await new Promise(res => setTimeout(res, 500));
-
       toast({
+        id: toastId,
         title: "Post Deleted",
         description: `"${postTitle}" has been removed.`,
       });
@@ -221,30 +205,42 @@ export function AdminDashboard() {
     } catch (error) {
       console.error("Failed to delete post:", error);
       toast({
+        id: toastId,
         variant: "destructive",
         title: "Deletion Failed",
         description: "Could not delete post from the database.",
       });
-    } finally {
-      setIsSaving(false);
     }
   };
+
 
   return (
     <div className="container mx-auto px-4 md:px-6">
       <div className="flex items-center justify-between mb-8">
         <h1 className="font-headline text-3xl font-semibold">Blog Posts</h1>
         <div className="flex items-center gap-4">
-          <Button onClick={handleNewPost} disabled={isSaving || listLoading}>
+          <Button onClick={handleNewPost} disabled={listLoading}>
             <PlusCircle className="mr-2 h-4 w-4" /> Create New
           </Button>
-          <form action={logout}>
-            <Button variant="outline" type="submit" disabled={isSaving}>Logout</Button>
-          </form>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <form action={logout}>
+                  <Button variant="ghost" size="icon" type="submit">
+                    <LogOut className="h-5 w-5" />
+                    <span className="sr-only">Logout</span>
+                  </Button>
+                </form>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Logout</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
       
-      {listLoading && !isSaving ? (
+      {listLoading ? (
         <TableSkeleton />
       ) : (
         <div className="rounded-lg border">
@@ -258,19 +254,18 @@ export function AdminDashboard() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isSaving && <ProgressRow progress={progress} text={progressText} />}
               {posts.map((post) => (
                 <TableRow key={post.id}>
                   <TableCell className="font-medium">{post.title}</TableCell>
                   <TableCell>{post.author}</TableCell>
                   <TableCell>{new Date(post.date).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => handleEditPost(post)} disabled={isSaving}>
+                    <Button variant="ghost" size="icon" onClick={() => handleEditPost(post)}>
                       <FileEdit className="h-4 w-4" />
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" disabled={isSaving}>
+                        <Button variant="ghost" size="icon">
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </AlertDialogTrigger>
@@ -310,6 +305,7 @@ export function AdminDashboard() {
               key={editingPost?.id || 'new'}
               post={editingPost}
               onSubmit={handleFormSubmit}
+              onCancel={() => setIsFormOpen(false)}
             />
           </div>
         </DialogContent>
