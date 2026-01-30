@@ -159,34 +159,38 @@ export function KeyboardAnimation({ className }: { className?: string }) {
             return;
           }
 
-          // 2. Allow critical browser shortcuts
-          if (e.key === 'F5' || e.key === 'F11' || (e.metaKey && e.key === 'r')) {
-            return;
-          }
-
-          // 3. Animate the key press visually if it exists on the SVG
+          // 2. Animate the key press visually if it exists on the SVG
           const keyEl = keyMap.get(e.code);
           if (keyEl) {
-            if (e.metaKey || e.ctrlKey) return; // Ignore complex shortcuts for now
             gsap.to(keyEl.querySelector('.key-base'), { y: 2, duration: 0.08, ease: 'power1.in' });
             gsap.to(keyEl.querySelector('.key-press-rect'), { opacity: 1, duration: 0.08 });
           }
-
-          // 4. Handle text input and prevent default actions ONLY for keys we are capturing
-          if (e.key.length === 1) {
+          
+          // 3. Prevent default ONLY for keys we are actively capturing for typing
+          if (
+            e.key.length === 1 || // All single characters
+            e.code === 'Space' ||
+            e.code === 'Backspace' ||
+            e.code === 'Escape'
+          ) {
             e.preventDefault();
+          } else {
+             // For all other keys (F5, F11, Cmd+R, arrows etc.), do nothing and let the browser handle it.
+            return;
+          }
+
+          // 4. Handle text input
+          if (e.key.length === 1) {
             setTypedText(prev => {
               if (prev.length === 0) setTypingStartTime(Date.now());
               return (prev + e.key).slice(-150);
             });
           } else if (e.code === 'Space') {
-            e.preventDefault();
             setTypedText(prev => {
               if (prev.length === 0) setTypingStartTime(Date.now());
               return (prev + ' ').slice(-150);
             });
           } else if (e.code === 'Backspace') {
-            e.preventDefault();
             setTypedText(prev => {
               const newText = prev.slice(0, -1);
               if (newText.length === 0) {
@@ -203,7 +207,6 @@ export function KeyboardAnimation({ className }: { className?: string }) {
               return '';
             });
           }
-          // For all other keys (Enter, Arrows, etc.), we do nothing and let the browser handle it.
         };
 
         const handleKeyUp = (e: KeyboardEvent) => {
@@ -253,14 +256,15 @@ export function KeyboardAnimation({ className }: { className?: string }) {
   
   // Effect for WPM calculation
   useEffect(() => {
-    if (!typingStartTime || typedText.length === 0) {
+    if (!typingStartTime || typedText.trim().length === 0) {
         setWpm(0);
         return;
     }
     const wpmInterval = setInterval(() => {
         const elapsedMinutes = (Date.now() - typingStartTime) / 1000 / 60;
         if (elapsedMinutes > 0) {
-            const wordCount = typedText.length / 5;
+            // Trim the text, split by any whitespace, and filter out empty strings
+            const wordCount = typedText.trim().split(/\s+/).filter(Boolean).length;
             setWpm(Math.round(wordCount / elapsedMinutes));
         }
     }, 500);
@@ -404,6 +408,8 @@ export function KeyboardAnimation({ className }: { className?: string }) {
     </div>
   );
 }
+
+    
 
     
 
