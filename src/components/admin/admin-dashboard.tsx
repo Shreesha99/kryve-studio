@@ -59,9 +59,17 @@ export function AdminDashboard() {
         ];
         let messageIndex = 0;
         setStatusMessage(messages[messageIndex]);
+        
         interval = setInterval(() => {
-            messageIndex = (messageIndex + 1) % messages.length;
-            setStatusMessage(messages[messageIndex]);
+            messageIndex++;
+            if (messageIndex < messages.length) {
+                setStatusMessage(messages[messageIndex]);
+            } else {
+                // Stop the interval once we've displayed the last message.
+                // The loader will continue to spin with the "Finalizing..." text
+                // until isSaving becomes false.
+                clearInterval(interval);
+            }
         }, 1500);
     }
     return () => {
@@ -129,7 +137,7 @@ export function AdminDashboard() {
     const { firestore } = initializeFirebase();
     const postData = {
       ...data,
-      date: isEditing && editingPost.date ? new Date(editingPost.date) : new Date(),
+      date: new Date(),
     };
 
     const writePromise = isEditing
@@ -137,7 +145,7 @@ export function AdminDashboard() {
       : addDoc(collection(firestore, 'posts'), postData);
 
     writePromise
-      .then(() => {
+      .then(async () => {
         toast({
           title: (
             <div className="flex items-center gap-2">
@@ -148,7 +156,7 @@ export function AdminDashboard() {
           description: `"${data.title}" has been saved.`,
         });
         invalidatePostsCache();
-        fetchPosts();
+        await fetchPosts();
       })
       .catch((e: any) => {
         console.error("Error saving post:", e);
