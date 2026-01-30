@@ -25,7 +25,7 @@ const rows = [
     { x: 0, w: 1, s: '~', code: 'Backquote' }, { x: 1, w: 1, s: '1', code: 'Digit1' }, { x: 2, w: 1, s: '2', code: 'Digit2' }, { x: 3, w: 1, s: '3', code: 'Digit3' },
     { x: 4, w: 1, s: '4', code: 'Digit4' }, { x: 5, w: 1, s: '5', code: 'Digit5' }, { x: 6, w: 1, s: '6', code: 'Digit6' }, { x: 7, w: 1, s: '7', code: 'Digit7' },
     { x: 8, w: 1, s: '8', code: 'Digit8' }, { x: 9, w: 1, s: '9', code: 'Digit9' }, { x: 10, w: 1, s: '0', code: 'Digit0' }, { x: 11, w: 1, s: '-', code: 'Minus' },
-    { x: 12, w: 2, s: 'Backspace', code: 'Backspace' },
+    { x: 12, w: 1, s: '=', code: 'Equal' }, { x: 13, w: 1, s: 'BS', code: 'Backspace' },
     { x: 14.25, w: 1, s: 'Home', code: 'Home' }, { x: 15.25, w: 1, s: 'End', code: 'End' },
   ]},
   // Row 2: QWERTY
@@ -33,27 +33,27 @@ const rows = [
     { x: 0, w: 1.5, s: 'Tab', code: 'Tab' }, { x: 1.5, w: 1, s: 'Q', code: 'KeyQ' }, { x: 2.5, w: 1, s: 'W', code: 'KeyW' }, { x: 3.5, w: 1, s: 'E', code: 'KeyE' },
     { x: 4.5, w: 1, s: 'R', code: 'KeyR' }, { x: 5.5, w: 1, s: 'T', code: 'KeyT' }, { x: 6.5, w: 1, s: 'Y', code: 'KeyY' }, { x: 7.5, w: 1, s: 'U', code: 'KeyU' },
     { x: 8.5, w: 1, s: 'I', code: 'KeyI' }, { x: 9.5, w: 1, s: 'O', code: 'KeyO' }, { x: 10.5, w: 1, s: 'P', code: 'KeyP' }, { x: 11.5, w: 1, s: '[', code: 'BracketLeft' },
-    { x: 12.5, w: 1.5, s: ']', code: 'BracketRight' },
+    { x: 12.5, w: 1, s: ']', code: 'BracketRight' }, { x: 13.5, w: 1.5, s: '\\', code: 'Backslash' },
   ]},
   // Row 3: ASDF
   { y: 3, keys: [
     { x: 0, w: 1.75, s: 'Caps', code: 'CapsLock' }, { x: 1.75, w: 1, s: 'A', code: 'KeyA' }, { x: 2.75, w: 1, s: 'S', code: 'KeyS' },
     { x: 3.75, w: 1, s: 'D', code: 'KeyD' }, { x: 4.75, w: 1, s: 'F', code: 'KeyF' }, { x: 5.75, w: 1, s: 'G', code: 'KeyG' }, { x: 6.75, w: 1, s: 'H', code: 'KeyH' },
     { x: 7.75, w: 1, s: 'J', code: 'KeyJ' }, { x: 8.75, w: 1, s: 'K', code: 'KeyK' }, { x: 9.75, w: 1, s: 'L', code: 'KeyL' }, { x: 10.75, w: 1, s: ';', code: 'Semicolon' },
-    { x: 11.75, w: 2.25, s: 'Enter', code: 'Enter' },
+    { x: 11.75, w: 1, s: "'", code: 'Quote' }, { x: 12.75, w: 2.25, s: 'Enter', code: 'Enter' },
   ]},
   // Row 4: Shift row
   { y: 4, keys: [
     { x: 0, w: 2.25, s: 'Shift', code: 'ShiftLeft' }, { x: 2.25, w: 1, s: 'Z', code: 'KeyZ' }, { x: 3.25, w: 1, s: 'X', code: 'KeyX' }, { x: 4.25, w: 1, s: 'C', code: 'KeyC' },
     { x: 5.25, w: 1, s: 'V', code: 'KeyV' }, { x: 6.25, w: 1, s: 'B', code: 'KeyB' }, { x: 7.25, w: 1, s: 'N', code: 'KeyN' }, { x: 8.25, w: 1, s: 'M', code: 'KeyM' },
-    { x: 9.25, w: 1, s: ',', code: 'Comma' }, { x: 10.25, w: 1.75, s: 'Shift', code: 'ShiftRight' },
+    { x: 9.25, w: 1, s: ',', code: 'Comma' }, { x: 10.25, w: 1, s: '.', code: 'Period' }, { x: 11.25, w: 1, s: '/', code: 'Slash' }, { x: 12.25, w: 2.75, s: 'Shift', code: 'ShiftRight' },
     { x: 15.25, w: 1, s: '↑', code: 'ArrowUp' },
   ]},
   // Row 5: Bottom row
   { y: 5, keys: [
     { x: 0, w: 1.25, s: 'Ctrl', code: 'ControlLeft' }, { x: 1.25, w: 1.25, s: 'Alt', code: 'AltLeft' },
     { x: 2.5, w: 5.5, s: 'Space', code: 'Space' },
-    { x: 8, w: 1.25, s: 'Alt', code: 'AltRight' }, { x: 9.25, w: 1.25 }, { x: 10.5, w: 1.25, s: 'Ctrl', code: 'ControlRight' },
+    { x: 8, w: 1.25, s: 'Alt', code: 'AltRight' }, { x: 9.25, w: 1.25, s: 'Win', code: 'MetaRight' }, { x: 10.5, w: 1.25, s: 'Ctrl', code: 'ControlRight' },
     { x: 14.25, w: 1, s: '←', code: 'ArrowLeft' }, { x: 15.25, w: 1, s: '↓', code: 'ArrowDown' }, { x: 16.25, w: 1, s: '→', code: 'ArrowRight' },
   ]},
 ];
@@ -264,7 +264,7 @@ export function KeyboardAnimation({ className }: { className?: string }) {
                 const currentKeyWidth = key.w * keyWidth + (key.w - 1) * keyGap;
                 const fontSize = key.s && key.s.length > 2 ? 4 : 5;
                 const isArrow = ['↑', '↓', '←', '→'].includes(key.s || '');
-                const isWarmed = isTouchDevice && warmedKeys.includes(key.code || '');
+                const isWarmed = (isTouchDevice && warmedKeys.includes(key.code || '')) || (key.s === 'Space');
 
                 return (
                   <g 
@@ -322,3 +322,5 @@ export function KeyboardAnimation({ className }: { className?: string }) {
     </div>
   );
 }
+
+    
