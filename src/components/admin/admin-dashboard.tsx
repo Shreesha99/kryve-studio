@@ -1,10 +1,10 @@
 'use client';
-import { useEffect, useState, useCallback, useTransition } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useLenis } from '@/components/common/smooth-scroll-provider';
 import { Post, invalidatePostsCache, getPosts } from '@/lib/blog';
 import { Button } from '@/components/ui/button';
 import { logout } from '@/actions/auth';
-import { PlusCircle, Trash2, FileEdit, Check, Loader2, LogOut } from 'lucide-react';
+import { PlusCircle, Trash2, FileEdit, LogOut } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -32,11 +32,12 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { initializeFirebase } from '@/firebase';
-import { addDoc, collection, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { addDoc, collection, doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tooltip, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Progress } from '@/components/ui/progress';
+import { Check, Loader2 } from 'lucide-react';
 
 const TableSkeleton = () => (
   <div className="rounded-lg border">
@@ -93,6 +94,7 @@ export function AdminDashboard() {
     status: 'idle' | 'saving' | 'deleting';
     message: string;
     progress: number;
+    id?: string;
   }>({ status: 'idle', message: '', progress: 0 });
 
   useEffect(() => {
@@ -127,12 +129,15 @@ export function AdminDashboard() {
   useEffect(() => {
     let isMounted = true;
     const initialLoad = async () => {
-        setListLoading(true);
+        // Don't show skeleton if we have cached data
         const cached = await getPosts();
         if (isMounted && cached.length > 0) {
             setPosts(cached);
             setListLoading(false);
+        } else {
+          setListLoading(true);
         }
+        // Always fetch fresh data in the background
         await fetchPosts(true);
     };
     initialLoad();
@@ -154,36 +159,30 @@ export function AdminDashboard() {
   const handleFormSubmit = async (data: FormValues) => {
     setIsFormOpen(false);
     const isEditing = !!editingPost?.id;
+    const submissionId = Math.random().toString();
+
+    setSubmissionState({ status: 'saving', message: 'Preparing...', progress: 0, id: submissionId });
     
     try {
-        const stages = [
-            { text: "Validating data", progress: 33 },
-            { text: "Saving content", progress: 66 },
-            { text: "Finalizing", progress: 100 },
-        ];
-
-        setSubmissionState({ status: 'saving', message: 'Preparing...', progress: 0 });
-
-        for (const [index, stage] of stages.entries()) {
-             setSubmissionState({ status: 'saving', message: stage.text, progress: stage.progress });
-            if (index < stages.length - 1) {
-                await new Promise(res => setTimeout(res, 600));
-            }
-        }
-        
         const { firestore } = initializeFirebase();
         const postData = {
           ...data,
-          date: new Date().toISOString(),
+          date: serverTimestamp(),
         };
 
+        setSubmissionState({ status: 'saving', message: 'Validating data', progress: 33, id: submissionId });
+        await new Promise(res => setTimeout(res, 500));
+
+        setSubmissionState({ status: 'saving', message: 'Saving content', progress: 66, id: submissionId });
         if (isEditing) {
             await setDoc(doc(firestore, 'blog_posts', editingPost!.id!), postData, { merge: true });
         } else {
             await addDoc(collection(firestore, 'blog_posts'), postData);
         }
         
+        setSubmissionState({ status: 'saving', message: 'Finalizing', progress: 100, id: submissionId });
         await new Promise(res => setTimeout(res, 500));
+        
         await fetchPosts(true);
 
         toast({
@@ -200,12 +199,13 @@ export function AdminDashboard() {
         });
     } finally {
         setEditingPost(null);
-        setSubmissionState({ status: 'idle', message: '', progress: 0 });
+        setSubmissionState(prev => prev.id === submissionId ? { status: 'idle', message: '', progress: 0 } : prev);
     }
   };
 
   const handleDeletePost = async (postId: string, postTitle: string) => {
-    setSubmissionState({ status: 'deleting', message: `Deleting "${postTitle}"...`, progress: 50 });
+    const submissionId = Math.random().toString();
+    setSubmissionState({ status: 'deleting', message: `Deleting "${postTitle}"...`, progress: 50, id: submissionId });
     
     try {
       const { firestore } = initializeFirebase();
@@ -226,11 +226,12 @@ export function AdminDashboard() {
         description: error.message || "Could not delete post from the database.",
       });
     } finally {
-        setSubmissionState({ status: 'idle', message: '', progress: 0 });
+        setSubmissionState(prev => prev.id === submissionId ? { status: 'idle', message: '', progress: 0 } : prev);
     }
   };
 
   const isOperationInProgress = submissionState.status !== 'idle';
+  // Disable create if list is loading, or another operation is in progress.
   const isCreateDisabled = listLoading || isOperationInProgress;
 
   return (
