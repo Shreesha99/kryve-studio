@@ -1,12 +1,90 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Cookies from 'js-cookie';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Cookie, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { gsap } from 'gsap';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+
+// New InteractiveCookieIcon component
+function InteractiveCookieIcon({ className }: { className?: string }) {
+  const biteMaskRef = useRef<SVGPathElement>(null);
+  const isAnimating = useRef(false);
+
+  const handleBite = () => {
+    if (isAnimating.current || !biteMaskRef.current) return;
+
+    isAnimating.current = true;
+    
+    // GSAP timeline for the bite and heal animation
+    gsap.timeline({
+      onComplete: () => { isAnimating.current = false; }
+    })
+      // Animate the bite
+      .fromTo(biteMaskRef.current, 
+        { attr: { d: 'M18,6 a0,0 0 0,1 0,0 L 18,6 Z' } }, // Start as a point (no bite)
+        { attr: { d: 'M18,6 a5,5 0 0,1 -6,6 L 18,6 Z' }, duration: 0.3, ease: 'power2.in' } // Animate to a wedge (bite taken)
+      )
+      // Animate the heal after 3 seconds
+      .to(biteMaskRef.current, { 
+        attr: { d: 'M18,6 a0,0 0 0,1 0,0 L 18,6 Z' }, 
+        duration: 0.5, 
+        ease: 'power3.out', 
+        delay: 3 
+      });
+  };
+
+  return (
+    <TooltipProvider delayDuration={200}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div 
+            className={cn("cursor-pointer", className)}
+            onClick={handleBite}
+            aria-label="Interactive animated cookie icon"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="h-full w-full"
+            >
+              <defs>
+                <mask id="biteMask">
+                  <rect x="0" y="0" width="24" height="24" fill="white" />
+                  {/* This path is what creates the bite; it's animated by GSAP */}
+                  <path ref={biteMaskRef} fill="black" d="M18,6 a0,0 0 0,1 0,0 L 18,6 Z" />
+                </mask>
+              </defs>
+              <g mask="url(#biteMask)">
+                {/* Full cookie circle */}
+                <circle cx="12" cy="12" r="10" />
+                {/* Chocolate chips - with a color that contrasts the cookie body */}
+                <circle cx="8.5" cy="8.5" r="1.2" fill="hsl(var(--card))" />
+                <circle cx="16" cy="15.5" r="1" fill="hsl(var(--card))" />
+                <circle cx="12" cy="12" r="0.9" fill="hsl(var(--card))" />
+                <circle cx="15.5" cy="8.5" r="1.1" fill="hsl(var(--card))" />
+                <circle cx="8.5" cy="15.5" r="0.8" fill="hsl(var(--card))" />
+              </g>
+            </svg>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="top">
+          <p>Psst! Take a bite.</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
 
 export function CookieBanner() {
   const [isVisible, setIsVisible] = useState(false);
@@ -51,7 +129,7 @@ export function CookieBanner() {
         </Button>
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-6">
           <div className="flex-shrink-0">
-            <Cookie className="h-10 w-10 text-primary" />
+            <InteractiveCookieIcon className="h-10 w-10 text-primary" />
           </div>
           <div className="flex-grow text-center sm:text-left">
             <h3 className="font-headline text-lg font-semibold">Regarding Your Privacy</h3>
