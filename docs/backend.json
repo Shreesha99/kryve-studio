@@ -1,92 +1,184 @@
 {
   "entities": {
-    "NewsletterSubscriber": {
-      "title": "Newsletter Subscriber",
-      "description": "Represents a user who has subscribed to the newsletter.",
+    "BlogPost": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "BlogPost",
       "type": "object",
+      "description": "Represents a blog post for the Kryve Studio website.",
       "properties": {
-        "email": {
+        "id": {
           "type": "string",
-          "format": "email",
-          "description": "The subscriber's email address."
-        },
-        "subscribedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp when the user subscribed."
-        }
-      },
-      "required": [
-        "email",
-        "subscribedAt"
-      ]
-    },
-    "Post": {
-      "title": "Blog Post",
-      "description": "Represents a blog post article.",
-      "type": "object",
-      "properties": {
-        "slug": {
-          "type": "string",
-          "description": "The URL-friendly slug for the post."
+          "description": "Unique identifier for the blog post."
         },
         "title": {
           "type": "string",
-          "description": "The title of the blog post."
-        },
-        "excerpt": {
-          "type": "string",
-          "description": "A short summary of the blog post."
+          "description": "Title of the blog post."
         },
         "content": {
           "type": "string",
-          "description": "The full content of the blog post in HTML format."
+          "description": "Content of the blog post, likely in markdown or HTML format."
         },
         "author": {
           "type": "string",
-          "description": "The name of the post's author."
+          "description": "Author of the blog post."
         },
-        "date": {
+        "datePublished": {
           "type": "string",
-          "format": "date-time",
-          "description": "The publication date of the post."
+          "description": "Date and time when the blog post was published.",
+          "format": "date-time"
+        },
+        "tags": {
+          "type": "array",
+          "description": "Tags associated with the blog post.",
+          "items": {
+            "type": "string"
+          }
         },
         "imageUrl": {
           "type": "string",
-          "format": "uri",
-          "description": "URL of the post's feature image."
-        },
-        "imageHint": {
-          "type": "string",
-          "description": "Hint for AI image generation services."
+          "description": "URL of the image associated with the blog post.",
+          "format": "uri"
         }
       },
       "required": [
-        "slug",
+        "id",
         "title",
-        "excerpt",
         "content",
         "author",
-        "date",
+        "datePublished"
+      ]
+    },
+    "Project": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Project",
+      "type": "object",
+      "description": "Represents a project showcased on the Kryve Studio website.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the project."
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the project."
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the project."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL of the project's image.",
+          "format": "uri"
+        },
+        "projectUrl": {
+          "type": "string",
+          "description": "URL of the live project or a detailed case study.",
+          "format": "uri"
+        },
+        "services": {
+          "type": "array",
+          "description": "List of services used in the project.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "description",
         "imageUrl"
+      ]
+    },
+    "Service": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Service",
+      "type": "object",
+      "description": "Represents a service offered by Kryve Studio.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the service."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the service."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the service offered."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL of the image representing the service.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description"
       ]
     }
   },
   "auth": {
-    "providers": []
+    "providers": [
+      "password",
+      "anonymous"
+    ]
   },
   "firestore": {
-    "/subscribers/{subscriberId}": {
-      "schema": {
-        "$ref": "#/backend/entities/NewsletterSubscriber"
+    "structure": [
+      {
+        "path": "/blog_posts/{blogPostId}",
+        "definition": {
+          "entityName": "BlogPost",
+          "schema": {
+            "$ref": "#/backend/entities/BlogPost"
+          },
+          "description": "Stores blog post documents.",
+          "params": [
+            {
+              "name": "blogPostId",
+              "description": "Unique identifier for the blog post."
+            }
+          ]
+        }
       },
-      "description": "Collection of newsletter subscribers."
-    },
-    "/posts/{postId}": {
-      "schema": {
-        "$ref": "#/backend/entities/Post"
+      {
+        "path": "/projects/{projectId}",
+        "definition": {
+          "entityName": "Project",
+          "schema": {
+            "$ref": "#/backend/entities/Project"
+          },
+          "description": "Stores project documents.",
+          "params": [
+            {
+              "name": "projectId",
+              "description": "Unique identifier for the project."
+            }
+          ]
+        }
       },
-      "description": "Collection of blog posts."
-    }
+      {
+        "path": "/services/{serviceId}",
+        "definition": {
+          "entityName": "Service",
+          "schema": {
+            "$ref": "#/backend/entities/Service"
+          },
+          "description": "Stores service documents.",
+          "params": [
+            {
+              "name": "serviceId",
+              "description": "Unique identifier for the service."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "This Firestore structure is designed to support the Kryve Studio website, focusing on showcasing blog posts, projects, and services. It prioritizes a flat structure where possible, given the absence of complex user-specific data or collaborative features based on the current requirements. Since there are no user-specific private documents, we can avoid the need for complex authorization and hierarchical data structures.\n\n- **/blog_posts (BlogPost):** Stores all blog post documents. There is no need to store drafts as private documents. Thus, we don't need user specific collections and can store this data in a flat, public, collection.\n- **/projects (Project):** Stores project documents.\n- **/services (Service):** Stores service documents.\n\nThis flat structure is simple and scalable for the features described. QAPs are supported because `list` operations on each collection are secure by default (no authorization rules needed) because all documents are public. Authorization Independence is less of a concern because there are no subcollections or deeply nested data that would require complex rules involving `get()` calls."
   }
 }
