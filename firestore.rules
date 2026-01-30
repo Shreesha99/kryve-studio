@@ -2,11 +2,15 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function isAdmin() {
+      // Allow access if the user is authenticated and their email is the admin email.
+      return request.auth != null && request.auth.token.email == "shreeshavenkatram99@gmail.com";
+    }
+
     match /blog_posts/{blogPostId} {
       allow read: if true;
-      // This is insecure for production but allows for development.
-      // We will add proper authentication rules next.
-      allow write: if true;
+      // Only the authenticated admin can write (create, update, delete) blog posts.
+      allow write: if isAdmin();
     }
 
     match /projects/{projectId} {
@@ -21,13 +25,19 @@ service cloud.firestore {
     
     match /subscribers/{subscriberId} {
       // Allow a client to check if a specific document exists by its ID (email).
+      // This is needed to check for existing subscribers without listing all of them.
       allow get: if true;
-      // Explicitly deny listing all subscribers to protect privacy.
-      allow list: if false;
+      
+      // Explicitly deny listing all subscribers to non-admins to protect privacy.
+      // The admin's request will be authenticated and allowed by the isAdmin() function.
+      allow list: if isAdmin();
+
       // Allow a new subscriber to be created.
       allow create: if true;
+      
       // Deny updates to prevent changing subscription details from the client.
       allow update: if false;
+      
       // Allow users to delete their own subscription via the unsubscribe link.
       allow delete: if true;
     }

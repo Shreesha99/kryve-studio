@@ -1,68 +1,77 @@
-"use server";
-import { initializeFirebase } from "@/firebase/init";
-import { doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
-import nodemailer from "nodemailer";
+'use server';
+
+import { initializeFirebase } from '@/firebase/init';
+import {
+  doc,
+  setDoc,
+  serverTimestamp,
+  getDoc,
+  getDocs,
+  collection,
+} from 'firebase/firestore';
+import nodemailer from 'nodemailer';
+import { z } from 'zod';
 
 export async function addSubscriber(
   email: string
 ): Promise<{ success: boolean; message: string }> {
   const { firestore } = initializeFirebase();
-  // Use the email as the document ID to enforce uniqueness and simplify logic.
-  const subscriberDocRef = doc(firestore, "subscribers", email);
+  const subscriberDocRef = doc(firestore, 'subscribers', email);
 
   try {
     const docSnap = await getDoc(subscriberDocRef);
 
-    // 1. Check if the user is already subscribed.
     if (docSnap.exists()) {
-      // If they exist, return a success message without sending another email.
-      return { success: true, message: "You are already subscribed!" };
+      return { success: true, message: 'You are already subscribed!' };
     }
 
-    // 2. If they don't exist, create the new subscriber document.
     await setDoc(subscriberDocRef, {
       email: email,
       subscribedAt: serverTimestamp(),
     });
   } catch (error: any) {
-    // This will now only catch actual server errors (e.g., network issues),
-    // not permission errors from the `getDoc` call.
-    console.error("Error adding subscriber to Firestore:", error);
+    console.error('Error adding subscriber to Firestore:', error);
     return {
       success: false,
-      message: "Could not connect to the database. Please try again.",
+      message: 'Could not connect to the database. Please try again.',
     };
   }
 
-  // 3. Send confirmation email ONLY for new subscribers.
   const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
 
   if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) {
-    console.error(
-      "SMTP configuration is missing. Cannot send confirmation email."
-    );
-    // The subscription was successful, but the email could not be sent.
-    // Still a success from the user's perspective.
+    console.error('SMTP configuration is missing. Cannot send confirmation email.');
     return {
       success: true,
-      message: "Thank you for subscribing! (Confirmation email pending setup)",
+      message: 'Thank you for subscribing! (Confirmation email pending setup)',
     };
   }
 
   const transporter = nodemailer.createTransport({
     host: SMTP_HOST,
     port: parseInt(SMTP_PORT, 10),
-    secure: parseInt(SMTP_PORT, 10) === 465,
+    secure: parseInt(SMTP_PORT, 10) === 465, // Use SSL for port 465
     auth: {
       user: SMTP_USER,
       pass: SMTP_PASS,
     },
   });
 
+  try {
+    await transporter.verify(); // Verify connection configuration
+  } catch (error) {
+    console.error('SMTP connection error:', error);
+    return {
+      success: true, // User is subscribed, but email failed.
+      message:
+        'Subscription successful, but failed to connect to the mail server. Please check SMTP credentials.',
+    };
+  }
+
   const siteUrl =
-    process.env.NODE_ENV === "production"
-      ? "https://www.the-elysium-project.in"
-      : "http://localhost:9002";
+    process.env.NODE_ENV === 'production'
+      ? 'https://www.the-elysium-project.in'
+      : 'http://localhost:9002';
   const unsubscribeUrl = `${siteUrl}/unsubscribe?email=${encodeURIComponent(
     email
   )}`;
@@ -73,6 +82,9 @@ export async function addSubscriber(
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
         <style>
             body {
                 font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -174,15 +186,72 @@ export async function addSubscriber(
     await transporter.sendMail({
       from: `"The Elysium Project" <${SMTP_USER}>`,
       to: email,
-      subject: "Subscription Confirmed | The Elysium Project",
+      subject: 'Subscription Confirmed | The Elysium Project',
       html: emailHtml,
     });
   } catch (error) {
-    console.error("Failed to send subscription confirmation email:", error);
+    console.error('Failed to send subscription confirmation email:', error);
     // Even if email fails, subscription was successful.
-    return { success: true, message: "Thank you for subscribing!" };
+    return { success: true, message: 'Thank you for subscribing!' };
   }
 
   // Final success message for new subscribers.
-  return { success: true, message: "Thank you for subscribing!" };
+  return { success: true, message: 'Thank you for subscribing!' };
+}
+
+const newsletterSchema = z.object({
+  subject: z.string().min(1, 'Subject is required.'),
+  content: z.string().min(1, 'Content is required.'),
+});
+
+// Updated function signature
+export async function sendBulkNewsletter(
+  data: z.infer<typeof newsletterSchema>,
+  subscribers: string[]
+): Promise<{ success: boolean; message: string }> {
+  const validation = newsletterSchema.safeParse(data);
+  if (!validation.success) {
+    return { success: false, message: 'Invalid newsletter content.' };
+  }
+
+  if (subscribers.length === 0) {
+    return { success: true, message: 'There are no subscribers to send to.' };
+  }
+
+  const { subject, content } = validation.data;
+  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
+
+  if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) {
+    console.error('SMTP configuration is missing.');
+    return { success: false, message: 'Email server is not configured.' };
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: SMTP_HOST,
+    port: parseInt(SMTP_PORT, 10),
+    secure: parseInt(SMTP_PORT, 10) === 465, // Use SSL
+    auth: {
+      user: SMTP_USER,
+      pass: SMTP_PASS,
+    },
+  });
+
+  try {
+    // No need to fetch subscribers here anymore
+    await transporter.sendMail({
+      from: `"The Elysium Project" <${SMTP_USER}>`,
+      to: SMTP_USER, // Send to self
+      bcc: subscribers, // BCC all subscribers for privacy
+      subject: subject,
+      html: content,
+    });
+
+    return {
+      success: true,
+      message: `Newsletter sent to ${subscribers.length} subscriber(s).`,
+    };
+  } catch (error) {
+    console.error('Failed to send bulk newsletter:', error);
+    return { success: false, message: 'Failed to send emails.' };
+  }
 }

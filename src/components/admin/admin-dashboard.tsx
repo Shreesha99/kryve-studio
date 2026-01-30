@@ -3,8 +3,15 @@ import { useCallback, useEffect, useState } from 'react';
 import { useLenis } from '@/components/common/smooth-scroll-provider';
 import { getPosts, invalidatePostsCache, type Post } from '@/lib/blog';
 import { Button } from '@/components/ui/button';
-import { logout } from '@/actions/auth';
-import { FileEdit, LogOut, PlusCircle, Trash2, Upload } from 'lucide-react';
+import {
+  FileEdit,
+  LogOut,
+  PlusCircle,
+  Trash2,
+  Upload,
+  BookMarked,
+  Newspaper,
+} from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -33,7 +40,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { initializeFirebase } from '@/firebase';
+import { initializeFirebase, useAuth } from '@/firebase';
 import {
   addDoc,
   collection,
@@ -52,6 +59,9 @@ import {
 } from '@/components/ui/tooltip';
 import { Progress } from '@/components/ui/progress';
 import { Loader2 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { NewsletterForm } from './newsletter-form';
+import { signOut } from 'firebase/auth';
 
 const TableSkeleton = () => (
   <div className="rounded-lg border">
@@ -115,6 +125,7 @@ export function AdminDashboard() {
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const { toast } = useToast();
   const lenis = useLenis();
+  const auth = useAuth();
 
   const [submissionState, setSubmissionState] = useState<{
     status: 'idle' | 'saving' | 'deleting';
@@ -323,121 +334,150 @@ export function AdminDashboard() {
   return (
     <div className="container mx-auto px-4 md:px-6">
       <div className="mb-8 flex items-center justify-between">
-        <h1 className="font-headline text-3xl font-semibold">Blog Posts</h1>
-        <div className="flex items-center gap-4">
-          <Button
-            onClick={() => setIsPdfFormOpen(true)}
-            disabled={isCreateDisabled}
-            variant="outline"
-          >
-            <Upload className="mr-2 h-4 w-4" /> Create from PDF
-          </Button>
-          <Button onClick={handleNewPost} disabled={isCreateDisabled}>
-            <PlusCircle className="mr-2 h-4 w-4" /> Create New
-          </Button>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <form action={logout}>
-                  <Button variant="ghost" size="icon" type="submit">
-                    <LogOut className="h-5 w-5" />
-                    <span className="sr-only">Logout</span>
-                  </Button>
-                </form>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Logout</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
+        <h1 className="font-headline text-3xl font-semibold">Admin Panel</h1>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => signOut(auth)}
+              >
+                <LogOut className="h-5 w-5" />
+                <span className="sr-only">Logout</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Logout</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
-      {listLoading ? (
-        <TableSkeleton />
-      ) : (posts.length > 0 || isOperationInProgress) ? (
-        <div className="rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Author</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isOperationInProgress && (
-                <ProgressRow
-                  message={submissionState.message}
-                  progress={submissionState.progress}
-                />
-              )}
-              {posts.map(post => (
-                <TableRow key={post.id}>
-                  <TableCell className="font-medium">{post.title}</TableCell>
-                  <TableCell>{post.author}</TableCell>
-                  <TableCell>
-                    {new Date(post.date).toLocaleString('en-US', {
-                      dateStyle: 'medium',
-                      timeStyle: 'short',
-                    })}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleEditPost(post)}
-                      disabled={isOperationInProgress}
-                    >
-                      <FileEdit className="h-4 w-4" />
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
+      <Tabs defaultValue="posts" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="posts">
+            <BookMarked className="mr-2" />
+            Blog Posts
+          </TabsTrigger>
+          <TabsTrigger value="newsletter">
+            <Newspaper className="mr-2" />
+            Newsletter
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="posts" className="mt-6">
+          <div className="mb-6 flex items-center justify-end gap-4">
+            <Button
+              onClick={() => setIsPdfFormOpen(true)}
+              disabled={isCreateDisabled}
+              variant="outline"
+            >
+              <Upload className="mr-2 h-4 w-4" /> Create from PDF
+            </Button>
+            <Button onClick={handleNewPost} disabled={isCreateDisabled}>
+              <PlusCircle className="mr-2 h-4 w-4" /> Create New Post
+            </Button>
+          </div>
+
+          {listLoading ? (
+            <TableSkeleton />
+          ) : posts.length > 0 || isOperationInProgress ? (
+            <div className="rounded-lg border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Author</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {isOperationInProgress && (
+                    <ProgressRow
+                      message={submissionState.message}
+                      progress={submissionState.progress}
+                    />
+                  )}
+                  {posts.map(post => (
+                    <TableRow key={post.id}>
+                      <TableCell className="font-medium">
+                        {post.title}
+                      </TableCell>
+                      <TableCell>{post.author}</TableCell>
+                      <TableCell>
+                        {new Date(post.date).toLocaleString('en-US', {
+                          dateStyle: 'medium',
+                          timeStyle: 'short',
+                        })}
+                      </TableCell>
+                      <TableCell className="text-right">
                         <Button
                           variant="ghost"
                           size="icon"
+                          onClick={() => handleEditPost(post)}
                           disabled={isOperationInProgress}
                         >
-                          <Trash2 className="h-4 w-4 text-destructive" />
+                          <FileEdit className="h-4 w-4" />
                         </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This will permanently delete the post "{post.title}
-                            ". This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() =>
-                              handleDeletePost(post.id!, post.title)
-                            }
-                            className="bg-destructive hover:bg-destructive/90"
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed py-24 text-center">
-            <h2 className="text-2xl font-semibold tracking-tight">No Posts Found</h2>
-            <p className="text-muted-foreground">It looks like you haven't created any posts yet.</p>
-            <Button onClick={handleNewPost} disabled={isOperationInProgress}>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              disabled={isOperationInProgress}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Are you sure?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This will permanently delete the post "
+                                {post.title}
+                                ". This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() =>
+                                  handleDeletePost(post.id!, post.title)
+                                }
+                                className="bg-destructive hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed py-24 text-center">
+              <h2 className="text-2xl font-semibold tracking-tight">
+                No Posts Found
+              </h2>
+              <p className="text-muted-foreground">
+                It looks like you haven't created any posts yet.
+              </p>
+              <Button onClick={handleNewPost} disabled={isOperationInProgress}>
                 <PlusCircle className="mr-2 h-4 w-4" /> Create Your First Post
-            </Button>
-        </div>
-      )}
+              </Button>
+            </div>
+          )}
+        </TabsContent>
+        <TabsContent value="newsletter" className="mt-6">
+          <NewsletterForm />
+        </TabsContent>
+      </Tabs>
 
       <Dialog
         open={isFormOpen}
