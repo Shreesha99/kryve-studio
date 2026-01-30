@@ -355,7 +355,7 @@ export function AdminDashboard() {
 
       {listLoading ? (
         <TableSkeleton />
-      ) : posts.length > 0 ? (
+      ) : (posts.length > 0 || isOperationInProgress) ? (
         <div className="rounded-lg border">
           <Table>
             <TableHeader>

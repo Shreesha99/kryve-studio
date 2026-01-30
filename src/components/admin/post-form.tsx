@@ -101,7 +101,7 @@ export function PostForm({
         .replace(/[^a-z0-9\s-]/g, '')
         .trim()
         .replace(/\s+/g, '-');
-      setValue('slug', slug, { shouldValidate: true });
+      setValue('slug', slug);
     }
   }, [watchedTitle, setValue, post?.id]);
 
