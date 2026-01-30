@@ -32,8 +32,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { initializeFirebase } from '@/firebase';
-import { addDoc, collection, doc, setDoc, serverTimestamp, deleteDoc } from 'firebase/firestore';
+import { addDoc, collection, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { useToast } from "@/components/ui/use-toast";
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function AdminDashboard() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -45,6 +46,31 @@ export function AdminDashboard() {
   const { toast } = useToast();
 
   const lenis = useLenis();
+
+  // Dynamic status message effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout | undefined;
+    if (isSaving && statusMessage.includes("Saving")) {
+        const messages = [
+            "Saving post...",
+            "Structuring content...",
+            "Updating records...",
+            "Finalizing...",
+        ];
+        let messageIndex = 0;
+        setStatusMessage(messages[messageIndex]);
+        interval = setInterval(() => {
+            messageIndex = (messageIndex + 1) % messages.length;
+            setStatusMessage(messages[messageIndex]);
+        }, 1500);
+    }
+    return () => {
+        if (interval) {
+            clearInterval(interval);
+        }
+    };
+  }, [isSaving, statusMessage]);
+
 
   // Effect to control body scroll when modal is open
   useEffect(() => {
@@ -69,10 +95,15 @@ export function AdminDashboard() {
       setPosts(fetchedPosts);
     } catch (error) {
       console.error("Failed to fetch posts:", error);
+       toast({
+        variant: "destructive",
+        title: "Failed to load posts",
+        description: "Could not retrieve blog posts from the database.",
+      });
     } finally {
       setListLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     fetchPosts();
@@ -96,9 +127,11 @@ export function AdminDashboard() {
     const isEditing = !!editingPost?.id;
     
     const { firestore } = initializeFirebase();
+    // FIX: Use client-side new Date() for new posts to avoid 1970 bug.
+    // Firestore SDK handles Date object conversion to Timestamp.
     const postData = {
       ...data,
-      date: isEditing && editingPost.date ? new Date(editingPost.date) : serverTimestamp(),
+      date: isEditing && editingPost.date ? new Date(editingPost.date) : new Date(),
     };
 
     try {
@@ -121,7 +154,7 @@ export function AdminDashboard() {
       });
 
       invalidatePostsCache();
-      fetchPosts();
+      await fetchPosts();
     } catch (e: any) {
       console.error("Error saving post:", e);
       toast({
@@ -142,6 +175,8 @@ export function AdminDashboard() {
 
 
   const handleDeletePost = async (postId: string) => {
+    setIsSaving(true);
+    setStatusMessage("Deleting post...");
     try {
       const { firestore } = initializeFirebase();
       await deleteDoc(doc(firestore, "posts", postId));
@@ -150,7 +185,7 @@ export function AdminDashboard() {
         description: "The blog post has been successfully removed.",
       });
       invalidatePostsCache();
-      fetchPosts(); // Refresh list after deleting
+      await fetchPosts(); // Refresh list after deleting
     } catch (error) {
       console.error("Failed to delete post:", error);
       toast({
@@ -158,8 +193,39 @@ export function AdminDashboard() {
         title: "Deletion Failed",
         description: "Error: Could not delete post.",
       });
+    } finally {
+      setIsSaving(false);
+      setStatusMessage("");
     }
   };
+
+  const TableSkeleton = () => (
+    <div className="rounded-lg border">
+        <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Title</TableHead>
+                <TableHead>Author</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+                {[...Array(5)].map((_, i) => (
+                    <TableRow key={i}>
+                        <TableCell><Skeleton className="h-5 w-3/4 rounded-md" /></TableCell>
+                        <TableCell><Skeleton className="h-5 w-2/3 rounded-md" /></TableCell>
+                        <TableCell><Skeleton className="h-5 w-1/2 rounded-md" /></TableCell>
+                        <TableCell className="flex justify-end gap-2">
+                            <Skeleton className="h-8 w-8 rounded-md" />
+                            <Skeleton className="h-8 w-8 rounded-md" />
+                        </TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
+    </div>
+  );
 
   return (
     <div className="container mx-auto px-4 md:px-6">
@@ -182,9 +248,7 @@ export function AdminDashboard() {
       </div>
       
       {listLoading ? (
-        <div className="flex justify-center items-center h-64">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        </div>
+        <TableSkeleton />
       ) : (
         <div className="rounded-lg border">
           <Table>
@@ -203,12 +267,12 @@ export function AdminDashboard() {
                   <TableCell>{post.author}</TableCell>
                   <TableCell>{new Date(post.date).toLocaleDateString()}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => handleEditPost(post)}>
+                    <Button variant="ghost" size="icon" onClick={() => handleEditPost(post)} disabled={isSaving}>
                       <FileEdit className="h-4 w-4" />
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" disabled={isSaving}>
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </AlertDialogTrigger>
