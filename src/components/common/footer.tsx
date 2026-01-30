@@ -4,7 +4,7 @@ import { AnimatedGradient } from "./animated-gradient";
 
 export function Footer() {
   return (
-    <footer className="relative min-h-screen overflow-hidden bg-foreground py-20 text-background md:min-h-0 md:py-32">
+    <footer className="relative overflow-hidden bg-foreground py-20 text-background md:py-32">
       <AnimatedGradient className="opacity-20 dark:opacity-10" />
       <div className="container relative z-10 mx-auto px-4 md:px-6">
         <div className="grid gap-16 md:grid-cols-2 lg:grid-cols-4">
