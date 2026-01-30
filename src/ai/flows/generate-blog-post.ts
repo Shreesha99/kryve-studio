@@ -11,7 +11,8 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {updateTrace, z} from 'genkit';
+import {updateTrace} from 'genkit';
+import {z} from 'zod';
 
 const GenerateBlogPostInputSchema = z.object({
   topic: z.string().describe('The topic of the blog post.'),

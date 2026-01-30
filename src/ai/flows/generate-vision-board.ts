@@ -9,7 +9,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z} from 'zod';
 
 const GenerateVisionBoardInputSchema = z.object({
   topic: z.string().describe('The topic or concept for the vision board.'),
