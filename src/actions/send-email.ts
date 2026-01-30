@@ -163,7 +163,7 @@ export async function sendEmail(
     await transporter.sendMail({
       from: `"${name}" <${email}>`,
       to: SMTP_USER,
-      reply_to: email,
+      replyTo: email,
       subject: `New Contact Form Submission from ${name}`,
       html: emailHtml,
     });
