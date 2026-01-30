@@ -19,10 +19,11 @@ import {
 import { AnimateOnScroll } from '@/components/common/animate-on-scroll';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Feather } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { AnimatedGradient } from '@/components/common/animated-gradient';
 import { BlogGenerator } from '@/components/blog/blog-generator';
 import { BlogPageSkeleton } from '@/components/blog/blog-page-skeleton';
+import { InkwellAnimation } from '@/components/blog/inkwell-animation';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -210,9 +211,7 @@ export default function BlogPage() {
                   {!featuredPost && !loading && (
                     <AnimateOnScroll>
                       <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-muted bg-card/50 p-12 text-center">
-                        <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
-                          <Feather className="h-10 w-10 text-primary" />
-                        </div>
+                        <InkwellAnimation className="mb-2" />
                         <h2 className="font-headline text-3xl font-semibold">The Ink is Still Dry</h2>
                         <p className="mt-3 max-w-md text-muted-foreground md:text-lg">
                           We're currently crafting some new articles. Please check back soon for fresh insights and stories!
