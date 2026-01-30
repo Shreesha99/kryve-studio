@@ -135,7 +135,7 @@ export function AdminDashboard() {
     setIsFormOpen(false);
     const isEditing = !!editingPost?.id;
     
-    const { id: toastId } = toast({
+    const { id: toastId, update } = toast({
         title: <div className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /><span>Preparing...</span></div>,
         description: <Progress value={0} className="w-full" />,
     });
@@ -149,7 +149,7 @@ export function AdminDashboard() {
 
         // Stage 1: Validation (simulated)
         await new Promise(res => setTimeout(res, 400));
-        toast({
+        update({
             id: toastId,
             title: <div className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /><span>Validating data...</span></div>,
             description: <Progress value={33} className="w-full" />,
@@ -157,7 +157,7 @@ export function AdminDashboard() {
 
         // Stage 2: Saving to DB
         await new Promise(res => setTimeout(res, 600));
-        toast({
+        update({
             id: toastId,
             title: <div className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /><span>Saving content...</span></div>,
             description: <Progress value={66} className="w-full" />,
@@ -173,7 +173,7 @@ export function AdminDashboard() {
         invalidatePostsCache();
         await fetchPosts();
 
-        toast({
+        update({
             id: toastId,
             title: <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /><span>{isEditing ? 'Post Updated!' : 'Post Created!'}</span></div>,
             description: `"${data.title}" has been saved.`,
@@ -181,7 +181,7 @@ export function AdminDashboard() {
 
     } catch (e: any) {
         console.error("Error saving post:", e);
-        toast({
+        update({
             id: toastId,
             variant: "destructive",
             title: "Save Failed",
@@ -193,7 +193,7 @@ export function AdminDashboard() {
   };
 
   const handleDeletePost = async (postId: string, postTitle: string) => {
-    const { id: toastId } = toast({
+    const { id: toastId, update } = toast({
         title: <div className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /><span>Deleting Post...</span></div>,
         description: `"${postTitle}"`,
     });
@@ -202,7 +202,7 @@ export function AdminDashboard() {
       const { firestore } = initializeFirebase();
       await deleteDoc(doc(firestore, "posts", postId));
       
-      toast({
+      update({
         id: toastId,
         title: "Post Deleted",
         description: `"${postTitle}" has been removed.`,
@@ -212,7 +212,7 @@ export function AdminDashboard() {
       await fetchPosts();
     } catch (error: any) {
       console.error("Failed to delete post:", error);
-      toast({
+      update({
         id: toastId,
         variant: "destructive",
         title: "Deletion Failed",
