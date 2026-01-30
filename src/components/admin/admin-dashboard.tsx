@@ -50,7 +50,7 @@ export function AdminDashboard() {
   // Dynamic status message effect
   useEffect(() => {
     let interval: NodeJS.Timeout | undefined;
-    if (isSaving && statusMessage.includes("Saving")) {
+    if (isSaving) {
         const messages = [
             "Saving post...",
             "Structuring content...",
@@ -69,7 +69,7 @@ export function AdminDashboard() {
             clearInterval(interval);
         }
     };
-  }, [isSaving, statusMessage]);
+  }, [isSaving]);
 
 
   // Effect to control body scroll when modal is open
@@ -119,7 +119,7 @@ export function AdminDashboard() {
     setIsFormOpen(true);
   };
 
-  const handleFormSubmit = async (data: FormValues) => {
+  const handleFormSubmit = (data: FormValues) => {
     setIsFormOpen(false);
     setIsSaving(true);
     setStatusMessage("Saving post...");
@@ -127,50 +127,41 @@ export function AdminDashboard() {
     const isEditing = !!editingPost?.id;
     
     const { firestore } = initializeFirebase();
-    // FIX: Use client-side new Date() for new posts to avoid 1970 bug.
-    // Firestore SDK handles Date object conversion to Timestamp.
     const postData = {
       ...data,
       date: isEditing && editingPost.date ? new Date(editingPost.date) : new Date(),
     };
 
-    try {
-      if (isEditing) {
-        const postRef = doc(firestore, 'posts', editingPost.id!);
-        await setDoc(postRef, postData, { merge: true });
-      } else {
-        const postsCollection = collection(firestore, 'posts');
-        await addDoc(postsCollection, postData);
-      }
+    const writePromise = isEditing
+      ? setDoc(doc(firestore, 'posts', editingPost!.id!), postData, { merge: true })
+      : addDoc(collection(firestore, 'posts'), postData);
 
-      toast({
-        title: (
-          <div className="flex items-center gap-2">
-            <Check className="h-4 w-4 text-green-500" />
-            <span>{isEditing ? 'Post Updated!' : 'Post Created!'}</span>
-          </div>
-        ),
-        description: `"${data.title}" has been saved.`,
+    writePromise
+      .then(() => {
+        toast({
+          title: (
+            <div className="flex items-center gap-2">
+              <Check className="h-4 w-4 text-green-500" />
+              <span>{isEditing ? 'Post Updated!' : 'Post Created!'}</span>
+            </div>
+          ),
+          description: `"${data.title}" has been saved.`,
+        });
+        invalidatePostsCache();
+        fetchPosts();
+      })
+      .catch((e: any) => {
+        console.error("Error saving post:", e);
+        toast({
+          variant: "destructive",
+          title: "Save failed",
+          description: e.message || "Could not save the post.",
+        });
+      })
+      .finally(() => {
+        setIsSaving(false);
+        setStatusMessage("");
       });
-
-      invalidatePostsCache();
-      await fetchPosts();
-    } catch (e: any) {
-      console.error("Error saving post:", e);
-      toast({
-        variant: "destructive",
-        title: (
-          <div className="flex items-center gap-2">
-            <X className="h-4 w-4" />
-            <span>Save failed</span>
-          </div>
-        ),
-        description: e.message || "Could not save the post.",
-      });
-    } finally {
-      setIsSaving(false);
-      setStatusMessage("");
-    }
   };
 
 
