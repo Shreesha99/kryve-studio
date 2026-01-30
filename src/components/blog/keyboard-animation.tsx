@@ -13,46 +13,53 @@ const keyGap = 3;
 const cornerRadius = 2.5;
 
 const rows = [
+  // Row 0: Esc and F keys
   { y: 0, keys: [
-    { x: 0, w: 1, s: 'F1', code: 'F1' }, { x: 1, w: 1, s: 'F2', code: 'F2' }, { x: 2, w: 1, s: 'F3', code: 'F3' }, { x: 3, w: 1, s: 'F4', code: 'F4' },
-    { x: 4.25, w: 1, s: 'F5', code: 'F5' }, { x: 5.25, w: 1, s: 'F6', code: 'F6' }, { x: 6.25, w: 1, s: 'F7', code: 'F7' }, { x: 7.25, w: 1, s: 'F8', code: 'F8' },
-    { x: 8.5, w: 1, s: 'F9', code: 'F9' }, { x: 9.5, w: 1, s: 'F10', code: 'F10' }, { x: 10.5, w: 1, s: 'F11', code: 'F11' }, { x: 11.5, w: 1, s: 'F12', code: 'F12' },
-    { x: 13, w: 1, s: 'Del', code: 'Delete' }, { x: 14, w: 1, s: 'PgUp', code: 'PageUp' }, { x: 15, w: 1, s: 'PgDn', code: 'PageDown' },
+    { x: 0, w: 1, s: 'Esc', code: 'Escape' },
+    { x: 1.5, w: 1, s: 'F1', code: 'F1' }, { x: 2.5, w: 1, s: 'F2', code: 'F2' }, { x: 3.5, w: 1, s: 'F3', code: 'F3' }, { x: 4.5, w: 1, s: 'F4', code: 'F4' },
+    { x: 5.75, w: 1, s: 'F5', code: 'F5' }, { x: 6.75, w: 1, s: 'F6', code: 'F6' }, { x: 7.75, w: 1, s: 'F7', code: 'F7' }, { x: 8.75, w: 1, s: 'F8', code: 'F8' },
+    { x: 10, w: 1, s: 'F9', code: 'F9' }, { x: 11, w: 1, s: 'F10', code: 'F10' }, { x: 12, w: 1, s: 'F11', code: 'F11' }, { x: 13, w: 1, s: 'F12', code: 'F12' },
+    { x: 14.25, w: 1, s: 'Del', code: 'Delete' }, { x: 15.25, w: 1, s: 'PgUp', code: 'PageUp' }, { x: 16.25, w: 1, s: 'PgDn', code: 'PageDown' },
   ]},
+  // Row 1: Numbers
   { y: 1, keys: [
     { x: 0, w: 1, s: '~', code: 'Backquote' }, { x: 1, w: 1, s: '1', code: 'Digit1' }, { x: 2, w: 1, s: '2', code: 'Digit2' }, { x: 3, w: 1, s: '3', code: 'Digit3' },
     { x: 4, w: 1, s: '4', code: 'Digit4' }, { x: 5, w: 1, s: '5', code: 'Digit5' }, { x: 6, w: 1, s: '6', code: 'Digit6' }, { x: 7, w: 1, s: '7', code: 'Digit7' },
     { x: 8, w: 1, s: '8', code: 'Digit8' }, { x: 9, w: 1, s: '9', code: 'Digit9' }, { x: 10, w: 1, s: '0', code: 'Digit0' }, { x: 11, w: 1, s: '-', code: 'Minus' },
     { x: 12, w: 2, s: 'Backspace', code: 'Backspace' },
-    { x: 14, w: 1, s: 'Home', code: 'Home' }, { x: 15, w: 1, s: 'End', code: 'End' },
+    { x: 14.25, w: 1, s: 'Home', code: 'Home' }, { x: 15.25, w: 1, s: 'End', code: 'End' },
   ]},
+  // Row 2: QWERTY
   { y: 2, keys: [
     { x: 0, w: 1.5, s: 'Tab', code: 'Tab' }, { x: 1.5, w: 1, s: 'Q', code: 'KeyQ' }, { x: 2.5, w: 1, s: 'W', code: 'KeyW', warmed: true }, { x: 3.5, w: 1, s: 'E', code: 'KeyE' },
     { x: 4.5, w: 1, s: 'R', code: 'KeyR' }, { x: 5.5, w: 1, s: 'T', code: 'KeyT' }, { x: 6.5, w: 1, s: 'Y', code: 'KeyY' }, { x: 7.5, w: 1, s: 'U', code: 'KeyU' },
     { x: 8.5, w: 1, s: 'I', code: 'KeyI' }, { x: 9.5, w: 1, s: 'O', code: 'KeyO' }, { x: 10.5, w: 1, s: 'P', code: 'KeyP' }, { x: 11.5, w: 1, s: '[', code: 'BracketLeft' },
     { x: 12.5, w: 1.5, s: ']', code: 'BracketRight' },
   ]},
+  // Row 3: ASDF
   { y: 3, keys: [
     { x: 0, w: 1.75, s: 'Caps', code: 'CapsLock' }, { x: 1.75, w: 1, s: 'A', code: 'KeyA', warmed: true }, { x: 2.75, w: 1, s: 'S', code: 'KeyS', warmed: true },
     { x: 3.75, w: 1, s: 'D', code: 'KeyD', warmed: true }, { x: 4.75, w: 1, s: 'F', code: 'KeyF' }, { x: 5.75, w: 1, s: 'G', code: 'KeyG' }, { x: 6.75, w: 1, s: 'H', code: 'KeyH' },
     { x: 7.75, w: 1, s: 'J', code: 'KeyJ' }, { x: 8.75, w: 1, s: 'K', code: 'KeyK' }, { x: 9.75, w: 1, s: 'L', code: 'KeyL' }, { x: 10.75, w: 1, s: ';', code: 'Semicolon' },
     { x: 11.75, w: 2.25, s: 'Enter', code: 'Enter' },
   ]},
+  // Row 4: Shift row
   { y: 4, keys: [
     { x: 0, w: 2.25, s: 'Shift', code: 'ShiftLeft' }, { x: 2.25, w: 1, s: 'Z', code: 'KeyZ' }, { x: 3.25, w: 1, s: 'X', code: 'KeyX' }, { x: 4.25, w: 1, s: 'C', code: 'KeyC' },
     { x: 5.25, w: 1, s: 'V', code: 'KeyV' }, { x: 6.25, w: 1, s: 'B', code: 'KeyB' }, { x: 7.25, w: 1, s: 'N', code: 'KeyN' }, { x: 8.25, w: 1, s: 'M', code: 'KeyM' },
-    { x: 9.25, w: 1, s: ',', code: 'Comma' }, { x: 10.25, w: 1.75, s: 'Shift', code: 'ShiftRight' }, { x: 13, w: 1 },
-    { x: 14, w: 1, s: '↑', code: 'ArrowUp' }, { x: 15, w: 1 },
+    { x: 9.25, w: 1, s: ',', code: 'Comma' }, { x: 10.25, w: 1.75, s: 'Shift', code: 'ShiftRight' },
+    { x: 15.25, w: 1, s: '↑', code: 'ArrowUp' },
   ]},
+  // Row 5: Bottom row
   { y: 5, keys: [
-    { x: 0, w: 1.25, s: 'Ctrl', code: 'ControlLeft' }, { x: 1.25, w: 1.25, s: 'Alt', code: 'AltLeft' }, { x: 2.5, w: 1.25 },
-    { x: 3.75, w: 5.5, s: 'Space', code: 'Space', warmed: true },
-    { x: 9.25, w: 1.25 }, { x: 10.5, w: 1.25, s: 'Alt', code: 'AltRight' }, { x: 11.75, w: 1.25, s: 'Ctrl', code: 'ControlRight' },
-    { x: 13, w: 1, s: '←', code: 'ArrowLeft' }, { x: 14, w: 1, s: '↓', code: 'ArrowDown' }, { x: 15, w: 1, s: '→', code: 'ArrowRight' },
+    { x: 0, w: 1.25, s: 'Ctrl', code: 'ControlLeft' }, { x: 1.25, w: 1.25, s: 'Alt', code: 'AltLeft' },
+    { x: 2.5, w: 5.5, s: 'Space', code: 'Space', warmed: true },
+    { x: 8, w: 1.25, s: 'Alt', code: 'AltRight' }, { x: 9.25, w: 1.25 }, { x: 10.5, w: 1.25, s: 'Ctrl', code: 'ControlRight' },
+    { x: 14.25, w: 1, s: '←', code: 'ArrowLeft' }, { x: 15.25, w: 1, s: '↓', code: 'ArrowDown' }, { x: 16.25, w: 1, s: '→', code: 'ArrowRight' },
   ]},
 ];
 
-const totalWidth = 16 * keyWidth + 15 * keyGap + 20;
+const totalWidth = 17.25 * keyWidth + 16.25 * keyGap + 20;
 const totalHeight = 6 * keyHeight + 5 * keyGap + 20;
 
 export function KeyboardAnimation({ className }: { className?: string }) {
@@ -71,15 +78,18 @@ export function KeyboardAnimation({ className }: { className?: string }) {
     if (!isMounted || !isTouchDevice) return;
 
     const ctx = gsap.context(() => {
-      const animatedKeys = gsap.utils.toArray('.key-animated');
-      if (animatedKeys.length === 0) return;
-
+      // Guard against running animation if no keys are found
+      const animatedKeys = componentRef.current?.querySelectorAll('[data-warmed="true"]');
+      if (!animatedKeys || animatedKeys.length === 0) {
+          return;
+      }
+      
       const tap = (key: any) => gsap.timeline()
         .to(key, { y: 2, duration: 0.08, ease: 'power1.in' })
         .to(key, { y: 0, duration: 0.15, ease: 'power2.out' });
 
       const masterTl = gsap.timeline({ repeat: -1 });
-      gsap.utils.shuffle(animatedKeys).forEach((key, i) => {
+      gsap.utils.shuffle(Array.from(animatedKeys)).forEach((key, i) => {
         masterTl.add(tap(key), i * 0.15);
       });
       masterTl.to({}, { duration: 2 });
@@ -95,7 +105,9 @@ export function KeyboardAnimation({ className }: { className?: string }) {
     const ctx = gsap.context(() => {
       const keyMap = new Map<string, SVGGElement>();
       const keyElements = componentRef.current?.querySelectorAll<SVGGElement>('[data-key-code]');
-      if (!keyElements || keyElements.length === 0) return;
+      if (!keyElements || keyElements.length === 0) {
+        return;
+      }
       
       keyElements.forEach(el => {
         const code = el.dataset.keyCode;
@@ -103,20 +115,25 @@ export function KeyboardAnimation({ className }: { className?: string }) {
       });
 
       const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.metaKey || e.ctrlKey) return;
-        
+        // We only want to intercept keys that are visually on our SVG keyboard
         const keyEl = keyMap.get(e.code);
         if (keyEl) {
+          e.preventDefault(); // This is the fix for F1 and other special keys
+          
+          if (e.metaKey || e.ctrlKey) return;
+        
           gsap.to(keyEl, { y: 2, duration: 0.08, ease: 'power1.in' });
           gsap.to(keyEl.querySelector('.key-press-rect'), { opacity: 1, duration: 0.08 });
         }
 
         if (e.key.length === 1) {
-          setTypedText(prev => prev + e.key);
+          setTypedText(prev => (prev + e.key).slice(-100)); // Limit text length
         } else if (e.code === 'Backspace') {
           setTypedText(prev => prev.slice(0, -1));
         } else if (e.code === 'Space') {
           setTypedText(prev => prev + ' ');
+        } else if (e.code === 'Escape') {
+          setTypedText('');
         }
       };
 
@@ -151,11 +168,11 @@ export function KeyboardAnimation({ className }: { className?: string }) {
               <X className="h-4 w-4" />
             </Button>
           </div>
-          <p className="mt-2 text-center text-sm text-muted-foreground">Try typing on your keyboard...</p>
+          <p className="mt-2 text-center text-sm text-muted-foreground">The stage is set. Type away...</p>
         </AnimateOnScroll>
       )}
 
-      <div className="w-full max-w-[280px] sm:max-w-xs md:max-w-sm lg:max-w-md">
+      <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl">
         <svg
           viewBox={`-15 -15 ${totalWidth + 30} ${totalHeight + 30}`}
           className="h-auto w-full"
@@ -193,7 +210,6 @@ export function KeyboardAnimation({ className }: { className?: string }) {
                 return (
                   <g 
                     key={`${rowIndex}-${keyIndex}`} 
-                    className={cn({ 'key-animated': isTouchDevice && key.warmed })}
                     data-key-code={key.code}
                     data-warmed={key.warmed}
                   >
