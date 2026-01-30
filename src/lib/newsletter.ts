@@ -46,9 +46,7 @@ export async function addSubscriber(
   }
 
   const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // use SSL
+    service: 'gmail',
     auth: {
       user: SMTP_USER,
       pass: SMTP_PASS,
@@ -222,9 +220,7 @@ export async function sendBulkNewsletter(
   }
 
   const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // use SSL
+    service: 'gmail',
     auth: {
       user: SMTP_USER,
       pass: SMTP_PASS,
