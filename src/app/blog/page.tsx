@@ -231,11 +231,16 @@ export default function BlogPage() {
                       <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-muted bg-card/50 p-12 text-center">
                         <KeyboardAnimation className="mb-4" />
                         <h2 className="font-headline text-3xl font-semibold">
-                          The Stage is Set, But the Cast is Missing.
+                          The Stage is Set...
                         </h2>
-                        <p className="mt-3 max-w-md text-muted-foreground md:text-lg">
-                          This interactive keyboard is just a placeholder. Once we start publishing articles, it will make way for our featured content. For now, feel free to warm up your fingers!
-                        </p>
+                        <div className="mt-3 max-w-md space-y-4 text-muted-foreground md:text-lg">
+                          <p>
+                            This interactive keyboard is a placeholder while our authors are warming up. Once we start publishing articles, it will make way for our featured content.
+                          </p>
+                          <p>
+                            In the meantime, feel free to warm up your fingers! Have a great idea? Type it out—we might just feature it. 😉
+                          </p>
+                        </div>
                       </div>
                     </AnimateOnScroll>
                   )}
