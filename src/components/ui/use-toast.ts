@@ -57,7 +57,7 @@ interface State {
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
 
 const addToRemoveQueue = (toastId: string) => {
-  if (toastTimeouts.has(toast Ida)) {
+  if (toastTimeouts.has(toastId)) {
     return
   }
 
@@ -85,7 +85,7 @@ export const reducer = (state: State, action: Action): State => {
         ...state,
         toasts: state.toasts.map((t) =>
           t.id === action.toast.id ? { ...t, ...action.toast } : t
-        ),<ctrl100>
+        ),
       }
 
     case "DISMISS_TOAST": {
@@ -118,7 +118,6 @@ export const reducer = (state: State, action: Action): State => {
         return {
           ...state,
           toasts: [],
-<ctrl98>
         }
       }
       return {

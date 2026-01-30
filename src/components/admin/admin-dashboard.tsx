@@ -4,7 +4,7 @@ import { useLenis } from '@/components/common/smooth-scroll-provider';
 import { Post, invalidatePostsCache, getPosts } from '@/lib/blog';
 import { Button } from '@/components/ui/button';
 import { logout } from '@/actions/auth';
-import { Loader2, PlusCircle, Trash2, FileEdit } from 'lucide-react';
+import { Loader2, PlusCircle, Trash2, FileEdit, Check, X } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -87,55 +87,61 @@ export function AdminDashboard() {
   };
 
   const handleFormSubmit = async (data: FormValues) => {
-    setIsFormOpen(false); // Optimistically close the modal
+    setIsFormOpen(false); // Close the modal immediately
 
-    const { firestore } = initializeFirebase();
+    const isEditing = !!editingPost?.id;
     
+    const toastController = toast({
+      title: (
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span>{isEditing ? 'Updating post...' : 'Creating post...'}</span>
+        </div>
+      ),
+      description: `Saving "${data.title}"`,
+    });
+    
+    const { firestore } = initializeFirebase();
     const postData = {
       ...data,
-      date: editingPost?.id ? new Date(editingPost.date) : serverTimestamp(),
+      date: isEditing && editingPost.date ? new Date(editingPost.date) : serverTimestamp(),
     };
 
-    if (editingPost?.id) {
-      // Editing existing post
-      const postRef = doc(firestore, 'posts', editingPost.id);
-      setDoc(postRef, postData, { merge: true })
-        .then(() => {
-          toast({
-            title: "Post Updated!",
-            description: `"${data.title}" has been saved.`,
-          });
-          invalidatePostsCache();
-          fetchPosts(); // Refresh list on success
-        })
-        .catch((e) => {
-          console.error("Error updating post:", e);
-          toast({
-            variant: "destructive",
-            title: "Update failed",
-            description: e.message || "Could not save changes to the post.",
-          });
-        });
-    } else {
-      // Creating new post
-      const postsCollection = collection(firestore, 'posts');
-      addDoc(postsCollection, postData)
-        .then(() => {
-          toast({
-            title: "Post Created!",
-            description: `"${data.title}" has been added to your blog.`,
-          });
-          invalidatePostsCache();
-          fetchPosts(); // Refresh list on success
-        })
-        .catch((e) => {
-          console.error("Error creating post:", e);
-          toast({
-            variant: "destructive",
-            title: "Creation failed",
-            description: e.message || "Could not create the new post.",
-          });
-        });
+    try {
+      if (isEditing) {
+        const postRef = doc(firestore, 'posts', editingPost.id!);
+        await setDoc(postRef, postData, { merge: true });
+      } else {
+        const postsCollection = collection(firestore, 'posts');
+        await addDoc(postsCollection, postData);
+      }
+
+      toastController.update({
+        id: toastController.id,
+        title: (
+          <div className="flex items-center gap-2">
+            <Check className="h-4 w-4 text-green-500" />
+            <span>{isEditing ? 'Post Updated!' : 'Post Created!'}</span>
+          </div>
+        ),
+        description: `"${data.title}" has been saved.`,
+      });
+
+      invalidatePostsCache();
+      fetchPosts();
+    } catch (e: any) {
+      console.error("Error saving post:", e);
+      toastController.update({
+        id: toastController.id,
+        variant: "destructive",
+        title: (
+          <div className="flex items-center gap-2">
+            <X className="h-4 w-4" />
+            <span>Save failed</span>
+          </div>
+        ),
+        description: e.message || "Could not save the post.",
+      });
     }
   };
 
