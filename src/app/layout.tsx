@@ -7,7 +7,7 @@ import { CustomCursor } from "@/components/common/custom-cursor";
 import { CookieBanner } from "@/components/common/cookie-banner";
 import { FirebaseClientProvider } from "@/firebase/client-provider";
 
-const faviconSvg = `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><style>.line{stroke:hsl(240 10% 3.9%)}@media (prefers-color-scheme:dark){.line{stroke:hsl(0 0% 98%)}}</style><path d="M25,18.33A7.5,7.5 0 0,1 17.5,25.83H7.5V7.5H17.5A7.5,7.5 0 0,1 25,15V18.33Z" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="line"></path></svg>`;
+const faviconSvg = `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><style>.line{stroke:hsl(240 10% 3.9%)}@media (prefers-color-scheme:dark){.line{stroke:hsl(0 0% 98%)}}</style><path d="M25 7H7V13H20V19H7V25H25" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="line"></path></svg>`;
 const faviconDataUri = `data:image/svg+xml,${encodeURIComponent(faviconSvg)}`;
 
 const siteConfig = {
