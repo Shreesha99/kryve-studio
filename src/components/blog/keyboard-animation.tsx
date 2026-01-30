@@ -12,8 +12,10 @@ export function KeyboardAnimation({ className }: { className?: string }) {
     const svg = svgRef.current;
     if (!svg) return;
 
-    // Use a class to select all keys
-    const keys = gsap.utils.toArray<SVGElement>('.keyboard-key', svg);
+    // Use querySelectorAll and then convert to a proper array. This is more robust.
+    const keysNodeList = svg.querySelectorAll('.keyboard-key');
+    const keys = Array.from(keysNodeList) as SVGElement[];
+    
     if (keys.length === 0) return;
     
     // Set initial fill using CSS variables for theme awareness
@@ -32,7 +34,8 @@ export function KeyboardAnimation({ className }: { className?: string }) {
 
     // Function to create a single key press animation
     function pressKey() {
-        const randomKey = gsap.utils.random(keys) as SVGElement;
+        if (keys.length === 0) return;
+        const randomKey = gsap.utils.random(keys);
         
         masterTl.to(randomKey, {
             fill: 'hsl(var(--primary))',
