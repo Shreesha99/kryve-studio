@@ -12,6 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/legal/terms-and-conditions',
     '/legal/privacy-policy',
     '/legal/disclaimer',
+    '/unsubscribe',
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
