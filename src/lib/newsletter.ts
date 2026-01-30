@@ -7,7 +7,7 @@ import {
   serverTimestamp,
   getDoc,
 } from 'firebase/firestore';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import { z } from 'zod';
 
 export async function addSubscriber(
@@ -35,34 +35,17 @@ export async function addSubscriber(
     };
   }
 
-  const { SMTP_USER, SMTP_PASS } = process.env;
+  const { RESEND_API_KEY } = process.env;
 
-  if (!SMTP_USER || !SMTP_PASS) {
-    console.error('SMTP configuration is missing. Cannot send confirmation email.');
+  if (!RESEND_API_KEY) {
+    console.error('RESEND_API_KEY is missing. Cannot send confirmation email.');
     return {
       success: true,
       message: 'Thank you for subscribing! (Confirmation email pending setup)',
     };
   }
 
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: SMTP_USER,
-      pass: SMTP_PASS,
-    },
-  });
-
-  try {
-    await transporter.verify();
-  } catch (error) {
-    console.error('SMTP connection error:', error);
-    return {
-      success: true, 
-      message:
-        'Subscription successful, but failed to connect to the mail server. Please check SMTP credentials.',
-    };
-  }
+  const resend = new Resend(RESEND_API_KEY);
 
   const siteUrl =
     process.env.NODE_ENV === 'production'
@@ -179,14 +162,15 @@ export async function addSubscriber(
   `;
 
   try {
-    await transporter.sendMail({
-      from: `"The Elysium Project" <${SMTP_USER}>`,
+    await resend.emails.send({
+      from: 'The Elysium Project <onboarding@resend.dev>',
       to: email,
       subject: 'Subscription Confirmed | The Elysium Project',
       html: emailHtml,
     });
   } catch (error) {
     console.error('Failed to send subscription confirmation email:', error);
+    // Even if email fails, the subscription to the DB was successful.
     return { success: true, message: 'Subscription successful, but the confirmation email could not be sent.' };
   }
 
@@ -213,24 +197,18 @@ export async function sendBulkNewsletter(
     return { success: true, message: 'There are no subscribers to send to.' };
   }
 
-  const { SMTP_USER, SMTP_PASS } = process.env;
-  if (!SMTP_USER || !SMTP_PASS) {
-    console.error('SMTP configuration is missing.');
+  const { RESEND_API_KEY, SMTP_USER } = process.env;
+  if (!RESEND_API_KEY) {
+    console.error('Resend API key is missing.');
     return { success: false, message: 'Email server is not configured.' };
   }
 
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: SMTP_USER,
-      pass: SMTP_PASS,
-    },
-  });
+  const resend = new Resend(RESEND_API_KEY);
 
   try {
-    await transporter.sendMail({
-      from: `"The Elysium Project" <${SMTP_USER}>`,
-      to: SMTP_USER, // Send to self
+    await resend.emails.send({
+      from: 'The Elysium Project <onboarding@resend.dev>',
+      to: SMTP_USER || 'fallback@example.com', // Primary recipient (can be your own admin email)
       bcc: subscribers, // BCC all subscribers for privacy
       subject: subject,
       html: content,
@@ -242,6 +220,6 @@ export async function sendBulkNewsletter(
     };
   } catch (error) {
     console.error('Failed to send bulk newsletter:', error);
-    return { success: false, message: 'Failed to send emails.' };
+    return { success: false, message: 'Failed to send emails via Resend.' };
   }
 }
