@@ -235,6 +235,7 @@ export function AdminDashboard() {
       await fetchPosts(true);
 
       toast({
+        variant: 'success',
         title: isEditing ? 'Post Updated!' : 'Post Created!',
         description: `"${data.title}" has been saved.`,
       });
@@ -270,6 +271,7 @@ export function AdminDashboard() {
       await deleteDoc(doc(firestore, 'blog_posts', postId));
 
       toast({
+        variant: 'success',
         title: 'Post Deleted',
         description: `"${postTitle}" has been removed.`,
       });
