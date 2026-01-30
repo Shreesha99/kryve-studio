@@ -355,7 +355,7 @@ export function AdminDashboard() {
 
       {listLoading ? (
         <TableSkeleton />
-      ) : (
+      ) : posts.length > 0 ? (
         <div className="rounded-lg border">
           <Table>
             <TableHeader>
@@ -428,6 +428,14 @@ export function AdminDashboard() {
               ))}
             </TableBody>
           </Table>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed py-24 text-center">
+            <h2 className="text-2xl font-semibold tracking-tight">No Posts Found</h2>
+            <p className="text-muted-foreground">It looks like you haven't created any posts yet.</p>
+            <Button onClick={handleNewPost} disabled={isOperationInProgress}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Create Your First Post
+            </Button>
         </div>
       )}
 
