@@ -20,10 +20,16 @@ service cloud.firestore {
     }
     
     match /subscribers/{subscriberId} {
-      // Allow creation and updates (for idempotency), and deletion for unsubscribing.
-      allow create, update, delete: if true;
-      // Nobody can read the subscriber list from the client-side.
-      allow read: if false;
+      // Allow a client to check if a specific document exists by its ID (email).
+      allow get: if true;
+      // Explicitly deny listing all subscribers to protect privacy.
+      allow list: if false;
+      // Allow a new subscriber to be created.
+      allow create: if true;
+      // Deny updates to prevent changing subscription details from the client.
+      allow update: if false;
+      // Allow users to delete their own subscription via the unsubscribe link.
+      allow delete: if true;
     }
   }
 }
