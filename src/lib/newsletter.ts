@@ -7,7 +7,7 @@ import {
   serverTimestamp,
   getDoc,
 } from 'firebase/firestore';
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import { z } from 'zod';
 
 export async function addSubscriber(
@@ -35,17 +35,32 @@ export async function addSubscriber(
     };
   }
 
-  const { RESEND_API_KEY } = process.env;
+  const { SMTP_USER, SMTP_PASS } = process.env;
 
-  if (!RESEND_API_KEY) {
-    console.error('RESEND_API_KEY is missing. Cannot send confirmation email.');
+  if (!SMTP_USER || !SMTP_PASS) {
+    console.error('SMTP credentials are missing. Cannot send confirmation email.');
     return {
       success: true,
       message: 'Thank you for subscribing! (Confirmation email pending setup)',
     };
   }
 
-  const resend = new Resend(RESEND_API_KEY);
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: SMTP_USER,
+      pass: SMTP_PASS,
+    },
+  });
+
+  try {
+    // Verify connection configuration
+    await transporter.verify();
+  } catch (error) {
+    console.error('SMTP connection error:', error);
+    return { success: true, message: 'Subscription successful, but failed to connect to the mail server. Please check SMTP credentials.' };
+  }
+
 
   const siteUrl =
     process.env.NODE_ENV === 'production'
@@ -162,8 +177,8 @@ export async function addSubscriber(
   `;
 
   try {
-    await resend.emails.send({
-      from: 'The Elysium Project <onboarding@resend.dev>',
+    await transporter.sendMail({
+      from: `"The Elysium Project" <${SMTP_USER}>`,
       to: email,
       subject: 'Subscription Confirmed | The Elysium Project',
       html: emailHtml,
@@ -197,18 +212,24 @@ export async function sendBulkNewsletter(
     return { success: true, message: 'There are no subscribers to send to.' };
   }
 
-  const { RESEND_API_KEY, SMTP_USER } = process.env;
-  if (!RESEND_API_KEY) {
-    console.error('Resend API key is missing.');
+  const { SMTP_USER, SMTP_PASS } = process.env;
+  if (!SMTP_USER || !SMTP_PASS) {
+    console.error('SMTP credentials are not configured.');
     return { success: false, message: 'Email server is not configured.' };
   }
 
-  const resend = new Resend(RESEND_API_KEY);
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: SMTP_USER,
+      pass: SMTP_PASS,
+    },
+  });
 
   try {
-    await resend.emails.send({
-      from: 'The Elysium Project <onboarding@resend.dev>',
-      to: SMTP_USER || 'fallback@example.com', // Primary recipient (can be your own admin email)
+    await transporter.sendMail({
+      from: `"The Elysium Project" <${SMTP_USER}>`,
+      to: SMTP_USER, // Primary recipient (can be your own admin email)
       bcc: subscribers, // BCC all subscribers for privacy
       subject: subject,
       html: content,
@@ -220,6 +241,6 @@ export async function sendBulkNewsletter(
     };
   } catch (error) {
     console.error('Failed to send bulk newsletter:', error);
-    return { success: false, message: 'Failed to send emails via Resend.' };
+    return { success: false, message: 'Failed to send emails via Nodemailer.' };
   }
 }

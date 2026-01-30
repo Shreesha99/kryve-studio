@@ -1,7 +1,7 @@
 'use server';
 
 import { z } from 'zod';
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
 const contactSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -38,25 +38,23 @@ export async function sendEmail(
   }
 
   const { name, email, message } = validatedFields.data;
-  const { RESEND_API_KEY, SMTP_USER } = process.env;
+  const { SMTP_USER, SMTP_PASS } = process.env;
 
-  if (!RESEND_API_KEY) {
-    console.error('RESEND_API_KEY is missing from environment variables.');
+  if (!SMTP_USER || !SMTP_PASS) {
+    console.error('SMTP user or password missing from environment variables.');
     return {
       success: false,
       message: "Sorry, our email service is currently unavailable. Please try again later.",
     };
   }
-  
-  if (!SMTP_USER) {
-    console.error('SMTP_USER (destination email) is missing from environment variables.');
-     return {
-      success: false,
-      message: "Sorry, the destination email is not configured.",
-    };
-  }
 
-  const resend = new Resend(RESEND_API_KEY);
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: SMTP_USER,
+      pass: SMTP_PASS,
+    },
+  });
   
   const emailHtml = `
     <!DOCTYPE html>
@@ -162,8 +160,8 @@ export async function sendEmail(
   `;
   
   try {
-    await resend.emails.send({
-      from: 'The Elysium Project <onboarding@resend.dev>',
+    await transporter.sendMail({
+      from: `"${name}" <${email}>`,
       to: SMTP_USER,
       reply_to: email,
       subject: `New Contact Form Submission from ${name}`,
