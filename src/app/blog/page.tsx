@@ -22,7 +22,6 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { AnimatedGradient } from '@/components/common/animated-gradient';
 import { BlogGenerator } from '@/components/blog/blog-generator';
-import { VisionBoardGenerator } from '@/components/blog/vision-board-generator';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -194,10 +193,6 @@ export default function BlogPage() {
           <Separator className="my-16" />
         </div>
         <BlogGenerator />
-        <div className="container mx-auto max-w-4xl">
-          <Separator className="my-16" />
-        </div>
-        <VisionBoardGenerator />
       </main>
       <Footer />
     </div>
