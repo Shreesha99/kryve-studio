@@ -50,28 +50,80 @@ export async function addSubscriber(email: string) {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
-            .header { text-align: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 20px; }
-            .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #999; }
-            .button { display: inline-block; padding: 10px 20px; background-color: #000; color: #fff; text-decoration: none; border-radius: 5px; }
-            a { color: #000; }
+            body {
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+                margin: 0;
+                padding: 0;
+                background-color: #f4f4f4;
+            }
+            .email-container {
+                max-width: 600px;
+                margin: 20px auto;
+                background-color: #ffffff;
+                border: 1px solid #e0e0e0;
+                border-radius: 12px;
+                overflow: hidden;
+                text-align: center;
+            }
+            .header {
+                background-color: #111111;
+                padding: 30px 20px;
+            }
+            .header img.logo {
+                max-width: 150px;
+            }
+            .content {
+                padding: 40px 30px;
+                color: #333333;
+            }
+            .content h1 {
+                font-family: 'Poppins', sans-serif;
+                font-size: 28px;
+                font-weight: 600;
+                color: #111111;
+                margin: 0 0 15px;
+            }
+            .content p {
+                font-size: 16px;
+                line-height: 1.6;
+                margin: 0 0 25px;
+            }
+            .gif-container img {
+                max-width: 200px;
+                margin: 10px auto;
+            }
+            .footer {
+                padding: 30px;
+                font-size: 12px;
+                color: #999999;
+                background-color: #f9f9f9;
+                border-top: 1px solid #e0e0e0;
+            }
+            .footer a {
+                color: #555555;
+                text-decoration: underline;
+            }
         </style>
     </head>
     <body>
-        <div class="container">
+        <div class="email-container">
             <div class="header">
-                <h2>The Elysium Project</h2>
+                <img src="https://www.the-elysium-project.in/logo.png" alt="The Elysium Project Logo" class="logo">
             </div>
-            <h3>Thank you for subscribing!</h3>
-            <p>You've been successfully added to our newsletter. You'll be the first to know about our latest projects, insights, and stories.</p>
-            <p>We're excited to have you with us.</p>
-            <br>
-            <p>The Elysium Project Team</p>
+            <div class="content">
+                <h1>Welcome to the Fold!</h1>
+                <p>You've officially joined the inner circle. We're thrilled to have you with us on our journey of engineering elegance and designing impact.</p>
+                <div class="gif-container">
+                    <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZGphZHNmYmJ5N2Y2cHVyOGFwdmNqYTg2cnRkZzU1MGF5NjN0b2Y5OCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/Be9bY8c2iS39W1y2Wb/giphy.gif" alt="Celebratory Sparkles">
+                </div>
+                <p>Expect to receive exclusive insights, project showcases, and stories from our studio—delivered right to your inbox.</p>
+            </div>
             <div class="footer">
-                <p>If you did not sign up for this newsletter or wish to stop receiving updates, you can unsubscribe below.</p>
+                <p>If you change your mind or this was a mistake, you can opt out anytime.</p>
                 <a href="${unsubscribeUrl}">Unsubscribe</a>
-                <p>&copy; ${new Date().getFullYear()} The Elysium Project. All Rights Reserved.</p>
+                <p style="margin-top: 15px;">&copy; ${new Date().getFullYear()} The Elysium Project. All Rights Reserved.</p>
             </div>
         </div>
     </body>
