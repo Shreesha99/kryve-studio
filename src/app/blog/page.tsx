@@ -157,8 +157,8 @@ export default function BlogPage() {
     });
 
     if (titleRef.current && paragraphRef.current) {
-        tl.from(titleRef.current, { y: 30, opacity: 0, duration: 1, ease: 'power3.out' })
-          .from(paragraphRef.current, { y: 20, opacity: 0, duration: 0.8, ease: 'power3.out' }, '-=0.7');
+        tl.to(titleRef.current, { y: 0, opacity: 1, duration: 1, ease: 'power3.out' })
+          .to(paragraphRef.current, { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out' }, '-=0.7');
     }
 
     return () => {
@@ -182,13 +182,13 @@ export default function BlogPage() {
           <div className="space-y-4 text-center">
             <h1
               ref={titleRef}
-              className="font-headline text-4xl font-semibold tracking-tighter sm:text-5xl md:text-6xl"
+              className="font-headline text-4xl font-semibold tracking-tighter sm:text-5xl md:text-6xl opacity-0 translate-y-5"
             >
                 From The Project
             </h1>
             <p
               ref={paragraphRef}
-              className="mx-auto max-w-2xl text-muted-foreground md:text-xl"
+              className="mx-auto max-w-2xl text-muted-foreground md:text-xl opacity-0 translate-y-5"
             >
               News, insights, and stories from the team at The Elysium Project.
             </p>
@@ -216,9 +216,8 @@ export default function BlogPage() {
                     <AnimateOnScroll>
                       <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-muted bg-card/50 p-12 text-center">
                         <KeyboardAnimation className="mb-4" />
-                        <h2 className="font-headline text-3xl font-semibold">Our Keys are Warming Up</h2>
+                        <h2 className="font-headline text-3xl font-semibold">Type to warm our keys up for our first blog article. Who knows, we might consider it in one of our blogs 😉</h2>
                         <p className="mt-3 max-w-md text-muted-foreground md:text-lg">
-                          Type to warm our keys up for our first blog article. Who knows, we might consider it in one of our blogs 😉
                         </p>
                       </div>
                     </AnimateOnScroll>
