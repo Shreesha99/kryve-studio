@@ -54,28 +54,36 @@ export function NewsletterForm() {
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
     setStatus('loading');
     setMessage('');
+
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Request timed out')), 10000)
+    );
+
     try {
-      await addSubscriber(data.email);
+      await Promise.race([addSubscriber(data.email), timeoutPromise]);
       setStatus('success');
       setMessage('Thank you for subscribing!');
       reset();
-    } catch (error) {
+    } catch (error: any) {
       setStatus('error');
-      setMessage('Something went wrong. Please try again.');
+      if (error.message === 'Request timed out') {
+        setMessage('Request timed out. Please try again later.');
+      } else {
+        setMessage('Something went wrong. Please try again.');
+      }
       console.error(error);
     }
   };
-  
+
   useEffect(() => {
-    if(status === 'success' || status === 'error') {
-        const timer = setTimeout(() => {
-            setStatus('idle');
-            setMessage('');
-        }, 3000);
-        return () => clearTimeout(timer);
+    if (status === 'success' || status === 'error') {
+      const timer = setTimeout(() => {
+        setStatus('idle');
+        setMessage('');
+      }, 5000);
+      return () => clearTimeout(timer);
     }
   }, [status]);
-
 
   return (
     <div className="max-w-xs space-y-3">
@@ -92,17 +100,19 @@ export function NewsletterForm() {
           placeholder="Your Email"
           className="w-full bg-transparent text-lg placeholder:text-background/50 focus:outline-none"
           required
+          disabled={status === 'loading'}
         />
         <SubmitButton status={status} />
       </form>
-      {errors.email && (
-        <p className="text-sm text-red-400">{errors.email.message}</p>
-      )}
-      {status === 'error' && (
-        <p className="text-sm text-red-400">{message}</p>
-      )}
-      {status === 'success' && (
-        <p className="text-sm text-green-400">{message}</p>
+      {(errors.email || message) && (
+        <p
+          className={cn('text-sm', {
+            'text-red-400': status === 'error' || !!errors.email,
+            'text-green-400': status === 'success',
+          })}
+        >
+          {errors.email?.message || message}
+        </p>
       )}
     </div>
   );
