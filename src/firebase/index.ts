@@ -3,8 +3,9 @@ import { getAuth, type Auth } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
 
 import { firebaseConfig } from "./config";
-import { FirebaseProvider, FirebaseClientProvider } from "./client-provider";
+import { FirebaseClientProvider } from "./client-provider";
 import {
+  FirebaseProvider,
   useFirebase,
   useFirebaseApp,
   useFirestore,
