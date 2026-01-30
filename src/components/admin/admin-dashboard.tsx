@@ -66,6 +66,21 @@ const TableSkeleton = () => (
   </div>
 );
 
+const ProgressRow = ({ message, progress }: { message: string, progress: number }) => (
+    <TableRow className="bg-muted/50 hover:bg-muted/50">
+        <TableCell colSpan={4}>
+            <div className="flex items-center gap-4 py-2">
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                <div className="flex-grow space-y-1">
+                    <p className="text-sm font-medium text-foreground">{message}</p>
+                    <Progress value={progress} className="h-2" />
+                </div>
+            </div>
+        </TableCell>
+    </TableRow>
+);
+
+
 export function AdminDashboard() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [listLoading, setListLoading] = useState(true);
@@ -73,6 +88,12 @@ export function AdminDashboard() {
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const { toast } = useToast();
   const lenis = useLenis();
+  
+  const [submissionState, setSubmissionState] = useState<{
+    status: 'idle' | 'saving' | 'deleting';
+    message: string;
+    progress: number;
+  }>({ status: 'idle', message: '', progress: 0 });
 
   useEffect(() => {
     if (isFormOpen) {
@@ -87,6 +108,7 @@ export function AdminDashboard() {
 
   const fetchPosts = useCallback(async (forceRefresh = false) => {
     if (forceRefresh) invalidatePostsCache();
+    setListLoading(true);
     try {
       const fetchedPosts = await getPosts(forceRefresh);
       setPosts(fetchedPosts);
@@ -133,20 +155,6 @@ export function AdminDashboard() {
     setIsFormOpen(false);
     const isEditing = !!editingPost?.id;
     
-    const { id: toastId, update } = toast({
-        className: "p-0 items-start",
-        title: <div className="w-full">
-            <div className="p-6 pr-8 pt-4 pb-2">
-                <div className="flex items-center gap-2 font-semibold">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Preparing...</span>
-                </div>
-            </div>
-            <Progress value={0} className="h-1 rounded-none rounded-b-md" />
-        </div>,
-        description: null,
-    });
-    
     try {
         const stages = [
             { text: "Validating data", progress: 33 },
@@ -154,22 +162,13 @@ export function AdminDashboard() {
             { text: "Finalizing", progress: 100 },
         ];
 
+        setSubmissionState({ status: 'saving', message: 'Preparing...', progress: 0 });
+
         for (const [index, stage] of stages.entries()) {
-            await new Promise(res => setTimeout(res, 400 + index * 200));
-            update({
-                id: toastId,
-                className: "p-0 items-start",
-                title: <div className="w-full">
-                    <div className="p-6 pr-8 pt-4 pb-2">
-                        <div className="flex items-center gap-2 font-semibold">
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            <span>{stage.text}...</span>
-                        </div>
-                    </div>
-                    <Progress value={stage.progress} className="h-1 rounded-none rounded-b-md" />
-                </div>,
-                description: null,
-            });
+             setSubmissionState({ status: 'saving', message: stage.text, progress: stage.progress });
+            if (index < stages.length - 1) {
+                await new Promise(res => setTimeout(res, 600));
+            }
         }
         
         const { firestore } = initializeFirebase();
@@ -183,42 +182,37 @@ export function AdminDashboard() {
         } else {
             await addDoc(collection(firestore, 'posts'), postData);
         }
-
+        
+        await new Promise(res => setTimeout(res, 500));
         await fetchPosts(true);
 
-        update({
-            id: toastId,
-            className: "", // Reset class
+        toast({
             title: <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /><span>{isEditing ? 'Post Updated!' : 'Post Created!'}</span></div>,
             description: `"${data.title}" has been saved.`,
         });
 
     } catch (e: any) {
         console.error("Error saving post:", e);
-        update({
-            id: toastId,
-            className: "", // Reset class
+        toast({
             variant: "destructive",
             title: "Save Failed",
             description: e.message || "Could not save the post to the database.",
         });
     } finally {
         setEditingPost(null);
+        setSubmissionState({ status: 'idle', message: '', progress: 0 });
     }
   };
 
   const handleDeletePost = async (postId: string, postTitle: string) => {
-    const { id: toastId, update } = toast({
-        title: <div className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /><span>Deleting Post...</span></div>,
-        description: `"${postTitle}"`,
-    });
+    setSubmissionState({ status: 'deleting', message: `Deleting "${postTitle}"...`, progress: 50 });
     
     try {
       const { firestore } = initializeFirebase();
+      await new Promise(res => setTimeout(res, 1000));
       await deleteDoc(doc(firestore, "posts", postId));
       
-      update({
-        id: toastId,
+      toast({
         title: "Post Deleted",
         description: `"${postTitle}" has been removed.`,
       });
@@ -226,21 +220,25 @@ export function AdminDashboard() {
       await fetchPosts(true);
     } catch (error: any) {
       console.error("Failed to delete post:", error);
-      update({
-        id: toastId,
+      toast({
         variant: "destructive",
         title: "Deletion Failed",
         description: error.message || "Could not delete post from the database.",
       });
+    } finally {
+        setSubmissionState({ status: 'idle', message: '', progress: 0 });
     }
   };
+
+  const isOperationInProgress = submissionState.status !== 'idle';
+  const isCreateDisabled = listLoading || isOperationInProgress;
 
   return (
     <div className="container mx-auto px-4 md:px-6">
       <div className="flex items-center justify-between mb-8">
         <h1 className="font-headline text-3xl font-semibold">Blog Posts</h1>
         <div className="flex items-center gap-4">
-          <Button onClick={handleNewPost} disabled={listLoading}>
+          <Button onClick={handleNewPost} disabled={isCreateDisabled}>
             <PlusCircle className="mr-2 h-4 w-4" /> Create New
           </Button>
           <TooltipProvider>
@@ -275,18 +273,21 @@ export function AdminDashboard() {
               </TableRow>
             </TableHeader>
             <TableBody>
+              {isOperationInProgress && (
+                  <ProgressRow message={submissionState.message} progress={submissionState.progress} />
+              )}
               {posts.map((post) => (
                 <TableRow key={post.id}>
                   <TableCell className="font-medium">{post.title}</TableCell>
                   <TableCell>{post.author}</TableCell>
                   <TableCell>{new Date(post.date).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => handleEditPost(post)}>
+                    <Button variant="ghost" size="icon" onClick={() => handleEditPost(post)} disabled={isOperationInProgress}>
                       <FileEdit className="h-4 w-4" />
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" disabled={isOperationInProgress}>
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </AlertDialogTrigger>
