@@ -1,10 +1,10 @@
 'use client';
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useLenis } from '@/components/common/smooth-scroll-provider';
-import { Post, invalidatePostsCache, getPosts } from '@/lib/blog';
+import { getPosts, invalidatePostsCache, type Post } from '@/lib/blog';
 import { Button } from '@/components/ui/button';
 import { logout } from '@/actions/auth';
-import { PlusCircle, Trash2, FileEdit, LogOut } from 'lucide-react';
+import { FileEdit, LogOut, PlusCircle, Trash2 } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -12,14 +12,15 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { PostForm, type FormValues } from './post-form';
+} from '@/components/ui/dialog';
+import { FormValues, PostForm } from './post-form';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,14 +31,26 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 import { initializeFirebase } from '@/firebase';
-import { addDoc, collection, doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
-import { useToast } from "@/components/ui/use-toast";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  serverTimestamp,
+  setDoc,
+} from 'firebase/firestore';
+import { useToast } from '@/components/ui/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { Progress } from '@/components/ui/progress';
-import { Check, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 const TableSkeleton = () => (
   <div className="rounded-lg border">
@@ -53,9 +66,15 @@ const TableSkeleton = () => (
       <TableBody>
         {[...Array(5)].map((_, i) => (
           <TableRow key={i}>
-            <TableCell><Skeleton className="h-5 w-3/4 rounded-md" /></TableCell>
-            <TableCell><Skeleton className="h-5 w-2/3 rounded-md" /></TableCell>
-            <TableCell><Skeleton className="h-5 w-1/2 rounded-md" /></TableCell>
+            <TableCell>
+              <Skeleton className="h-5 w-3/4 rounded-md" />
+            </TableCell>
+            <TableCell>
+              <Skeleton className="h-5 w-2/3 rounded-md" />
+            </TableCell>
+            <TableCell>
+              <Skeleton className="h-5 w-1/2 rounded-md" />
+            </TableCell>
             <TableCell className="flex justify-end gap-2">
               <Skeleton className="h-8 w-8 rounded-md" />
               <Skeleton className="h-8 w-8 rounded-md" />
@@ -67,20 +86,25 @@ const TableSkeleton = () => (
   </div>
 );
 
-const ProgressRow = ({ message, progress }: { message: string, progress: number }) => (
-    <TableRow className="bg-muted/50 hover:bg-muted/50">
-        <TableCell colSpan={4}>
-            <div className="flex items-center gap-4 py-2">
-                <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                <div className="flex-grow space-y-1">
-                    <p className="text-sm font-medium text-foreground">{message}</p>
-                    <Progress value={progress} className="h-2" />
-                </div>
-            </div>
-        </TableCell>
-    </TableRow>
+const ProgressRow = ({
+  message,
+  progress,
+}: {
+  message: string;
+  progress: number;
+}) => (
+  <TableRow className="bg-muted/50 hover:bg-muted/50">
+    <TableCell colSpan={4}>
+      <div className="flex items-center gap-4 py-2">
+        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+        <div className="flex-grow space-y-1">
+          <p className="text-sm font-medium text-foreground">{message}</p>
+          <Progress value={progress} className="h-2" />
+        </div>
+      </div>
+    </TableCell>
+  </TableRow>
 );
-
 
 export function AdminDashboard() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -89,7 +113,7 @@ export function AdminDashboard() {
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const { toast } = useToast();
   const lenis = useLenis();
-  
+
   const [submissionState, setSubmissionState] = useState<{
     status: 'idle' | 'saving' | 'deleting';
     message: string;
@@ -108,42 +132,45 @@ export function AdminDashboard() {
     };
   }, [isFormOpen, lenis]);
 
-  const fetchPosts = useCallback(async (forceRefresh = false) => {
-    if (forceRefresh) invalidatePostsCache();
-    setListLoading(true);
-    try {
-      const fetchedPosts = await getPosts(forceRefresh);
-      setPosts(fetchedPosts);
-    } catch (error) {
-      console.error("Failed to fetch posts:", error);
-      toast({
-        variant: "destructive",
-        title: "Failed to load posts",
-        description: "Could not retrieve blog posts from the database.",
-      });
-    } finally {
-      setListLoading(false);
-    }
-  }, [toast]);
+  const fetchPosts = useCallback(
+    async (forceRefresh = false) => {
+      if (forceRefresh) invalidatePostsCache();
+      setListLoading(true);
+      try {
+        const fetchedPosts = await getPosts(forceRefresh);
+        setPosts(fetchedPosts);
+      } catch (error) {
+        console.error('Failed to fetch posts:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Failed to load posts',
+          description: 'Could not retrieve blog posts from the database.',
+        });
+      } finally {
+        setListLoading(false);
+      }
+    },
+    [toast]
+  );
 
   useEffect(() => {
     let isMounted = true;
     const initialLoad = async () => {
-        // Don't show skeleton if we have cached data
-        const cached = await getPosts();
-        if (isMounted && cached.length > 0) {
-            setPosts(cached);
-            setListLoading(false);
-        } else {
-          setListLoading(true);
-        }
-        // Always fetch fresh data in the background
-        await fetchPosts(true);
+      // Don't show skeleton if we have cached data
+      const cached = await getPosts();
+      if (isMounted && cached.length > 0) {
+        setPosts(cached);
+        setListLoading(false);
+      } else {
+        setListLoading(true);
+      }
+      // Always fetch fresh data in the background
+      await fetchPosts(true);
     };
     initialLoad();
     return () => {
-        isMounted = false;
-    }
+      isMounted = false;
+    };
   }, [fetchPosts]);
 
   const handleNewPost = () => {
@@ -161,72 +188,107 @@ export function AdminDashboard() {
     const isEditing = !!editingPost?.id;
     const submissionId = Math.random().toString();
 
-    setSubmissionState({ status: 'saving', message: 'Preparing...', progress: 0, id: submissionId });
-    
+    setSubmissionState({
+      status: 'saving',
+      message: 'Preparing...',
+      progress: 0,
+      id: submissionId,
+    });
+
     try {
-        const { firestore } = initializeFirebase();
-        const postData = {
-          ...data,
-          date: serverTimestamp(),
-        };
+      const { firestore } = initializeFirebase();
+      const postData = {
+        ...data,
+        date: serverTimestamp(),
+      };
 
-        setSubmissionState({ status: 'saving', message: 'Validating data', progress: 33, id: submissionId });
-        await new Promise(res => setTimeout(res, 500));
+      setSubmissionState({
+        status: 'saving',
+        message: 'Validating data',
+        progress: 33,
+        id: submissionId,
+      });
+      await new Promise(res => setTimeout(res, 500));
 
-        setSubmissionState({ status: 'saving', message: 'Saving content', progress: 66, id: submissionId });
-        if (isEditing) {
-            await setDoc(doc(firestore, 'blog_posts', editingPost!.id!), postData, { merge: true });
-        } else {
-            await addDoc(collection(firestore, 'blog_posts'), postData);
-        }
-        
-        setSubmissionState({ status: 'saving', message: 'Finalizing', progress: 100, id: submissionId });
-        await new Promise(res => setTimeout(res, 500));
-        
-        await fetchPosts(true);
-
-        toast({
-            title: <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /><span>{isEditing ? 'Post Updated!' : 'Post Created!'}</span></div>,
-            description: `"${data.title}" has been saved.`,
+      setSubmissionState({
+        status: 'saving',
+        message: 'Saving content',
+        progress: 66,
+        id: submissionId,
+      });
+      if (isEditing) {
+        await setDoc(doc(firestore, 'blog_posts', editingPost!.id!), postData, {
+          merge: true,
         });
+      } else {
+        await addDoc(collection(firestore, 'blog_posts'), postData);
+      }
 
+      setSubmissionState({
+        status: 'saving',
+        message: 'Finalizing',
+        progress: 100,
+        id: submissionId,
+      });
+      await new Promise(res => setTimeout(res, 500));
+
+      await fetchPosts(true);
+
+      toast({
+        title: isEditing ? 'Post Updated!' : 'Post Created!',
+        description: `"${data.title}" has been saved.`,
+      });
     } catch (e: any) {
-        console.error("Error saving post:", e);
-        toast({
-            variant: "destructive",
-            title: "Save Failed",
-            description: e.message || "Could not save the post to the database.",
-        });
+      console.error('Error saving post:', e);
+      toast({
+        variant: 'destructive',
+        title: 'Save Failed',
+        description: e.message || 'Could not save the post to the database.',
+      });
     } finally {
-        setEditingPost(null);
-        setSubmissionState(prev => prev.id === submissionId ? { status: 'idle', message: '', progress: 0 } : prev);
+      setEditingPost(null);
+      setSubmissionState(prev =>
+        prev.id === submissionId
+          ? { status: 'idle', message: '', progress: 0 }
+          : prev
+      );
     }
   };
 
   const handleDeletePost = async (postId: string, postTitle: string) => {
     const submissionId = Math.random().toString();
-    setSubmissionState({ status: 'deleting', message: `Deleting "${postTitle}"...`, progress: 50, id: submissionId });
-    
+    setSubmissionState({
+      status: 'deleting',
+      message: `Deleting "${postTitle}"...`,
+      progress: 50,
+      id: submissionId,
+    });
+
     try {
       const { firestore } = initializeFirebase();
       await new Promise(res => setTimeout(res, 1000));
-      await deleteDoc(doc(firestore, "blog_posts", postId));
-      
+      await deleteDoc(doc(firestore, 'blog_posts', postId));
+
       toast({
-        title: "Post Deleted",
+        title: 'Post Deleted',
         description: `"${postTitle}" has been removed.`,
       });
 
       await fetchPosts(true);
     } catch (error: any) {
-      console.error("Failed to delete post:", error);
+      console.error('Failed to delete post:', error);
       toast({
-        variant: "destructive",
-        title: "Deletion Failed",
-        description: error.message || "Could not delete post from the database.",
+        variant: 'destructive',
+        title: 'Deletion Failed',
+        description:
+          error.message || 'Could not delete post from the database.',
       });
     } finally {
-        setSubmissionState(prev => prev.id === submissionId ? { status: 'idle', message: '', progress: 0 } : prev);
+      setSubmissionState(prev =>
+        prev.id === submissionId
+          ? { status: 'idle', message: '', progress: 0 }
+          : prev
+      );
     }
   };
 
@@ -236,7 +298,7 @@ export function AdminDashboard() {
 
   return (
     <div className="container mx-auto px-4 md:px-6">
-      <div className="flex items-center justify-between mb-8">
+      <div className="mb-8 flex items-center justify-between">
         <h1 className="font-headline text-3xl font-semibold">Blog Posts</h1>
         <div className="flex items-center gap-4">
           <Button onClick={handleNewPost} disabled={isCreateDisabled}>
@@ -259,7 +321,7 @@ export function AdminDashboard() {
           </TooltipProvider>
         </div>
       </div>
-      
+
       {listLoading ? (
         <TableSkeleton />
       ) : (
@@ -275,20 +337,37 @@ export function AdminDashboard() {
             </TableHeader>
             <TableBody>
               {isOperationInProgress && (
-                  <ProgressRow message={submissionState.message} progress={submissionState.progress} />
+                <ProgressRow
+                  message={submissionState.message}
+                  progress={submissionState.progress}
+                />
               )}
-              {posts.map((post) => (
+              {posts.map(post => (
                 <TableRow key={post.id}>
                   <TableCell className="font-medium">{post.title}</TableCell>
                   <TableCell>{post.author}</TableCell>
-                  <TableCell>{new Date(post.date).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}</TableCell>
+                  <TableCell>
+                    {new Date(post.date).toLocaleString('en-US', {
+                      dateStyle: 'medium',
+                      timeStyle: 'short',
+                    })}
+                  </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => handleEditPost(post)} disabled={isOperationInProgress}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleEditPost(post)}
+                      disabled={isOperationInProgress}
+                    >
                       <FileEdit className="h-4 w-4" />
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" disabled={isOperationInProgress}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          disabled={isOperationInProgress}
+                        >
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </AlertDialogTrigger>
@@ -296,12 +375,20 @@ export function AdminDashboard() {
                         <AlertDialogHeader>
                           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            This will permanently delete the post "{post.title}". This action cannot be undone.
+                            This will permanently delete the post "{post.title}
+                            ". This action cannot be undone.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDeletePost(post.id!, post.title)} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                          <AlertDialogAction
+                            onClick={() =>
+                              handleDeletePost(post.id!, post.title)
+                            }
+                            className="bg-destructive hover:bg-destructive/90"
+                          >
+                            Delete
+                          </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
@@ -313,24 +400,33 @@ export function AdminDashboard() {
         </div>
       )}
 
-      <Dialog open={isFormOpen} onOpenChange={(isOpen) => {
-        if (!isOpen) {
-          setEditingPost(null);
-        }
-        setIsFormOpen(isOpen);
-      }}>
-        <DialogContent className="sm:max-w-3xl">
+      <Dialog
+        open={isFormOpen}
+        onOpenChange={isOpen => {
+          if (!isOpen) {
+            setEditingPost(null);
+          }
+          setIsFormOpen(isOpen);
+        }}
+      >
+        <DialogContent className="sm:max-w-4xl">
           <DialogHeader>
-            <DialogTitle>{editingPost ? 'Edit Post' : 'Create New Post'}</DialogTitle>
+            <DialogTitle>
+              {editingPost ? 'Edit Post' : 'Create New Post'}
+            </DialogTitle>
+            <DialogDescription>
+              {editingPost
+                ? 'Update the details for this blog post.'
+                : "Fill in the details for your new blog post. Click save when you're done."}
+            </DialogDescription>
           </DialogHeader>
-          <div className="overflow-y-auto max-h-[70vh] pr-6 -mr-6">
-            <PostForm
-              key={editingPost?.id || 'new'}
-              post={editingPost}
-              onSubmit={handleFormSubmit}
-              onCancel={() => setIsFormOpen(false)}
-            />
-          </div>
+          <PostForm
+            key={editingPost?.id || 'new'}
+            post={editingPost}
+            onSubmit={handleFormSubmit}
+            onCancel={() => setIsFormOpen(false)}
+            isSubmitting={submissionState.status === 'saving'}
+          />
         </DialogContent>
       </Dialog>
     </div>
