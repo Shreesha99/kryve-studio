@@ -44,13 +44,13 @@ export function KeyboardAnimation({ className }: { className?: string }) {
     ]},
     // Bottom Row
     { y: 5, keys: [
-      { x: 0, w: 1.25 }, { x: 1.25, w: 1.25 }, { x: 2.5, w: 1.25 }, { x: 3.75, w: 5.5, s: 'Space' },
+      { x: 0, w: 1.25 }, { x: 1.25, w: 1.25 }, { x: 2.5, w: 1.25 }, { x: 3.75, w: 5.5, s: 'Space', warmed: true },
       { x: 9.25, w: 1.25 }, { x: 10.5, w: 1.25 }, { x: 11.75, w: 1.25 },
       { x: 13, w: 1, s: 'Left' }, { x: 14, w: 1, s: 'Down' }, { x: 15, w: 1, s: 'Right' },
     ]},
   ];
 
-  const totalWidth = 16 * keyWidth + 16 * keyGap;
+  const totalWidth = 16 * keyWidth + 15 * keyGap + 20; // Correct width calculation: 16 units of keys, 15 gaps, and 10px padding on each side.
   const totalHeight = 6 * keyHeight + 5 * keyGap + 20; // Extra space for top bezel
 
   return (
