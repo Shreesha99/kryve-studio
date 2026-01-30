@@ -87,10 +87,10 @@ export function PostForm({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleFormSubmit)}
-        className="flex-grow flex flex-col min-h-0"
+        className="flex h-full flex-col"
       >
-        <ScrollArea className="flex-grow pr-6 -mr-6">
-          <div className="space-y-6 py-1">
+        <ScrollArea className="flex-auto">
+          <div className="space-y-6 px-1 py-1 pr-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <FormField
                 control={form.control}
@@ -196,7 +196,7 @@ export function PostForm({
             />
           </div>
         </ScrollArea>
-        <div className="flex-shrink-0 flex justify-end gap-4 pt-4 border-t mt-auto">
+        <div className="flex flex-shrink-0 justify-end gap-4 border-t pt-4">
           <Button
             type="button"
             variant="outline"

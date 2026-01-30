@@ -422,13 +422,15 @@ export function AdminDashboard() {
                 : "Fill in the details for your new blog post. Click save when you're done."}
             </DialogDescription>
           </DialogHeader>
-          <PostForm
-            key={editingPost?.id || 'new'}
-            post={editingPost}
-            onSubmit={handleFormSubmit}
-            onCancel={() => setIsFormOpen(false)}
-            isSubmitting={submissionState.status === 'saving'}
-          />
+          <div className="flex-grow min-h-0">
+            <PostForm
+              key={editingPost?.id || 'new'}
+              post={editingPost}
+              onSubmit={handleFormSubmit}
+              onCancel={() => setIsFormOpen(false)}
+              isSubmitting={submissionState.status === 'saving'}
+            />
+          </div>
         </DialogContent>
       </Dialog>
     </div>
