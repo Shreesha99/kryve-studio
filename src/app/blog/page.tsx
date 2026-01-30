@@ -218,7 +218,7 @@ export default function BlogPage() {
                         <KeyboardAnimation className="mb-4" />
                         <h2 className="font-headline text-3xl font-semibold">Our Keys are Warming Up</h2>
                         <p className="mt-3 max-w-md text-muted-foreground md:text-lg">
-                          We're currently crafting some new articles. Please check back soon for fresh insights and stories!
+                          Type to warm our keys up for our first blog article. Who knows, we might consider it in one of our blogs 😉
                         </p>
                       </div>
                     </AnimateOnScroll>

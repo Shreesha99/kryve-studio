@@ -59,6 +59,15 @@ const rows = [
 ];
 
 const warmedKeys = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space'];
+const hintTriggers: { [key: string]: string } = {
+  'this is awesome': 'Not just this, you are as well!',
+  'elysium': 'You found our name! ✨',
+  'hello world': 'The classic. Welcome, coder.',
+  'gsap': 'The secret sauce for our animations.',
+  'react': 'The foundation of our UIs.',
+  'nextjs': 'Powering this very site.',
+  'magic': 'I know, right? It feels like magic.',
+};
 
 const totalWidth = 17.25 * keyWidth + 16.25 * keyGap + 20;
 const totalHeight = 6 * keyHeight + 5 * keyGap + 20;
@@ -70,6 +79,7 @@ export function KeyboardAnimation({ className }: { className?: string }) {
 
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [typedText, setTypedText] = useState('');
+  const [interactiveHint, setInteractiveHint] = useState('');
   const [isMounted, setIsMounted] = useState(false);
   const hasAnimatedIn = useRef(false);
 
@@ -149,11 +159,11 @@ export function KeyboardAnimation({ className }: { className?: string }) {
         }
 
         if (e.key.length === 1) {
-          setTypedText(prev => (prev + e.key).slice(-100)); // Limit text length
+          setTypedText(prev => (prev + e.key).slice(-150));
         } else if (e.code === 'Backspace') {
           setTypedText(prev => prev.slice(0, -1));
         } else if (e.code === 'Space') {
-          setTypedText(prev => prev + ' ');
+          setTypedText(prev => (prev + ' ').slice(-150));
         } else if (e.code === 'Escape') {
           setTypedText('');
         }
@@ -179,6 +189,30 @@ export function KeyboardAnimation({ className }: { className?: string }) {
     return () => ctx.revert();
   }, [isMounted, isTouchDevice]);
 
+  // Effect for interactive hints
+  useEffect(() => {
+    if (isTouchDevice || !typedText) {
+      setInteractiveHint('');
+      return;
+    }
+
+    const handler = setTimeout(() => {
+      let foundHint = '';
+      const lowercasedText = typedText.toLowerCase();
+      for (const trigger in hintTriggers) {
+        if (lowercasedText.includes(trigger)) {
+          foundHint = hintTriggers[trigger];
+          break;
+        }
+      }
+      setInteractiveHint(foundHint);
+    }, 500); // Debounce time
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [typedText, isTouchDevice]);
+
   return (
     <div ref={componentRef} className={cn('relative flex w-full flex-col items-center justify-center gap-6', className)}>
       
@@ -186,13 +220,16 @@ export function KeyboardAnimation({ className }: { className?: string }) {
         <div className="flex h-24 w-full max-w-xl flex-col items-center justify-start">
           <div ref={textboxContainerRef} className="w-full opacity-0" style={{ transform: 'translateY(20px)'}}>
             <div className="relative rounded-lg border bg-card/50 p-4 shadow-inner backdrop-blur-sm">
-              <p className="min-h-[2.5em] font-mono text-foreground">{typedText}<span className="animate-pulse">|</span></p>
+              <p className="min-h-[2.5em] font-mono text-foreground break-words">{typedText}<span className="animate-pulse">|</span></p>
               <Button variant="ghost" size="icon" className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setTypedText('')}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
           </div>
           <p ref={hintRef} className="mt-2 text-center text-sm text-muted-foreground">Start typing to see the magic.</p>
+          <p className={cn("mt-2 text-center text-sm text-primary transition-opacity duration-300", interactiveHint ? 'opacity-100' : 'opacity-0')}>
+            {interactiveHint || ' '}
+          </p>
         </div>
       )}
 
