@@ -52,17 +52,19 @@ export function PostForm({ post, onSuccess }: PostFormProps) {
     try {
       const { firestore } = initializeFirebase();
       
+      const postData = {
+        ...data,
+        date: post?.date ? new Date(post.date) : serverTimestamp(),
+      }
+
       if (post?.id) {
         // Editing existing post: merge new data with existing document
         const postRef = doc(firestore, 'posts', post.id);
-        await setDoc(postRef, data, { merge: true });
+        await setDoc(postRef, postData, { merge: true });
       } else {
         // Creating new post: add form data and creation date
         const postsCollection = collection(firestore, 'posts');
-        await addDoc(postsCollection, {
-          ...data,
-          date: serverTimestamp(),
-        });
+        await addDoc(postsCollection, postData);
       }
       onSuccess();
     } catch (e: any) {
@@ -74,7 +76,7 @@ export function PostForm({ post, onSuccess }: PostFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-h-[70vh] overflow-y-auto p-1 pr-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 p-1 pr-4">
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="space-y-1">
           <Label htmlFor="title">Title</Label>

@@ -19,9 +19,10 @@ import {
 import { AnimateOnScroll } from '@/components/common/animate-on-scroll';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Loader2 } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { AnimatedGradient } from '@/components/common/animated-gradient';
 import { BlogGenerator } from '@/components/blog/blog-generator';
+import { BlogPageSkeleton } from '@/components/blog/blog-page-skeleton';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -190,9 +191,7 @@ export default function BlogPage() {
 
           <div className="mt-16 space-y-16">
               {loading ? (
-                <div className="flex justify-center items-center h-64">
-                  <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                </div>
+                <BlogPageSkeleton />
               ) : (
                 <>
                   {featuredPost && <FeaturedPostCard post={featuredPost} />}

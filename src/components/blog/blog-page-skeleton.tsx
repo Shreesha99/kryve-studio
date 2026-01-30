@@ -1,8 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Header } from "@/components/common/header";
-import { Footer } from "@/components/common/footer";
-import { AnimatedGradient } from "../common/animated-gradient";
 
 function FeaturedPostCardSkeleton() {
   return (
@@ -49,31 +46,16 @@ function PostCardSkeleton() {
 
 export function BlogPageSkeleton() {
     return (
-        <div className="relative flex min-h-screen flex-col bg-background">
-            <AnimatedGradient className="opacity-20 dark:opacity-10" />
-            <Header />
-            <main className="relative z-10 flex-1">
-                <section className="container mx-auto max-w-7xl px-4 py-16 pt-32 md:px-6 md:py-24 md:pt-48">
-                <div className="space-y-4 text-center mb-16">
-                    <Skeleton className="h-12 w-1/2 mx-auto" />
-                    <Skeleton className="h-6 w-3/4 mx-auto mt-4" />
-                </div>
-
-                <div className="animate-pulse space-y-16">
-                    <FeaturedPostCardSkeleton />
-
-                    <div className="space-y-8">
-                      <Skeleton className="h-8 w-1/4 mt-16" />
-                      <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 lg:gap-12">
-                          <PostCardSkeleton />
-                          <PostCardSkeleton />
-                          <PostCardSkeleton />
-                      </div>
-                    </div>
-                </div>
-                </section>
-            </main>
-            <Footer />
+        <div className="animate-pulse space-y-16">
+            <FeaturedPostCardSkeleton />
+            <div className="space-y-8">
+              <Skeleton className="h-8 w-1/4 mt-16" />
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 lg:gap-12">
+                  <PostCardSkeleton />
+                  <PostCardSkeleton />
+                  <PostCardSkeleton />
+              </div>
+            </div>
         </div>
     );
 }

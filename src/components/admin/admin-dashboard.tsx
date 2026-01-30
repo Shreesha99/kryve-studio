@@ -150,7 +150,7 @@ export function AdminDashboard() {
           <DialogHeader>
             <DialogTitle>{editingPost ? 'Edit Post' : 'Create New Post'}</DialogTitle>
           </DialogHeader>
-          <div className="py-4">
+          <div className="py-4 overflow-y-auto">
             <PostForm post={editingPost} onSuccess={onFormSuccess} />
           </div>
         </DialogContent>
