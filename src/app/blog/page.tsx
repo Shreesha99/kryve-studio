@@ -157,8 +157,20 @@ export default function BlogPage() {
     });
 
     if (titleRef.current && paragraphRef.current) {
-        tl.to(titleRef.current, { y: 0, opacity: 1, duration: 1, ease: 'power3.out' })
-          .to(paragraphRef.current, { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out' }, '-=0.7');
+        const titleSpans = gsap.utils.toArray('span', titleRef.current);
+        // Animate title
+        tl.fromTo(
+          titleSpans,
+          { yPercent: 120 },
+          { yPercent: 0, duration: 1.2, ease: 'power3.out' }
+        )
+        // Animate paragraph
+        .fromTo(
+          paragraphRef.current,
+          { y: 20, opacity: 0 },
+          { y: 0, opacity: 1, duration: 1, ease: 'power3.out' },
+          '-=0.9'
+        );
     }
 
     return () => {
@@ -182,13 +194,15 @@ export default function BlogPage() {
           <div className="space-y-4 text-center">
             <h1
               ref={titleRef}
-              className="font-headline text-4xl font-semibold tracking-tighter sm:text-5xl md:text-6xl opacity-0 translate-y-5"
+              className="font-headline text-4xl font-semibold tracking-tighter sm:text-5xl md:text-6xl"
             >
-                From The Project
+              <div className="overflow-hidden py-1">
+                  <span className="inline-block">From The Project</span>
+              </div>
             </h1>
             <p
               ref={paragraphRef}
-              className="mx-auto max-w-2xl text-muted-foreground md:text-xl opacity-0 translate-y-5"
+              className="mx-auto max-w-2xl text-muted-foreground md:text-xl"
             >
               News, insights, and stories from the team at The Elysium Project.
             </p>
