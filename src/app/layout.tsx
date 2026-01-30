@@ -14,7 +14,7 @@ const siteConfig = {
   url: "https://www.the-elysium-project.in",
   ogImage: "https://www.the-elysium-project.in/og-image.png",
   description:
-    "The Elysium Project is a premium digital studio specializing in web design, development, and branding. We build beautiful, high-performance websites with Next.js and React that drive results and create lasting impact.",
+    "The Elysium Project is a premium digital studio that blends visionary design with precision engineering. We build beautiful, high-performance websites with Next.js, React, and AI that captivate users and create lasting impact.",
   keywords: [
     "Web Design",
     "Web Development",
@@ -27,6 +27,11 @@ const siteConfig = {
     "UI/UX Design",
     "SEO",
     "Performance Optimization",
+    "AI Content Generation",
+    "Interactive Web Design",
+    "GSAP Animation",
+    "Firestore",
+    "Genkit",
     "Bengaluru",
     "India",
     "Creative Agency",
