@@ -3,10 +3,13 @@
 import { useState, useEffect } from 'react';
 import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 import { getPostBySlug, type Post } from '@/lib/blog';
 import { Header } from '@/components/common/header';
 import { Footer } from '@/components/common/footer';
 import { PageLoader } from '@/components/common/page-loader';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 export default function BlogPostPage() {
   const params = useParams();
@@ -44,6 +47,18 @@ export default function BlogPostPage() {
       <Header />
       <main className="flex-1 bg-background">
         <article className="container mx-auto max-w-4xl px-4 py-16 md:px-6 md:py-24">
+          <div className="mb-8">
+            <Button
+              asChild
+              variant="ghost"
+              className="pl-0 text-muted-foreground hover:text-foreground"
+            >
+              <Link href="/blog">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to all articles
+              </Link>
+            </Button>
+          </div>
           <div className="space-y-4 text-center">
             <h1 className="font-headline text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl">
               {post.title}
