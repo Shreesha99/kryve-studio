@@ -69,6 +69,10 @@ function FeaturedPostCard({ post }: { post: Post }) {
         const image = card.querySelector('img');
         if (!image) return;
 
+        // This makes the image slightly larger than its container, giving it room to move.
+        gsap.set(image, { scale: 1.15 });
+
+        // This animates the image's vertical position as the user scrolls, creating a parallax effect.
         gsap.to(image, {
             yPercent: -15,
             ease: 'none',

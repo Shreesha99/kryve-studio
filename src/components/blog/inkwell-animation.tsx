@@ -6,45 +6,49 @@ import { cn } from '@/lib/utils';
 
 export function InkwellAnimation({ className }: { className?: string }) {
   const svgRef = useRef<SVGSVGElement>(null);
-  const quillRef = useRef<SVGGElement>(null);
-  const inkDropRef = useRef<SVGPathElement>(null);
+  const penRef = useRef<SVGGElement>(null);
+  const lineRef = useRef<SVGPathElement>(null);
 
   useEffect(() => {
     const svg = svgRef.current;
-    const quill = quillRef.current;
-    const inkDrop = inkDropRef.current;
+    const pen = penRef.current;
+    const line = lineRef.current;
 
-    if (!svg || !quill || !inkDrop) return;
+    if (!svg || !pen || !line) return;
 
-    gsap.set(quill, { transformOrigin: 'bottom right', rotate: 15 });
-    const dropLength = inkDrop.getTotalLength();
-    gsap.set(inkDrop, {
-      strokeDasharray: dropLength,
-      strokeDashoffset: dropLength,
-      opacity: 0,
+    const lineLength = line.getTotalLength();
+    gsap.set(line, {
+      strokeDasharray: lineLength,
+      strokeDashoffset: lineLength,
+    });
+    
+    // Position pen at the start of the line path
+    const startPoint = line.getPointAtLength(0);
+    gsap.set(pen, {
+        x: startPoint.x - 55, // Adjustments to position pen tip correctly
+        y: startPoint.y - 65,
+        rotation: 15,
+        transformOrigin: 'bottom right',
+        opacity: 0,
     });
 
     const masterTl = gsap.timeline({
       repeat: -1,
-      repeatDelay: 2,
+      repeatDelay: 1,
       defaults: { ease: 'power1.inOut' },
     });
 
     masterTl
-      // Dip the quill
-      .to(quill, { y: 20, rotation: 5, duration: 1 })
-      // Pull it out
-      .to(quill, { y: 0, rotation: 15, duration: 1 })
-      // Brief pause
-      .to({}, { duration: 0.5 })
-      // Animate the ink drop
-      .set(inkDrop, { opacity: 1, strokeDashoffset: dropLength })
-      .to(inkDrop, {
-        strokeDashoffset: 0,
-        duration: 0.6,
-        ease: 'power2.out',
-      })
-      .to(inkDrop, { opacity: 0, duration: 0.5 }, '+=0.5');
+      .to(pen, { opacity: 1, duration: 0.5 })
+      .to(line, { strokeDashoffset: 0, duration: 1.5, ease: 'none' })
+      .to(pen, {
+          x: '+=40', // Move pen across the line path
+          duration: 1.5,
+          ease: 'none',
+      }, '<')
+      .to(pen, { opacity: 0, y: '-=10', duration: 0.5, ease: 'power2.out' })
+      .set(line, { strokeDashoffset: lineLength })
+      .set(pen, { x: startPoint.x - 55, y: startPoint.y - 65, opacity: 0 });
 
     return () => {
       masterTl.kill();
@@ -52,42 +56,26 @@ export function InkwellAnimation({ className }: { className?: string }) {
   }, []);
 
   return (
-    <div className={cn("relative h-32 w-32", className)}>
+    <div className={cn("relative h-40 w-40", className)}>
         <svg ref={svgRef} viewBox="0 0 100 100" className="h-full w-full">
-            {/* Inkwell */}
-            <path
-                d="M30 85 C 20 85, 20 70, 30 70 L 70 70 C 80 70, 80 85, 70 85 Z"
-                className="fill-secondary stroke-foreground"
-                strokeWidth="1.5"
-            />
-            <path
-                d="M35 70 C 35 60, 65 60, 65 70"
-                className="fill-none stroke-foreground"
-                strokeWidth="1.5"
-            />
-            {/* Quill */}
-            <g ref={quillRef}>
-                <path
-                    d="M 80 10 L 50 70"
-                    className="stroke-foreground"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                />
-                <path
-                    d="M 80 10 C 85 20, 85 30, 75 40 M 75 20 C 80 30, 80 40, 70 50 M 70 30 C 75 40, 75 50, 65 60"
-                    className="fill-none stroke-foreground"
-                    strokeWidth="1"
-                    strokeLinecap="round"
-                />
+            {/* Notepad */}
+            <rect x="15" y="20" width="70" height="60" rx="3" className="fill-card stroke-foreground/30" strokeWidth="1.5"/>
+            <path d="M 15 28 h 70" className="stroke-muted-foreground/30" strokeWidth="0.5" />
+            <path d="M 15 36 h 70" className="stroke-muted-foreground/30" strokeWidth="0.5" />
+            <path d="M 15 44 h 70" className="stroke-muted-foreground/30" strokeWidth="0.5" />
+            <path d="M 15 52 h 70" className="stroke-muted-foreground/30" strokeWidth="0.5" />
+            <path d="M 15 60 h 70" className="stroke-muted-foreground/30" strokeWidth="0.5" />
+            <path d="M 15 68 h 70" className="stroke-muted-foreground/30" strokeWidth="0.5" />
+            
+            {/* The line to be written */}
+            <path ref={lineRef} d="M30 46 C 40 50, 60 42, 70 46" className="fill-none stroke-primary" strokeWidth="2" strokeLinecap="round"/>
+            
+            {/* Pen */}
+            <g ref={penRef}>
+                <path d="M 80 15 L 95 30 L 65 60 L 50 45 Z" className="fill-foreground" />
+                <path d="M 50 45 L 48 47 L 78 77 L 80 75 Z" className="fill-muted-foreground" />
+                <rect x="78" y="28" width="14" height="4" rx="1" transform="rotate(45 85 30)" className="fill-primary"/>
             </g>
-            {/* Ink Drop/Scribble Animation */}
-            <path
-                ref={inkDropRef}
-                d="M45 60 C 50 55, 60 65, 65 60"
-                className="fill-none stroke-primary"
-                strokeWidth="2"
-                strokeLinecap="round"
-            />
         </svg>
     </div>
   );
