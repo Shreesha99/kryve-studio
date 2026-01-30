@@ -4,7 +4,7 @@ import { useLenis } from '@/components/common/smooth-scroll-provider';
 import { Post, invalidatePostsCache, getPosts } from '@/lib/blog';
 import { Button } from '@/components/ui/button';
 import { logout } from '@/actions/auth';
-import { Loader2, PlusCircle, Trash2, FileEdit, Check, X } from 'lucide-react';
+import { Loader2, PlusCircle, Trash2, FileEdit, Check } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -38,55 +38,74 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import { gsap } from 'gsap';
 
+const TableSkeleton = () => (
+  <div className="rounded-lg border">
+      <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Title</TableHead>
+              <TableHead>Author</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+              {[...Array(5)].map((_, i) => (
+                  <TableRow key={i}>
+                      <TableCell><Skeleton className="h-5 w-3/4 rounded-md" /></TableCell>
+                      <TableCell><Skeleton className="h-5 w-2/3 rounded-md" /></TableCell>
+                      <TableCell><Skeleton className="h-5 w-1/2 rounded-md" /></TableCell>
+                      <TableCell className="flex justify-end gap-2">
+                          <Skeleton className="h-8 w-8 rounded-md" />
+                          <Skeleton className="h-8 w-8 rounded-md" />
+                      </TableCell>
+                  </TableRow>
+              ))}
+          </TableBody>
+      </Table>
+  </div>
+);
+
+const ProgressRow = ({ progress, text }: { progress: number; text: string }) => (
+  <TableRow className="bg-muted/50">
+    <TableCell colSpan={4} className="p-0">
+      <div className="flex items-center gap-4 p-4">
+        <div className="w-40 text-right text-sm font-medium text-muted-foreground">{text}</div>
+        <Progress value={progress} className="h-2 flex-1" />
+      </div>
+    </TableCell>
+  </TableRow>
+);
+
+
 export function AdminDashboard() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [listLoading, setListLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [progressText, setProgressText] = useState('');
   const { toast } = useToast();
-  const progressRef = useRef<HTMLDivElement>(null);
-  const progressTl = useRef<gsap.core.Timeline | null>(null);
 
   const lenis = useLenis();
+  const progressTl = useRef<gsap.core.Timeline | null>(null);
 
-  // Animate progress bar
-  useEffect(() => {
-    if (isSaving) {
-      progressTl.current?.kill(); // Kill any existing animation
-      progressTl.current = gsap.timeline();
-      progressTl.current.fromTo(
-        progressRef.current,
-        { scaleX: 0 },
-        {
-          scaleX: 0.9,
-          duration: 8, // Simulate a longer process
-          ease: 'power1.out',
-        }
-      );
-    }
-  }, [isSaving]);
-
-  // Effect to control body scroll when modal is open
   useEffect(() => {
     if (isFormOpen) {
       lenis?.stop();
-      document.body.style.overflow = 'hidden';
     } else {
       lenis?.start();
-      document.body.style.overflow = '';
     }
-    // Cleanup on component unmount
     return () => {
       lenis?.start();
-      document.body.style.overflow = '';
     };
   }, [isFormOpen, lenis]);
 
   const fetchPosts = useCallback(async () => {
     setListLoading(true);
     try {
-      const fetchedPosts = await getPosts(true); // forceRefresh = true
+      const fetchedPosts = await getPosts(true);
       setPosts(fetchedPosts);
     } catch (error) {
       console.error("Failed to fetch posts:", error);
@@ -114,121 +133,122 @@ export function AdminDashboard() {
     setIsFormOpen(true);
   };
 
-  const completeSaveAnimation = (callback?: () => void) => {
-    if (progressTl.current) {
-        progressTl.current.to(progressRef.current, {
-            scaleX: 1,
-            duration: 0.4,
-            ease: 'power1.in',
-            onComplete: () => {
-                setIsSaving(false);
-                if (callback) callback();
-            }
-        });
-    } else {
-        setIsSaving(false);
-        if (callback) callback();
-    }
-  }
-
   const handleFormSubmit = (data: FormValues) => {
     setIsFormOpen(false);
     setIsSaving(true);
-    
+    setProgress(0);
+    setProgressText('Starting...');
+  
     const isEditing = !!editingPost?.id;
-    
-    const { firestore } = initializeFirebase();
-    const postData = {
-      ...data,
-      date: new Date(),
-    };
-
-    const writePromise = isEditing
-      ? setDoc(doc(firestore, 'posts', editingPost!.id!), postData, { merge: true })
-      : addDoc(collection(firestore, 'posts'), postData);
-
-    writePromise
-      .then(() => {
-        toast({
-          title: (
-            <div className="flex items-center gap-2">
-              <Check className="h-4 w-4 text-green-500" />
-              <span>{isEditing ? 'Post Updated!' : 'Post Created!'}</span>
-            </div>
-          ),
-          description: `"${data.title}" has been saved.`,
-        });
-        invalidatePostsCache();
-        completeSaveAnimation(() => fetchPosts());
+  
+    progressTl.current?.kill();
+    progressTl.current = gsap.timeline({
+      onComplete: () => {
+        const { firestore } = initializeFirebase();
+        const postData = {
+          ...data,
+          date: new Date().toISOString(), // Use ISO string for consistency
+        };
+  
+        const writePromise = isEditing
+          ? setDoc(doc(firestore, 'posts', editingPost!.id!), postData, { merge: true })
+          : addDoc(collection(firestore, 'posts'), postData);
+  
+        writePromise
+          .then(() => {
+            const progressProxy = { value: 90 };
+            gsap.to(progressProxy, {
+              value: 100,
+              duration: 0.5,
+              onUpdate: function() { setProgress(this.targets()[0].value); },
+              onComplete: () => {
+                toast({
+                  title: <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /><span>{isEditing ? 'Post Updated!' : 'Post Created!'}</span></div>,
+                  description: `"${data.title}" has been saved.`,
+                });
+                invalidatePostsCache();
+                fetchPosts();
+                setIsSaving(false);
+              }
+            });
+          })
+          .catch((e: any) => {
+            console.error("Error saving post:", e);
+            progressTl.current?.kill();
+            toast({
+              variant: "destructive",
+              title: "Save failed",
+              description: e.message || "Could not save the post. Check console for details.",
+            });
+            setIsSaving(false);
+          });
+      }
+    });
+  
+    const progressProxy = { value: 0 };
+    progressTl.current
+      .to(progressProxy, {
+        value: 25, duration: 0.5, ease: 'none',
+        onStart: () => setProgressText('Validating data...'),
+        onUpdate: () => setProgress(progressProxy.value),
       })
-      .catch((e: any) => {
-        console.error("Error saving post:", e);
-        toast({
-          variant: "destructive",
-          title: "Save failed",
-          description: e.message || "Could not save the post.",
-        });
-        completeSaveAnimation();
+      .to(progressProxy, {
+        value: 60, duration: 1.0, ease: 'none',
+        onStart: () => setProgressText('Saving content...'),
+        onUpdate: () => setProgress(progressProxy.value),
+      })
+      .to(progressProxy, {
+        value: 90, duration: 1.0, ease: 'none',
+        onStart: () => setProgressText('Finalizing...'),
+        onUpdate: () => setProgress(progressProxy.value),
       });
   };
 
-
-  const handleDeletePost = async (postId: string) => {
+  const handleDeletePost = (postId: string, postTitle: string) => {
     setIsSaving(true);
-    try {
-      const { firestore } = initializeFirebase();
-      await deleteDoc(doc(firestore, "posts", postId));
-      toast({
-        title: "Post Deleted",
-        description: "The blog post has been successfully removed.",
-      });
-      invalidatePostsCache();
-      completeSaveAnimation(() => fetchPosts());
-    } catch (error) {
-      console.error("Failed to delete post:", error);
-      toast({
-        variant: "destructive",
-        title: "Deletion Failed",
-        description: "Error: Could not delete post.",
-      });
-      completeSaveAnimation();
-    }
-  };
+    setProgress(0);
+    setProgressText('Starting delete...');
 
-  const TableSkeleton = () => (
-    <div className="rounded-lg border">
-        <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Author</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-                {[...Array(5)].map((_, i) => (
-                    <TableRow key={i}>
-                        <TableCell><Skeleton className="h-5 w-3/4 rounded-md" /></TableCell>
-                        <TableCell><Skeleton className="h-5 w-2/3 rounded-md" /></TableCell>
-                        <TableCell><Skeleton className="h-5 w-1/2 rounded-md" /></TableCell>
-                        <TableCell className="flex justify-end gap-2">
-                            <Skeleton className="h-8 w-8 rounded-md" />
-                            <Skeleton className="h-8 w-8 rounded-md" />
-                        </TableCell>
-                    </TableRow>
-                ))}
-            </TableBody>
-        </Table>
-    </div>
-  );
+    progressTl.current?.kill();
+    progressTl.current = gsap.timeline();
+    const progressProxy = { value: 0 };
+    
+    progressTl.current.to(progressProxy, {
+      value: 100,
+      duration: 1.5,
+      ease: 'power1.out',
+      onUpdate: () => setProgress(progressProxy.value),
+      onStart: () => setProgressText('Removing post...'),
+      onComplete: async () => {
+        try {
+          const { firestore } = initializeFirebase();
+          await deleteDoc(doc(firestore, "posts", postId));
+          toast({
+            title: "Post Deleted",
+            description: `"${postTitle}" has been removed.`,
+          });
+          invalidatePostsCache();
+          fetchPosts();
+        } catch (error) {
+          console.error("Failed to delete post:", error);
+          toast({
+            variant: "destructive",
+            title: "Deletion Failed",
+            description: "Error: Could not delete post.",
+          });
+        } finally {
+          setIsSaving(false);
+        }
+      }
+    });
+  };
 
   return (
     <div className="container mx-auto px-4 md:px-6">
       <div className="flex items-center justify-between mb-8">
         <h1 className="font-headline text-3xl font-semibold">Blog Posts</h1>
         <div className="flex items-center gap-4">
-          <Button onClick={handleNewPost} disabled={isSaving}>
+          <Button onClick={handleNewPost} disabled={isSaving || listLoading}>
             <PlusCircle className="mr-2 h-4 w-4" /> Create New
           </Button>
           <form action={logout}>
@@ -251,23 +271,12 @@ export function AdminDashboard() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isSaving && (
-                <TableRow>
-                  <TableCell colSpan={4} className="p-0">
-                    <div className="relative h-1 w-full overflow-hidden">
-                      <div
-                        ref={progressRef}
-                        className="h-full origin-left bg-primary"
-                      />
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
+               {isSaving && <ProgressRow progress={progress} text={progressText} />}
               {posts.map((post) => (
                 <TableRow key={post.id}>
                   <TableCell className="font-medium">{post.title}</TableCell>
                   <TableCell>{post.author}</TableCell>
-                  <TableCell>{new Date(post.date).toLocaleString()}</TableCell>
+                  <TableCell>{new Date(post.date).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}</TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="icon" onClick={() => handleEditPost(post)} disabled={isSaving}>
                       <FileEdit className="h-4 w-4" />
@@ -287,7 +296,7 @@ export function AdminDashboard() {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDeletePost(post.id!)} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                          <AlertDialogAction onClick={() => handleDeletePost(post.id!, post.title)} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
@@ -300,13 +309,13 @@ export function AdminDashboard() {
       )}
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="sm:max-w-3xl flex flex-col max-h-[90vh]">
+        <DialogContent className="sm:max-w-3xl">
           <DialogHeader>
             <DialogTitle>{editingPost ? 'Edit Post' : 'Create New Post'}</DialogTitle>
           </DialogHeader>
-          <div className="flex-grow overflow-y-auto -mr-6 pr-6">
+           <div className="overflow-y-auto max-h-[70vh] pr-6 -mr-6">
             <PostForm
-              key={editingPost?.id || 'new-post'}
+              key={editingPost?.id || 'new'}
               post={editingPost}
               onSubmit={handleFormSubmit}
             />
