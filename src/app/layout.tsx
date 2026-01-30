@@ -114,7 +114,6 @@ export default function RootLayout({
             {children}
             <ScrollToTop />
           </AppProviders>
-          <EasterEggHint />
           <CookieBanner />
           <Toaster />
         </FirebaseClientProvider>

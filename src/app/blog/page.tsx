@@ -24,6 +24,7 @@ import { AnimatedGradient } from '@/components/common/animated-gradient';
 import { BlogGenerator } from '@/components/blog/blog-generator';
 import { BlogPageSkeleton } from '@/components/blog/blog-page-skeleton';
 import { KeyboardAnimation } from '@/components/blog/keyboard-animation';
+import { EasterEggHint } from '@/components/common/easter-egg-hint';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -254,6 +255,7 @@ export default function BlogPage() {
         <BlogGenerator />
       </main>
       <Footer />
+      <EasterEggHint />
     </div>
   );
 }
