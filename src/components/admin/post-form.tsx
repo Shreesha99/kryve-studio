@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/form';
 import { Loader2 } from 'lucide-react';
 import { useEffect } from 'react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const formSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
@@ -85,7 +86,8 @@ export function PostForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
-        <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-4 py-1">
+        <ScrollArea className="h-[60vh]">
+          <div className="space-y-6 pr-6 py-1">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <FormField
                 control={form.control}
@@ -189,8 +191,9 @@ export function PostForm({
                 </FormItem>
               )}
             />
-        </div>
-        <div className="flex justify-end gap-4">
+          </div>
+        </ScrollArea>
+        <div className="flex justify-end gap-4 pt-4">
           <Button
             type="button"
             variant="outline"

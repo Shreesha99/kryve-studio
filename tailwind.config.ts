@@ -78,12 +78,17 @@ export default {
         'path-draw': {
           'to': { strokeDashoffset: '0' },
         },
+        'icon-pop-in': {
+          '0%': { opacity: '0', transform: 'scale(0.5) rotate(-15deg)' },
+          '100%': { opacity: '1', transform: 'scale(1) rotate(0deg)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'fade-in-up': 'fade-in-up 0.8s ease-out forwards',
         'path-draw': 'path-draw 3s ease-out 0.8s forwards',
+        'icon-pop-in': 'icon-pop-in 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards',
       },
     },
   },
