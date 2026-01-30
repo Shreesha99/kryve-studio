@@ -1,16 +1,14 @@
 'use client';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Post, invalidatePostsCache } from '@/lib/blog';
+import { type Post } from '@/lib/blog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
-import { useState } from 'react';
-import { addDoc, collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { initializeFirebase } from '@/firebase';
+import { useEffect } from 'react';
 
 const formSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
@@ -22,23 +20,22 @@ const formSchema = z.object({
   imageHint: z.string().optional(),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+export type FormValues = z.infer<typeof formSchema>;
 
 interface PostFormProps {
   post?: Post | null;
-  onSuccess: () => void;
+  onSubmit: (data: FormValues) => void;
+  isSubmitting: boolean;
+  error: string | null;
 }
 
-export function PostForm({ post, onSuccess }: PostFormProps) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  
-  const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
+export function PostForm({ post, onSubmit, isSubmitting, error }: PostFormProps) {
+  const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: post?.title || '',
       slug: post?.slug || '',
-      author: post?.author || '',
+      author: post?.author || 'The Elysium Project',
       excerpt: post?.excerpt || '',
       content: post?.content || '',
       imageUrl: post?.imageUrl || 'https://picsum.photos/seed/default/1200/800',
@@ -46,35 +43,18 @@ export function PostForm({ post, onSuccess }: PostFormProps) {
     }
   });
 
-  const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const { firestore } = initializeFirebase();
-      
-      const postData = {
-        ...data,
-        date: post?.id ? new Date(post.date) : serverTimestamp(),
-      }
-
-      if (post?.id) {
-        // Editing existing post
-        const postRef = doc(firestore, 'posts', post.id);
-        await setDoc(postRef, postData, { merge: true });
-      } else {
-        // Creating new post
-        const postsCollection = collection(firestore, 'posts');
-        await addDoc(postsCollection, postData);
-      }
-      invalidatePostsCache();
-      setLoading(false);
-      onSuccess();
-    } catch (e: any) {
-      console.error("Error saving post:", e);
-      setError(`An error occurred: ${e.message || 'Please try again.'}`);
-      setLoading(false);
+  // Auto-generate slug from title for new posts
+  const watchedTitle = watch('title');
+  useEffect(() => {
+    if (!post?.id && watchedTitle) { // Only for new posts
+      const slug = watchedTitle
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .trim()
+        .replace(/\s+/g, '-');
+      setValue('slug', slug, { shouldValidate: true });
     }
-  };
+  }, [watchedTitle, setValue, post?.id]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -104,7 +84,7 @@ export function PostForm({ post, onSuccess }: PostFormProps) {
             {errors.imageUrl && <p className="text-sm text-destructive">{errors.imageUrl?.message}</p>}
         </div>
         <div className="space-y-1">
-            <Label htmlFor="imageHint">Image Hint</Label>
+            <Label htmlFor="imageHint">Image Hint (for AI)</Label>
             <Input id="imageHint" {...register("imageHint")} />
             {errors.imageHint && <p className="text-sm text-destructive">{errors.imageHint?.message}</p>}
         </div>
@@ -125,8 +105,8 @@ export function PostForm({ post, onSuccess }: PostFormProps) {
       {error && <p className="text-sm text-destructive">{error}</p>}
       
       <div className="flex justify-end pt-4">
-        <Button type="submit" disabled={loading}>
-          {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save Post'}
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save Post'}
         </Button>
       </div>
     </form>

@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
 import { useLenis } from '@/components/common/smooth-scroll-provider';
-import { Post, getPosts, invalidatePostsCache } from '@/lib/blog';
+import { Post, invalidatePostsCache, getPosts } from '@/lib/blog';
 import { Button } from '@/components/ui/button';
 import { logout } from '@/actions/auth';
 import { Loader2, PlusCircle, Trash2, FileEdit } from 'lucide-react';
@@ -19,7 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { PostForm } from './post-form';
+import { PostForm, type FormValues } from './post-form';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,32 +32,43 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { initializeFirebase } from '@/firebase';
-import { doc, deleteDoc } from 'firebase/firestore';
+import { addDoc, collection, doc, setDoc, serverTimestamp, deleteDoc } from 'firebase/firestore';
 
 export function AdminDashboard() {
   const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [listLoading, setListLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [formSubmitting, setFormSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
   const lenis = useLenis();
 
+  // Effect to control body scroll when modal is open
   useEffect(() => {
     if (isFormOpen) {
       lenis?.stop();
+      document.body.style.overflow = 'hidden';
     } else {
       lenis?.start();
+      document.body.style.overflow = '';
     }
+    // Cleanup on component unmount
+    return () => {
+      lenis?.start();
+      document.body.style.overflow = '';
+    };
   }, [isFormOpen, lenis]);
 
   const fetchPosts = useCallback(async () => {
-    setLoading(true);
+    setListLoading(true);
     try {
-      const fetchedPosts = await getPosts(true);
+      const fetchedPosts = await getPosts(true); // forceRefresh = true
       setPosts(fetchedPosts);
     } catch (error) {
       console.error("Failed to fetch posts:", error);
     } finally {
-      setLoading(false);
+      setListLoading(false);
     }
   }, []);
 
@@ -67,13 +78,50 @@ export function AdminDashboard() {
   
   const handleNewPost = () => {
     setEditingPost(null);
+    setFormError(null);
     setIsFormOpen(true);
   };
   
   const handleEditPost = (post: Post) => {
     setEditingPost(post);
+    setFormError(null);
     setIsFormOpen(true);
   };
+
+  const handleFormSubmit = async (data: FormValues) => {
+    setFormSubmitting(true);
+    setFormError(null);
+    try {
+      const { firestore } = initializeFirebase();
+      
+      const postData = {
+        ...data,
+        // Use serverTimestamp for new posts, preserve date for existing ones
+        date: editingPost?.id ? new Date(editingPost.date) : serverTimestamp(),
+      };
+
+      if (editingPost?.id) {
+        // Editing existing post
+        const postRef = doc(firestore, 'posts', editingPost.id);
+        await setDoc(postRef, postData, { merge: true });
+      } else {
+        // Creating new post
+        const postsCollection = collection(firestore, 'posts');
+        await addDoc(postsCollection, postData);
+      }
+      
+      invalidatePostsCache();
+      setIsFormOpen(false); // Close modal on success
+      await fetchPosts(); // Refresh list
+
+    } catch (e: any) {
+      console.error("Error saving post:", e);
+      setFormError(`An error occurred: ${e.message || 'Please try again.'}`);
+    } finally {
+      setFormSubmitting(false);
+    }
+  };
+
 
   const handleDeletePost = async (postId: string) => {
     try {
@@ -87,11 +135,6 @@ export function AdminDashboard() {
     }
   };
 
-  const onFormSuccess = () => {
-    setIsFormOpen(false);
-    fetchPosts();
-  }
-
   return (
     <div className="container mx-auto px-4 md:px-6">
       <div className="flex items-center justify-between mb-8">
@@ -104,7 +147,7 @@ export function AdminDashboard() {
         </div>
       </div>
       
-      {loading ? (
+      {listLoading ? (
         <div className="flex justify-center items-center h-64">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
         </div>
@@ -165,7 +208,9 @@ export function AdminDashboard() {
             <PostForm
               key={editingPost?.id || 'new-post'}
               post={editingPost}
-              onSuccess={onFormSuccess}
+              onSubmit={handleFormSubmit}
+              isSubmitting={formSubmitting}
+              error={formError}
             />
           </div>
         </DialogContent>
