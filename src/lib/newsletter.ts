@@ -188,7 +188,7 @@ export async function addSubscriber(
     });
   } catch (error) {
     console.error('Failed to send subscription confirmation email:', error);
-    return { success: true, message: 'Thank you for subscribing!' };
+    return { success: true, message: 'Subscription successful, but the confirmation email could not be sent.' };
   }
 
   return { success: true, message: 'Thank you for subscribing!' };
