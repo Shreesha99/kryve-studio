@@ -28,9 +28,8 @@ service cloud.firestore {
       // This is needed to check for existing subscribers without listing all of them.
       allow get: if true;
       
-      // Explicitly deny listing all subscribers to non-admins to protect privacy.
-      // The admin's request will be authenticated and allowed by the isAdmin() function.
-      allow list: if isAdmin();
+      // Explicitly deny listing all subscribers to protect privacy.
+      allow list: if false;
 
       // Allow a new subscriber to be created.
       allow create: if true;
