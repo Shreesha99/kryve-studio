@@ -5,7 +5,6 @@ import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { gsap } from 'gsap';
-import jsPDF from 'jspdf';
 import {
   generateBlogPost,
   type GenerateBlogPostOutput,
@@ -110,7 +109,8 @@ function GeneratedPostResult({ post }: { post: GenerateBlogPostOutput }) {
     });
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
+    const { default: jsPDF } = await import('jspdf');
     const doc = new jsPDF();
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = post.content;
