@@ -81,22 +81,22 @@ export function PreflightCheck() {
     });
     
     // Animate progress bar
-    gsap.to(
-      // a proxy object
-      { value: 0 },
+    const progressProxy = { value: 0 };
+    const tween = gsap.to(
+      progressProxy,
       {
         value: 100,
         duration: stepDuration * analysisSteps.length,
         ease: 'none',
-        onUpdate: function () {
-          setProgress(this.targets()[0].value);
+        onUpdate: () => {
+          setProgress(progressProxy.value);
         },
       }
     );
     
     return () => {
       tl.current?.kill();
-      gsap.killTweensOf(setProgress);
+      tween.kill();
     }
 
   }, [analysisStatus]);
@@ -107,7 +107,7 @@ export function PreflightCheck() {
     setCurrentStep(0);
     setProgress(0);
     form.reset();
-  }
+  };
 
   return (
     <div className="container mx-auto max-w-4xl px-4 pb-16 md:px-6 md:pb-24">
@@ -158,8 +158,11 @@ export function PreflightCheck() {
                   <div className="flex h-8 items-center gap-4 text-lg font-medium">
                       {analysisStatus === 'running' && (
                           <>
-                          <analysisSteps[currentStep].icon className="h-6 w-6 animate-spin" />
-                          <p>{analysisSteps[currentStep].text}</p>
+                            {currentStep === 0 && <Search className="h-6 w-6 animate-spin" />}
+                            {currentStep === 1 && <Zap className="h-6 w-6 animate-spin" />}
+                            {currentStep === 2 && <ShieldCheck className="h-6 w-6 animate-spin" />}
+                            {currentStep === 3 && <CheckCircle2 className="h-6 w-6 animate-spin" />}
+                            <p>{analysisSteps[currentStep].text}</p>
                           </>
                       )}
                       {analysisStatus === 'complete' && (
