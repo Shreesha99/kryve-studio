@@ -9,19 +9,31 @@ export function KeyboardAnimation({ className }: { className?: string }) {
   const tlRef = useRef<gsap.core.Timeline | null>(null);
 
   useLayoutEffect(() => {
+    // Guard 1: Ensure the component's root DOM element has been rendered.
+    const component = componentRef.current;
+    if (!component) {
+      return;
+    }
+
+    // Use gsap.context for robust scoping and automatic cleanup.
     const ctx = gsap.context(() => {
-      // Kill any existing timeline to prevent duplicates on hot-reload
+      // Kill any previous animation timeline to prevent duplicates on hot-reload.
       if (tlRef.current) {
-          tlRef.current.kill();
+        tlRef.current.kill();
+        tlRef.current = null;
       }
 
-      const keys = gsap.utils.toArray<SVGElement>('.keyboard-key');
-      
-      if (keys.length === 0) {
-        return; // Guard against no keys found
+      // Guard 2: Use browser-native selectors for maximum reliability.
+      // This ensures we have a definitive list of elements before proceeding.
+      const keyElements = component.querySelectorAll<SVGElement>('.keyboard-key');
+      if (!keyElements || keyElements.length === 0) {
+        // If for any reason the keys aren't in the DOM yet, abort. This prevents the crash.
+        return;
       }
       
-      // Set initial fill using CSS variables for theme awareness
+      const keys = Array.from(keyElements);
+
+      // Now it's safe to set the initial state.
       gsap.set(keys, { fill: 'hsl(var(--muted))' });
       
       const masterTl = gsap.timeline({
@@ -34,20 +46,22 @@ export function KeyboardAnimation({ className }: { className?: string }) {
       function pressKey() {
           const randomKey = gsap.utils.random(keys);
           
-          masterTl.to(randomKey, {
-              fill: 'hsl(var(--primary))',
-              scaleY: 0.9,
-              y: '+=2',
-              transformOrigin: 'center bottom',
-              duration: 0.1,
-              ease: 'circ.in'
-          }).to(randomKey, {
-              fill: 'hsl(var(--muted))',
-              scaleY: 1,
-              y: '-=2',
-              duration: 0.25,
-              ease: 'elastic.out(1, 0.5)'
-          }, '+=0.05'); // Release key shortly after press
+          if (randomKey) {
+            masterTl.to(randomKey, {
+                fill: 'hsl(var(--primary))',
+                scaleY: 0.9,
+                y: '+=2',
+                transformOrigin: 'center bottom',
+                duration: 0.1,
+                ease: 'circ.in'
+            }).to(randomKey, {
+                fill: 'hsl(var(--muted))',
+                scaleY: 1,
+                y: '-=2',
+                duration: 0.25,
+                ease: 'elastic.out(1, 0.5)'
+            }, '+=0.05'); // Release key shortly after press
+          }
       }
       
       // Create a sequence of random key presses for one loop
@@ -58,15 +72,15 @@ export function KeyboardAnimation({ className }: { className?: string }) {
       }
       // Add a longer pause at the end of the sequence before it repeats
       masterTl.addPause(1.5);
-    }, componentRef); // scope the context to the component
+    }, component); // Scope all selectors and animations to the component element.
 
     return () => {
-      ctx.revert(); // Cleanup GSAP animations
+      ctx.revert(); // GSAP's built-in cleanup function.
       if (tlRef.current) {
         tlRef.current.kill();
       }
     };
-  }, []);
+  }, []); // Empty dependency array ensures this runs only once after mount.
 
   // Procedurally generate the keyboard layout
   const keyWidth = 10;
