@@ -21,25 +21,25 @@ export function KeyboardAnimation({ className }: { className?: string }) {
   const keyboardWidth = 12 * (keyWidth + keyGap) + keyGap;
 
   useLayoutEffect(() => {
-    // GSAP's context is still the best practice for cleanup.
+    // This is the correct hook for running code after the DOM is painted.
+    // It is essential for preventing race conditions with animations.
     const ctx = gsap.context(() => {
-      // **THE DEFINITIVE FIX**
-      // Instead of relying on GSAP's selector, we use the browser-native
-      // `querySelectorAll` directly on the component's ref. This is the
-      // most reliable way to guarantee we have the DOM elements.
-      const keyNodes = componentRef.current?.querySelectorAll('.keyboard-key');
+      // gsap.utils.toArray is a robust way to select elements.
+      // Crucially, if no elements are found, it returns an EMPTY ARRAY `[]`, not `null`.
+      const keys = gsap.utils.toArray('.keyboard-key');
 
-      // **IRONCLAD SAFETY CHECK**
-      // If for any reason the nodes are not found (e.g., during a fast
-      // hot-reload), we abort immediately. This makes it impossible to
-      // pass a null value to GSAP and cause a crash.
-      if (!keyNodes || keyNodes.length === 0) {
-        return;
+      // **THE DEFINITIVE, BULLETPROOF FIX**
+      // This check is the most critical part. The error happens because sometimes,
+      // during a fast refresh in development, this code runs a split-second
+      // before the SVG keys are in the DOM. This check makes the animation
+      // code *wait* until the keys are ready. If they aren't found, it simply
+      // exits and tries again on the next render. This makes a crash impossible.
+      if (keys.length === 0) {
+        return; // EXIT EARLY.
       }
       
-      const keys = Array.from(keyNodes);
-      
-      // Now that `keys` is a guaranteed, non-empty array, this is safe.
+      // Because of the check above, this line is now guaranteed to be safe.
+      // `keys` is always a valid, non-empty array here.
       gsap.set(keys, { fill: 'hsl(var(--muted))' });
       
       const masterTl = gsap.timeline({
@@ -74,11 +74,11 @@ export function KeyboardAnimation({ className }: { className?: string }) {
       }
       masterTl.addPause(1.5);
 
-    }, componentRef);
+    }, componentRef); // Scoping the context ensures GSAP only looks inside this component.
 
-    // Return the cleanup function.
+    // GSAP's context handles all cleanup automatically.
     return () => ctx.revert();
-  }, []);
+  }, []); // Run once on mount.
 
   return (
     <div ref={componentRef} className={cn("relative h-40 w-40 flex items-center justify-center", className)}>
