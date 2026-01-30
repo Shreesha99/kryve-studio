@@ -79,10 +79,12 @@ export function KeyboardAnimation({ className }: { className?: string }) {
   const componentRef = useRef<HTMLDivElement>(null);
   const textboxContainerRef = useRef<HTMLDivElement>(null);
   const hintRef = useRef<HTMLParagraphElement>(null);
+  const handRef = useRef<HTMLDivElement>(null);
 
   const [isTouchDevice, setIsTouchDevice] = useState<boolean | null>(null);
   const [typedText, setTypedText] = useState('');
   const [interactiveHint, setInteractiveHint] = useState('');
+  const [isSlapping, setIsSlapping] = useState(false);
   const hasAnimatedIn = useRef(false);
 
   const [wpm, setWpm] = useState(0);
@@ -293,9 +295,78 @@ export function KeyboardAnimation({ className }: { className?: string }) {
     setWpm(0);
   };
 
+  const handleKeyboardClick = (e: React.MouseEvent) => {
+    if (isTouchDevice || isSlapping) return;
+
+    setIsSlapping(true);
+    const hand = handRef.current;
+    
+    const tl = gsap.timeline({ onComplete: () => setIsSlapping(false) });
+    const fromLeft = e.clientX < window.innerWidth / 2;
+
+    gsap.set(hand, {
+        x: fromLeft ? e.clientX + 200 : e.clientX - 200,
+        y: e.clientY - 80,
+        rotation: fromLeft ? -60 : 60,
+        scaleX: fromLeft ? 1 : -1,
+        transformOrigin: "center center"
+    });
+
+    tl.to(hand, { opacity: 1, duration: 0.1, ease: 'power2.out' })
+      .to(hand, {
+          x: e.clientX,
+          y: e.clientY,
+          rotation: fromLeft ? 15 : -15,
+          duration: 0.3,
+          ease: 'power3.in'
+      })
+      .to(hand, {
+          x: fromLeft ? e.clientX - 10 : e.clientX + 10,
+          y: e.clientY + 10,
+          rotation: fromLeft ? 25 : -25,
+          duration: 0.1,
+          ease: 'power1.out'
+      })
+      .to(hand, {
+          opacity: 0,
+          y: e.clientY + 100,
+          duration: 0.4,
+          ease: 'power2.in'
+      });
+  };
+
   return (
     <div ref={componentRef} className={cn('relative flex w-full flex-col items-center justify-center gap-6', className)}>
       
+      <div ref={handRef} className="fixed left-0 top-0 h-24 w-24 pointer-events-none z-[9999] opacity-0">
+          <svg viewBox="0 0 32 32" className="w-full h-full text-foreground drop-shadow-lg">
+              <path
+                  fill="hsl(var(--background))"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M13.2,28.4c-3.7-1-6.7-4.2-6.7-8.3c0-4.8,3.9-8.8,8.8-8.8c3.9,0,7.1,2.5,8.3,6c0.3,0.8,0.4,1.6,0.4,2.5 c0,4.8-3.9,8.8-8.8,8.8C14.5,28.6,13.8,28.5,13.2,28.4z"
+              />
+              <path
+                  fill="hsl(var(--background))"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21,11.3c0.7-1.3,0.5-3-0.6-4.1c-1.3-1.3-3.3-1.3-4.7,0c-1.1,1.1-1.3,2.6-0.6,3.9"
+              />
+              <path
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21.1,19.3c1,0.1,1.9,0.5,2.7,1.2"
+              />
+          </svg>
+      </div>
+
       {isTouchDevice === false && (
         <div className="flex h-28 w-full max-w-xl flex-col items-center justify-start">
           <div ref={textboxContainerRef} className="w-full opacity-0" style={{ transform: 'translateY(20px)'}}>
@@ -317,94 +388,96 @@ export function KeyboardAnimation({ className }: { className?: string }) {
       )}
 
       <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl">
-        <svg
-          viewBox={`-15 -15 ${totalWidth + 30} ${totalHeight + 30}`}
-          className="h-auto w-full"
-          style={{ '--kb-skew': '-0.05' } as React.CSSProperties}
-        >
-          <defs>
-            <linearGradient id="key-gradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="hsl(var(--muted))" stopOpacity="0.5"/>
-              <stop offset="100%" stopColor="hsl(var(--muted))" stopOpacity="0.8"/>
-            </linearGradient>
-            <linearGradient id="warmed-key-gradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.1" />
-              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.25" />
-            </linearGradient>
-            <filter id="kb-shadow" x="-10%" y="-10%" width="120%" height="130%">
-              <feDropShadow dx="0" dy="8" stdDeviation="6" floodColor="hsl(var(--foreground))" floodOpacity="0.08"/>
-            </filter>
-          </defs>
+        <div onClick={handleKeyboardClick}>
+            <svg
+            viewBox={`-15 -15 ${totalWidth + 30} ${totalHeight + 30}`}
+            className="h-auto w-full"
+            style={{ '--kb-skew': '-0.05' } as React.CSSProperties}
+            >
+            <defs>
+                <linearGradient id="key-gradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="hsl(var(--muted))" stopOpacity="0.5"/>
+                <stop offset="100%" stopColor="hsl(var(--muted))" stopOpacity="0.8"/>
+                </linearGradient>
+                <linearGradient id="warmed-key-gradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.1" />
+                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.25" />
+                </linearGradient>
+                <filter id="kb-shadow" x="-10%" y="-10%" width="120%" height="130%">
+                <feDropShadow dx="0" dy="8" stdDeviation="6" floodColor="hsl(var(--foreground))" floodOpacity="0.08"/>
+                </filter>
+            </defs>
 
-          <g transform="matrix(1, var(--kb-skew), 0, 1, 0, 0)">
-            <rect x="20" y="0" width="50" height="10" rx={cornerRadius + 1} className="fill-card stroke-border" />
-            <rect x={totalWidth - 120} y="0" width="100" height="10" rx={cornerRadius + 1} className="fill-card stroke-border" />
-          </g>
+            <g transform="matrix(1, var(--kb-skew), 0, 1, 0, 0)">
+                <rect x="20" y="0" width="50" height="10" rx={cornerRadius + 1} className="fill-card stroke-border" />
+                <rect x={totalWidth - 120} y="0" width="100" height="10" rx={cornerRadius + 1} className="fill-card stroke-border" />
+            </g>
 
-          <g transform="matrix(1, var(--kb-skew), 0, 1, 0, 8)" style={{ filter: 'url(#kb-shadow)' }}>
-            <rect x="0" y="0" width={totalWidth} height={totalHeight} rx="8" className="fill-card stroke-border" strokeWidth="1.5"/>
-            {rows.map((row, rowIndex) => (
-              row.keys.map((key, keyIndex) => {
-                const xPos = key.x * (keyWidth + keyGap) + 10;
-                const yPos = row.y * (keyHeight + keyGap) + 10;
-                const currentKeyWidth = key.w * keyWidth + (key.w - 1) * keyGap;
-                const fontSize = key.s && key.s.length > 2 ? 4 : 5;
-                const isArrow = ['↑', '↓', '←', '→'].includes(key.s || '');
-                const isWarmed = (isTouchDevice && warmedKeys.includes(key.code || '')) || (key.s === 'Space');
+            <g transform="matrix(1, var(--kb-skew), 0, 1, 0, 8)" style={{ filter: 'url(#kb-shadow)' }}>
+                <rect x="0" y="0" width={totalWidth} height={totalHeight} rx="8" className="fill-card stroke-border" strokeWidth="1.5"/>
+                {rows.map((row, rowIndex) => (
+                row.keys.map((key, keyIndex) => {
+                    const xPos = key.x * (keyWidth + keyGap) + 10;
+                    const yPos = row.y * (keyHeight + keyGap) + 10;
+                    const currentKeyWidth = key.w * keyWidth + (key.w - 1) * keyGap;
+                    const fontSize = key.s && key.s.length > 2 ? 4 : 5;
+                    const isArrow = ['↑', '↓', '←', '→'].includes(key.s || '');
+                    const isWarmed = (isTouchDevice && warmedKeys.includes(key.code || '')) || (key.s === 'Space');
 
-                return (
-                  <g 
-                    key={`${rowIndex}-${keyIndex}`} 
-                    data-key-code={key.code}
-                    className="key-base"
-                  >
-                    {/* Shadow Layer */}
-                    <rect x={xPos} y={yPos + 2} width={currentKeyWidth} height={keyHeight} rx={cornerRadius} className="fill-foreground/10"/>
-                    
-                    {/* Base Key Layer */}
-                    <rect
-                      x={xPos}
-                      y={yPos}
-                      width={currentKeyWidth}
-                      height={keyHeight}
-                      rx={cornerRadius}
-                      className={cn("stroke-foreground/10", { 'stroke-primary/40': isWarmed })}
-                      strokeWidth="0.5"
-                      fill={isWarmed ? "url(#warmed-key-gradient)" : "url(#key-gradient)"}
-                    />
+                    return (
+                    <g 
+                        key={`${rowIndex}-${keyIndex}`} 
+                        data-key-code={key.code}
+                        className="key-base"
+                    >
+                        {/* Shadow Layer */}
+                        <rect x={xPos} y={yPos + 2} width={currentKeyWidth} height={keyHeight} rx={cornerRadius} className="fill-foreground/10"/>
+                        
+                        {/* Base Key Layer */}
+                        <rect
+                        x={xPos}
+                        y={yPos}
+                        width={currentKeyWidth}
+                        height={keyHeight}
+                        rx={cornerRadius}
+                        className={cn("stroke-foreground/10", { 'stroke-primary/40': isWarmed })}
+                        strokeWidth="0.5"
+                        fill={isWarmed ? "url(#warmed-key-gradient)" : "url(#key-gradient)"}
+                        />
 
-                    {/* Pressed State Overlay */}
-                    <rect
-                      className="key-press-rect"
-                      x={xPos}
-                      y={yPos}
-                      width={currentKeyWidth}
-                      height={keyHeight}
-                      rx={cornerRadius}
-                      fill="hsl(var(--primary))"
-                      opacity="0"
-                      style={{ pointerEvents: 'none' }}
-                    />
-                    
-                    {/* Key Text */}
-                    {key.s && (
-                      <text
-                        x={xPos + currentKeyWidth / 2}
-                        y={yPos + keyHeight / 2 + (isArrow ? 2.5 : 2)}
-                        textAnchor="middle"
-                        fontSize={fontSize}
-                        className="pointer-events-none select-none font-sans font-semibold text-muted-foreground"
-                        fill="currentColor"
-                      >
-                        {key.s}
-                      </text>
-                    )}
-                  </g>
-                );
-              })
-            ))}
-          </g>
-        </svg>
+                        {/* Pressed State Overlay */}
+                        <rect
+                        className="key-press-rect"
+                        x={xPos}
+                        y={yPos}
+                        width={currentKeyWidth}
+                        height={keyHeight}
+                        rx={cornerRadius}
+                        fill="hsl(var(--primary))"
+                        opacity="0"
+                        style={{ pointerEvents: 'none' }}
+                        />
+                        
+                        {/* Key Text */}
+                        {key.s && (
+                        <text
+                            x={xPos + currentKeyWidth / 2}
+                            y={yPos + keyHeight / 2 + (isArrow ? 2.5 : 2)}
+                            textAnchor="middle"
+                            fontSize={fontSize}
+                            className="pointer-events-none select-none font-sans font-semibold text-muted-foreground"
+                            fill="currentColor"
+                        >
+                            {key.s}
+                        </text>
+                        )}
+                    </g>
+                    );
+                })
+                ))}
+            </g>
+            </svg>
+        </div>
       </div>
     </div>
   );

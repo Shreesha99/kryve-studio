@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { NewsletterForm } from "./newsletter-form";
 import { AnimatedGradient } from "./animated-gradient";
+import { ArrowRight } from "lucide-react";
 
 export function Footer() {
   return (
@@ -82,10 +83,11 @@ export function Footer() {
                   rel="noopener noreferrer"
                   className="group inline-flex items-center gap-2 transition-colors hover:text-background/80"
                 >
-                  Instagram{" "}
-                  <span className="text-xl transition-transform group-hover:translate-x-1">
-                    ↗
+                  <span className="relative">
+                    Instagram
+                    <span className="absolute bottom-0 left-0 h-px w-full origin-left scale-x-0 bg-background transition-transform duration-300 ease-out group-hover:scale-x-100" />
                   </span>
+                  <ArrowRight className="h-5 w-5 transition-transform duration-300 ease-in-out group-hover:rotate-[-45deg]" />
                 </a>
               </li>
               <li>
@@ -95,10 +97,11 @@ export function Footer() {
                   rel="noopener noreferrer"
                   className="group inline-flex items-center gap-2 transition-colors hover:text-background/80"
                 >
-                  LinkedIn{" "}
-                  <span className="text-xl transition-transform group-hover:translate-x-1">
-                    ↗
+                  <span className="relative">
+                    LinkedIn
+                    <span className="absolute bottom-0 left-0 h-px w-full origin-left scale-x-0 bg-background transition-transform duration-300 ease-out group-hover:scale-x-100" />
                   </span>
+                  <ArrowRight className="h-5 w-5 transition-transform duration-300 ease-in-out group-hover:rotate-[-45deg]" />
                 </a>
               </li>
             </ul>
