@@ -35,7 +35,7 @@ import { initializeFirebase } from '@/firebase';
 import { addDoc, collection, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Progress } from '@/components/ui/progress';
 
 const TableSkeleton = () => (
@@ -178,9 +178,9 @@ export function AdminDashboard() {
         };
 
         if (isEditing) {
-            await setDoc(doc(firestore, 'posts', editingPost!.id!), postData, { merge: true });
+            await setDoc(doc(firestore, 'blog_posts', editingPost!.id!), postData, { merge: true });
         } else {
-            await addDoc(collection(firestore, 'posts'), postData);
+            await addDoc(collection(firestore, 'blog_posts'), postData);
         }
         
         await new Promise(res => setTimeout(res, 500));
@@ -210,7 +210,7 @@ export function AdminDashboard() {
     try {
       const { firestore } = initializeFirebase();
       await new Promise(res => setTimeout(res, 1000));
-      await deleteDoc(doc(firestore, "posts", postId));
+      await deleteDoc(doc(firestore, "blog_posts", postId));
       
       toast({
         title: "Post Deleted",

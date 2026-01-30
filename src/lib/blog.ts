@@ -72,7 +72,7 @@ export async function getPosts(forceRefresh = false): Promise<Post[]> {
   }
 
   const { firestore } = initializeFirebase();
-  const postsCollection = collection(firestore, 'posts');
+  const postsCollection = collection(firestore, 'blog_posts');
   const q = query(postsCollection, orderBy('date', 'desc'));
   const querySnapshot = await getDocs(q);
 
@@ -93,7 +93,7 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
   }
 
   const { firestore } = initializeFirebase();
-  const postsCollection = collection(firestore, 'posts');
+  const postsCollection = collection(firestore, 'blog_posts');
   const q = query(postsCollection, where('slug', '==', slug), limit(1));
   const querySnapshot = await getDocs(q);
 

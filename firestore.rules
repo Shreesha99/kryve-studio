@@ -1,104 +1,29 @@
-/**
- * Core Philosophy: This ruleset is designed for a public-facing content website.
- * The primary security goal is to make all content (blog posts, projects, services)
- * publicly readable by any visitor, while completely restricting all write
- * operations (create, update, delete) by default. This creates a secure, read-only
- * state for website visitors.
- *
- * Data Structure: The Firestore database uses a flat, non-hierarchical structure.
- * There are three top-level collections: /blog_posts, /projects, and /services.
- * There is no user-specific data or nesting, which simplifies the rules significantly.
- *
- * Key Security Decisions:
- * - Public Read Access: All collections are configured to allow `get` and `list`
- *   operations for everyone, including unauthenticated (anonymous) users.
- *   This is essential for the website to display its content.
- * - Write Lockdown: All write operations (`create`, `update`, `delete`) are
- *   explicitly denied (`if false;`). This provides a highly secure default posture.
- *   It is expected that an admin role or a trusted server-side process will be
- *   granted write access in the future, and these rules must be updated accordingly.
- *   This approach prevents any unauthorized data modification.
- * - No Ownership Model: As there are no user accounts creating content through the
- *   app, there is no concept of document ownership. The data is treated as globally
- *   managed content.
- */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ----------------------------------------------------------------------
-    // Helper Functions
-    // ----------------------------------------------------------------------
-
-    /**
-     * Checks if the user is authenticated.
-     */
-    // function isSignedIn() {
-    //   return request.auth != null;
-    // }
-
-    // ----------------------------------------------------------------------
-    // Collection Rules
-    // ----------------------------------------------------------------------
-
-    /**
-     * @description Publicly readable collection of blog posts. All write operations
-     *              are disabled by default, pending an admin implementation.
-     * @path        /blog_posts/{blogPostId}
-     * @allow       Any user, signed-in or anonymous, can read a blog post. `(get)`
-     * @deny        Any user attempting to create, update, or delete a blog post. `(create, update, delete)`
-     * @principle   Provides public read access for a content website while securing
-     *              all write operations as a secure default.
-     */
     match /blog_posts/{blogPostId} {
-      allow get: if true;
-      allow list: if true;
-
-      // Deny all writes by default. To enable writes for admins, you might
-      // use a custom claim: `request.auth.token.isAdmin == true`
-      allow create: if false; // TODO: Implement admin-only write access
-      allow update: if false; // TODO: Implement admin-only write access
-      allow delete: if false; // TODO: Implement admin-only write access
+      allow read: if true;
+      // This is insecure for production but allows for development.
+      // We will add proper authentication rules next.
+      allow write: if true;
     }
 
-    /**
-     * @description Publicly readable collection of projects. All write operations
-     *              are disabled by default, pending an admin implementation.
-     * @path        /projects/{projectId}
-     * @allow       Any user, signed-in or anonymous, can read a project. `(get)`
-     * @deny        Any user attempting to create, update, or delete a project. `(create, update, delete)`
-     * @principle   Provides public read access for a content website while securing
-     *              all write operations as a secure default.
-     */
     match /projects/{projectId} {
-      allow get: if true;
-      allow list: if true;
-
-      // Deny all writes by default. To enable writes for admins, you might
-      // use a custom claim: `request.auth.token.isAdmin == true`
-      allow create: if false; // TODO: Implement admin-only write access
-      allow update: if false; // TODO: Implement admin-only write access
-      allow delete: if false; // TODO: Implement admin-only write access
+      allow read: if true;
+      allow write: if false; // Keep projects read-only for now
     }
 
-    /**
-     * @description Publicly readable collection of services. All write operations
-     *              are disabled by default, pending an admin implementation.
-     * @path        /services/{serviceId}
-     * @allow       Any user, signed-in or anonymous, can read a service. `(get)`
-     * @deny        Any user attempting to create, update, or delete a service. `(create, update, delete)`
-     * @principle   Provides public read access for a content website while securing
-     *              all write operations as a secure default.
-     */
     match /services/{serviceId} {
-      allow get: if true;
-      allow list: if true;
-
-      // Deny all writes by default. To enable writes for admins, you might
-      // use a custom claim: `request.auth.token.isAdmin == true`
-      allow create: if false; // TODO: Implement admin-only write access
-      allow update: if false; // TODO: Implement admin-only write access
-      allow delete: if false; // TODO: Implement admin-only write access
+      allow read: if true;
+      allow write: if false; // Keep services read-only for now
+    }
+    
+    match /subscribers/{subscriberId} {
+      // Anyone can sign up for the newsletter
+      allow create: if true;
+      // Nobody can read or modify the subscriber list from the client-side
+      allow read, update, delete: if false;
     }
   }
 }
