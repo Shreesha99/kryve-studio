@@ -10,6 +10,7 @@ import { AnimatedGradient } from "../common/animated-gradient";
 import { ScrollHint } from "@/components/common/scroll-hint";
 import { Sparkles } from "lucide-react";
 import { usePreloaderDone } from "@/components/common/app-providers";
+import { LogoStrip } from "@/components/common/logo-strip";
 
 export function Hero() {
   const headlineRef = useRef<HTMLHeadingElement>(null);
@@ -23,6 +24,8 @@ export function Hero() {
   const { preloaderDone } = usePreloaderDone();
 
   useLayoutEffect(() => {
+    if (!preloaderDone) return;
+    
     const ctx = gsap.context(() => {
       const headlineSpans = gsap.utils.toArray("span", headlineRef.current);
 
@@ -70,6 +73,11 @@ export function Hero() {
       className="relative flex min-h-screen w-full items-center overflow-hidden bg-background py-24 md:py-32 lg:py-0"
     >
       <AnimatedGradient className="opacity-20 dark:opacity-10" />
+
+      {/* Logo Strip in the background */}
+      <div className="absolute inset-x-0 bottom-0 z-0">
+        <LogoStrip />
+      </div>
 
       <div className="container relative z-10 mx-auto px-4 md:px-6">
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-24">
