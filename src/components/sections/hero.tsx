@@ -68,10 +68,9 @@ export function Hero() {
     }
 
     const primaryColor = `hsl(${getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()})`;
-    // FIX: Make muted color more visible on light theme
     const mutedColor = resolvedTheme === 'dark'
       ? `hsla(${getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()}, 0.2)`
-      : `hsla(${getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()}, 0.3)`;
+      : `hsl(${getComputedStyle(document.documentElement).getPropertyValue('--muted-foreground').trim()})`;
 
 
     const setCanvasDimensions = () => {
