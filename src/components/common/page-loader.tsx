@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { cn } from "@/lib/utils";
 
@@ -43,7 +43,7 @@ export function PageLoader() {
   const pathRef = useRef<SVGPathElement>(null);
   const ringRef = useRef<SVGCircleElement>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const path = pathRef.current;
     const ring = ringRef.current;
 
