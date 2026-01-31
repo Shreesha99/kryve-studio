@@ -33,7 +33,7 @@ export default function Preloader({ onAnimationComplete }: PreloaderProps) {
           : 0.05;
 
       value = Math.min(100, value + increment);
-      setProgress(Math.floor(value));
+      setProgress(value);
 
       if (value < 100) {
         raf = requestAnimationFrame(tick);
@@ -132,7 +132,7 @@ export default function Preloader({ onAnimationComplete }: PreloaderProps) {
       {/* 🔢 HUGE PERCENTAGE - Reverted to bottom-right */}
       <div className="absolute bottom-10 right-10 select-none">
         <span className="text-[9rem] leading-none font-semibold tracking-tight text-foreground">
-          {progress}
+          {Math.floor(progress)}
         </span>
         <span className="absolute right-[-1.5rem] top-3 text-3xl text-foreground/40">
           %
