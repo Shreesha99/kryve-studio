@@ -36,13 +36,15 @@ export default function Preloader({ onAnimationComplete }: PreloaderProps) {
     const tick = () => {
       const remaining = 100 - value;
 
-      // Faster, more dynamic increment. Starts fast, slows for the finale.
+      // Refined increment for a more noticeable slowdown at the end.
       const increment =
-        remaining > 30
-          ? 1.0
-          : remaining > 10
-          ? 0.5
-          : 0.2;
+        remaining > 50
+          ? 1.0   // Fast start
+          : remaining > 20
+          ? 0.5   // Medium pace
+          : remaining > 5
+          ? 0.2   // Slow down
+          : 0.1;  // Crawl to the finish
 
       value = Math.min(100, value + increment);
       setProgress(value);
