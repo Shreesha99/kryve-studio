@@ -68,7 +68,11 @@ export function Hero() {
     }
 
     const primaryColor = `hsl(${getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()})`;
-    const mutedColor = `hsla(${getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()}, 0.2)`;
+    // FIX: Make muted color more visible on light theme
+    const mutedColor = resolvedTheme === 'dark'
+      ? `hsla(${getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()}, 0.2)`
+      : `hsla(${getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()}, 0.3)`;
+
 
     const setCanvasDimensions = () => {
       const dpr = window.devicePixelRatio || 1;
