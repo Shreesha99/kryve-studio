@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useState, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { usePreloaderDone } from './app-providers';
 
 interface AnimateOnScrollProps {
   children: ReactNode;
@@ -22,14 +23,18 @@ export function AnimateOnScroll({
 }: AnimateOnScrollProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const { preloaderDone } = usePreloaderDone();
 
   useEffect(() => {
+    const currentRef = ref.current;
+    if (!currentRef || !preloaderDone) return;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
-          if (triggerOnce && ref.current) {
-            observer.unobserve(ref.current);
+          if (triggerOnce) {
+            observer.unobserve(currentRef);
           }
         } else if (!triggerOnce) {
           setIsVisible(false);
@@ -38,17 +43,14 @@ export function AnimateOnScroll({
       { threshold }
     );
 
-    const currentRef = ref.current;
-    if (currentRef) {
-      observer.observe(currentRef);
-    }
+    observer.observe(currentRef);
 
     return () => {
       if (currentRef) {
         observer.unobserve(currentRef);
       }
     };
-  }, [threshold, triggerOnce]);
+  }, [threshold, triggerOnce, preloaderDone]);
 
   return (
     <div

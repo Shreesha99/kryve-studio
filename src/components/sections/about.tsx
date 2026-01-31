@@ -6,6 +6,7 @@ import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
 import { AnimateOnScroll } from '../common/animate-on-scroll';
 import { PenTool, CodeXml, Users } from 'lucide-react';
 import { AnimatedGradient } from '../common/animated-gradient';
+import { usePreloaderDone } from '../common/app-providers';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -84,8 +85,11 @@ export function About() {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const paragraphRef = useRef<HTMLParagraphElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
+  const { preloaderDone } = usePreloaderDone();
 
   useEffect(() => {
+    if (!preloaderDone) return;
+
     const paths = gsap.utils.toArray<SVGPathElement>('path', bgSvgRef.current);
     const bgTl = gsap.timeline({
       scrollTrigger: {
@@ -132,7 +136,7 @@ export function About() {
       contentTl.kill();
       ScrollTrigger.getAll().forEach(t => t.kill());
     };
-  }, []);
+  }, [preloaderDone]);
 
   return (
     <section

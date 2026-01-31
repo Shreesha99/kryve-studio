@@ -7,6 +7,7 @@ import { TextPlugin } from "gsap/dist/TextPlugin";
 import { cn } from "@/lib/utils";
 import { InteractiveOrbs } from "@/components/common/interactive-orbs";
 import { AnimatedGradient } from "../common/animated-gradient";
+import { usePreloaderDone } from "../common/app-providers";
 
 gsap.registerPlugin(TextPlugin, ScrollTrigger);
 
@@ -120,6 +121,7 @@ export function Services() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const { preloaderDone } = usePreloaderDone();
 
   const sectionRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -133,6 +135,8 @@ export function Services() {
   }, []);
 
   useEffect(() => {
+    if (!preloaderDone) return;
+
     const contentTl = gsap.timeline({
       scrollTrigger: {
         trigger: sectionRef.current,
@@ -153,7 +157,7 @@ export function Services() {
       contentTl.kill();
       ScrollTrigger.getAll().forEach((t) => t.kill());
     };
-  }, []);
+  }, [preloaderDone]);
 
   const runAutoplay = useCallback((index: number) => {
     progressTl.current?.kill();
@@ -178,6 +182,8 @@ export function Services() {
   }, []);
 
   useEffect(() => {
+    if (!preloaderDone) return;
+    
     secondaryAnimation.current?.kill();
     gsap.killTweensOf(".code-tag-text");
 
@@ -379,7 +385,7 @@ export function Services() {
         clearTimeout(resumeTimerRef.current);
       }
     };
-  }, [activeIndex, isHovering, runAutoplay, isTouchDevice]);
+  }, [activeIndex, isHovering, runAutoplay, isTouchDevice, preloaderDone]);
 
   const handleTap = (index: number) => {
     if (!isTouchDevice) return;

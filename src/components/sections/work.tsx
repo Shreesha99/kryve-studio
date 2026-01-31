@@ -6,12 +6,14 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 import { Projects, type ImagePlaceholder } from "@/lib/placeholder-images";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { usePreloaderDone } from "../common/app-providers";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export function Work() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<HTMLDivElement[]>([]);
+  const { preloaderDone } = usePreloaderDone();
 
   const [activeProject, setActiveProject] = useState<ImagePlaceholder | null>(
     null
@@ -19,6 +21,8 @@ export function Work() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
+    if (!preloaderDone) return;
+
     const ctx = gsap.context(() => {
       const cards = cardsRef.current;
       const travel = window.innerHeight;
@@ -86,7 +90,7 @@ export function Work() {
     }, sectionRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [preloaderDone]);
 
   return (
     <>
