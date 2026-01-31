@@ -12,16 +12,45 @@ import { gsap } from 'gsap';
 export function CookieBanner() {
   const [isVisible, setIsVisible] = useState(false);
   const iconRef = useRef<HTMLDivElement>(null);
+  const bannerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // This needs to run only on the client.
     const consent = Cookies.get('cookie_consent');
     if (!consent) {
-      // Use a timeout to avoid flashing the banner during SSR/hydration
-      const timer = setTimeout(() => setIsVisible(true), 1500);
+      const timer = setTimeout(() => setIsVisible(true), 10000);
       return () => clearTimeout(timer);
     }
   }, []);
+
+  // Animation for slide-in and vibration
+  useEffect(() => {
+    const banner = bannerRef.current;
+    if (!banner) return;
+
+    const card = banner.querySelector('.vibrating-card') as HTMLDivElement;
+
+    if (isVisible) {
+      gsap.timeline()
+        .fromTo(banner,
+          { yPercent: 100, opacity: 0 },
+          { yPercent: 0, opacity: 1, duration: 0.7, ease: 'power3.out' }
+        )
+        .fromTo(card,
+          { rotation: 0 },
+          {
+            duration: 0.6,
+            rotation: 0,
+            ease: 'elastic.out(1.2, 0.25)',
+            keyframes: [
+              { rotation: -1 }, { rotation: 1 },
+              { rotation: -0.5 }, { rotation: 0.5 },
+              { rotation: 0 },
+            ]
+          },
+          "-=0.2"
+        );
+    }
+  }, [isVisible]);
 
   // Animation for the cookie icon
   useEffect(() => {
@@ -43,24 +72,26 @@ export function CookieBanner() {
   }, [isVisible]);
 
   const handleDecision = (consent: 'accepted' | 'declined') => {
-    setIsVisible(false);
     Cookies.set('cookie_consent', consent, { expires: 365, path: '/' });
+    gsap.to(bannerRef.current, {
+      yPercent: 100,
+      opacity: 0,
+      duration: 0.5,
+      ease: 'power3.in',
+      onComplete: () => setIsVisible(false)
+    });
   };
 
   return (
     <div
-      className={cn(
-        'fixed bottom-0 left-0 right-0 z-[100] p-4 transition-all duration-500 ease-out',
-        isVisible
-          ? 'translate-y-0 opacity-100'
-          : 'pointer-events-none translate-y-full opacity-0'
-      )}
+      ref={bannerRef}
+      className={cn('fixed bottom-0 left-0 right-0 z-[100] p-4 opacity-0')}
       role="dialog"
       aria-live="polite"
       aria-label="Cookie consent"
       aria-hidden={!isVisible}
     >
-      <Card className="container relative mx-auto max-w-4xl border-border bg-card/80 p-6 shadow-2xl backdrop-blur-lg">
+      <Card className="vibrating-card container relative mx-auto max-w-4xl border-border bg-card/80 p-6 shadow-2xl backdrop-blur-lg">
         <Button
           variant="ghost"
           size="icon"

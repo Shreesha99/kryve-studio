@@ -39,7 +39,7 @@ class Dot {
 function ElysiumIcon({ className }: { className?: string }) {
   return (
     <svg
-      viewBox="0 0 32 32"
+      viewBox="0 1 24 34"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={cn('w-auto', className)}
@@ -158,9 +158,8 @@ export function Hero() {
   // Canvas Drawing Logic
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    const container = containerRef.current;
+    if (!canvas || !container) return;
 
     const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
     if (isTouchDevice) {
@@ -172,11 +171,11 @@ export function Hero() {
 
     const isDark = resolvedTheme === 'dark';
     const primaryColor = isDark
-      ? 'hsla(0, 0%, 100%, 0.6)'
-      : 'hsla(0, 0%, 0%, 0.6)';
+      ? 'hsla(0, 0%, 100%, 0.8)'
+      : 'hsla(0, 0%, 0%, 0.7)';
     const mutedColor = isDark
-      ? 'hsla(0, 0%, 100%, 0.3)'
-      : 'hsla(0, 0%, 0%, 0.3)';
+      ? 'hsla(0, 0%, 100%, 0.15)'
+      : 'hsla(0, 0%, 0%, 0.2)';
 
     let animationFrameId: number;
 
@@ -188,6 +187,9 @@ export function Hero() {
       ctx.scale(dpr, dpr);
       createDots(rect.width, rect.height);
     };
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
     const createDots = (width: number, height: number) => {
       dots.current = [];
@@ -212,8 +214,8 @@ export function Hero() {
       mousePos.current = { x: -9999, y: -9999 };
     };
 
-    canvas.addEventListener('mousemove', handleMouseMove);
-    canvas.addEventListener('mouseleave', handleMouseLeave);
+    container.addEventListener('mousemove', handleMouseMove);
+    container.addEventListener('mouseleave', handleMouseLeave);
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -245,9 +247,9 @@ export function Hero() {
     return () => {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('resize', setCanvasDimensions);
-      if (canvas) {
-        canvas.removeEventListener('mousemove', handleMouseMove);
-        canvas.removeEventListener('mouseleave', handleMouseLeave);
+      if (container) {
+        container.removeEventListener('mousemove', handleMouseMove);
+        container.removeEventListener('mouseleave', handleMouseLeave);
       }
     };
   }, [resolvedTheme]);
@@ -268,7 +270,8 @@ export function Hero() {
       >
         <canvas
           ref={canvasRef}
-          className="pointer-events-none absolute inset-0 z-0 h-full w-full"
+          className="absolute inset-0 z-0 h-full w-full"
+          key={resolvedTheme} // This forces remount on theme change
         />
 
         {isReady && (
@@ -300,7 +303,7 @@ export function Hero() {
 
               <p
                 ref={paragraphRef}
-                className="mx-auto mt-8 max-w-2xl text-lg text-muted-foreground md:text-xl"
+                className="mx-auto mt-8 max-w-2xl text-lg text-muted-foreground opacity-0 md:text-xl"
               >
                 We are the architects of the digital frontier. A studio where
                 visionary design and precision engineering are not just goals,
@@ -309,13 +312,13 @@ export function Hero() {
                 impact.
               </p>
 
-              <div ref={ctaRef} className="mt-8">
+              <div ref={ctaRef} className="mt-8 opacity-0">
                 <Button size="lg" asChild>
                   <Link href="#work">Explore Our Work</Link>
                 </Button>
               </div>
 
-              <div ref={hintRef} className="mt-6">
+              <div ref={hintRef} className="mt-6 opacity-0">
                 <Button
                   asChild
                   variant="ghost"
