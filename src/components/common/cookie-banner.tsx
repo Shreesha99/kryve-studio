@@ -8,67 +8,50 @@ import { X, Cookie } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { gsap } from 'gsap';
+import { usePreloaderDone } from './app-providers';
 
 export function CookieBanner() {
   const [isVisible, setIsVisible] = useState(false);
-  const iconRef = useRef<HTMLDivElement>(null);
   const bannerRef = useRef<HTMLDivElement>(null);
+  const { preloaderDone } = usePreloaderDone();
 
   useEffect(() => {
+    if (!preloaderDone) return;
+
     const consent = Cookies.get('cookie_consent');
     if (!consent) {
       const timer = setTimeout(() => setIsVisible(true), 10000);
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [preloaderDone]);
 
-  // Animation for slide-in and vibration
   useEffect(() => {
     const banner = bannerRef.current;
-    if (!banner) return;
+    if (!banner || !isVisible) return;
 
     const card = banner.querySelector('.vibrating-card') as HTMLDivElement;
 
-    if (isVisible) {
-      gsap.timeline()
-        .fromTo(banner,
-          { yPercent: 100, opacity: 0 },
-          { yPercent: 0, opacity: 1, duration: 0.7, ease: 'power3.out' }
-        )
-        .fromTo(card,
-          { rotation: 0 },
-          {
-            duration: 0.6,
-            rotation: 0,
-            ease: 'elastic.out(1.2, 0.25)',
-            keyframes: [
-              { rotation: -1 }, { rotation: 1 },
-              { rotation: -0.5 }, { rotation: 0.5 },
-              { rotation: 0 },
-            ]
-          },
-          "-=0.2"
-        );
-    }
-  }, [isVisible]);
+    gsap.timeline()
+      .fromTo(banner,
+        { yPercent: 120, opacity: 0 },
+        { yPercent: 0, opacity: 1, duration: 0.7, ease: 'power3.out' }
+      )
+      .fromTo(card,
+        { rotation: 0 },
+        {
+          duration: 0.8,
+          rotation: 0,
+          ease: 'elastic.out(1.5, 0.2)',
+          keyframes: [
+            { rotation: -2 }, { rotation: 2 },
+            { rotation: -1.5 }, { rotation: 1.5 },
+            { rotation: -1 }, { rotation: 1 },
+            { rotation: 0 },
+          ]
+        },
+        "-=0.2"
+      );
 
-  // Animation for the cookie icon
-  useEffect(() => {
-    if (isVisible && iconRef.current) {
-      const tl = gsap.timeline({
-        repeat: -1,
-        yoyo: true,
-        defaults: { ease: 'power1.inOut' }
-      });
-      tl.to(iconRef.current, {
-        y: '-8px',
-        duration: 0.8
-      });
-
-      return () => {
-        tl.kill();
-      };
-    }
   }, [isVisible]);
 
   const handleDecision = (consent: 'accepted' | 'declined') => {
@@ -85,7 +68,9 @@ export function CookieBanner() {
   return (
     <div
       ref={bannerRef}
-      className={cn('fixed bottom-0 left-0 right-0 z-[100] p-4 opacity-0')}
+      className={cn('fixed bottom-0 left-0 right-0 z-[100] p-4 opacity-0', {
+        'pointer-events-none': !isVisible,
+      })}
       role="dialog"
       aria-live="polite"
       aria-label="Cookie consent"
@@ -102,13 +87,13 @@ export function CookieBanner() {
           <X className="h-4 w-4" />
         </Button>
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-6">
-          <div ref={iconRef} className="flex-shrink-0">
+          <div className="flex-shrink-0">
             <Cookie className="h-10 w-10 text-primary" />
           </div>
           <div className="flex-grow text-center sm:text-left">
-            <h3 className="font-headline text-lg font-semibold">Regarding Your Privacy</h3>
+            <h3 className="font-headline text-lg font-semibold">Our Site Has Cookies (The Digital Kind)</h3>
             <p className="mt-1 text-sm text-muted-foreground">
-              We use essential cookies to ensure our site functions smoothly. We respect your privacy and do not use them for tracking. By clicking "Allow," you consent to our use of cookies. Learn more in our{' '}
+              We use them to keep things running smoothly, not to follow you around the internet. It’s all about making your experience better. Is that cool? Learn more in our{' '}
               <Link href="/legal/privacy-policy" className="underline hover:text-primary">
                 Privacy Policy
               </Link>.
@@ -116,10 +101,10 @@ export function CookieBanner() {
           </div>
           <div className="flex w-full flex-shrink-0 gap-4 sm:w-auto">
             <Button variant="ghost" className="flex-1" onClick={() => handleDecision('declined')}>
-              Decline
+              Not for me
             </Button>
             <Button className="flex-1" onClick={() => handleDecision('accepted')}>
-              Allow
+              Sounds Good!
             </Button>
           </div>
         </div>

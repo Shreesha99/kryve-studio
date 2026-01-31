@@ -56,45 +56,44 @@ function ElysiumIcon({ className }: { className?: string }) {
   );
 }
 
+// New Custom Cursor with Liquid Glass effect
 function CustomCursor() {
-  const cursorRef = useRef<HTMLDivElement>(null);
-  const { resolvedTheme } = useTheme();
-
-  useEffect(() => {
-    const cursor = cursorRef.current;
-    if (!cursor) return;
-
-    const onMouseMove = (e: MouseEvent) => {
-      gsap.to(cursor, {
-        x: e.clientX,
-        y: e.clientY,
-        duration: 0.4,
-        ease: 'power3.out',
-      });
-    };
-
-    window.addEventListener('mousemove', onMouseMove);
-    return () => window.removeEventListener('mousemove', onMouseMove);
-  }, []);
-
-  const color =
-    resolvedTheme === 'dark' ? 'hsl(0 0% 98%)' : 'hsl(240 10% 3.9%)';
-
-  return (
-    <div
-      ref={cursorRef}
-      className="pointer-events-none fixed -left-4 -top-4 z-[9998] flex h-8 w-8 items-center justify-center rounded-full"
-      style={{ willChange: 'transform' }}
-    >
-      <ElysiumIcon className="h-5 w-5" style={{ color }} />
-    </div>
-  );
-}
+    const cursorRef = useRef<HTMLDivElement>(null);
+  
+    useEffect(() => {
+      const cursor = cursorRef.current;
+      if (!cursor) return;
+  
+      const onMouseMove = (e: MouseEvent) => {
+        gsap.to(cursor, {
+          x: e.clientX,
+          y: e.clientY,
+          duration: 0.5,
+          ease: 'power3.out',
+        });
+      };
+  
+      window.addEventListener('mousemove', onMouseMove);
+      return () => window.removeEventListener('mousemove', onMouseMove);
+    }, []);
+  
+    return (
+      <div
+        ref={cursorRef}
+        className="pointer-events-none fixed -left-6 -top-6 z-[9998] flex h-12 w-12 items-center justify-center"
+        style={{ willChange: 'transform' }}
+      >
+        <div className="absolute inset-0 rounded-full border border-white/10 bg-white/10 backdrop-blur-sm transition-all duration-300"></div>
+        <ElysiumIcon className="relative h-6 w-6 text-foreground" />
+      </div>
+    );
+  }
 
 export function Hero() {
   const { preloaderDone } = usePreloaderDone();
   const [isReady, setIsReady] = useState(false);
-  const [isHovering, setIsHovering] = useState(false);
+  const [showCustomCursor, setShowCustomCursor] = useState(true);
+  const [isTouchDevice, setIsTouchDevice] = useState<boolean | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { resolvedTheme } = useTheme();
@@ -109,6 +108,10 @@ export function Hero() {
   // Refs for canvas animation
   const mousePos = useRef({ x: -9999, y: -9999 });
   const dots = useRef<Dot[]>([]);
+
+  useEffect(() => {
+    setIsTouchDevice(window.matchMedia("(pointer: coarse)").matches);
+  }, []);
 
   useEffect(() => {
     if (preloaderDone) {
@@ -159,23 +162,15 @@ export function Hero() {
   useEffect(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
-    if (!canvas || !container) return;
-
-    const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
-    if (isTouchDevice) {
-      canvas.style.display = 'none';
-      return;
-    } else {
-      canvas.style.display = 'block';
-    }
+    if (!canvas || !container || isTouchDevice) return;
 
     const isDark = resolvedTheme === 'dark';
     const primaryColor = isDark
-      ? 'hsla(0, 0%, 100%, 0.8)'
-      : 'hsla(0, 0%, 0%, 0.7)';
+      ? 'hsla(0, 0%, 100%, 0.5)'
+      : 'hsla(0, 0%, 0%, 0.5)';
     const mutedColor = isDark
       ? 'hsla(0, 0%, 100%, 0.15)'
-      : 'hsla(0, 0%, 0%, 0.2)';
+      : 'hsla(0, 0%, 0%, 0.15)';
 
     let animationFrameId: number;
 
@@ -252,7 +247,11 @@ export function Hero() {
         container.removeEventListener('mouseleave', handleMouseLeave);
       }
     };
-  }, [resolvedTheme]);
+  }, [resolvedTheme, isTouchDevice]);
+
+
+  const handleInteractiveEnter = () => !isTouchDevice && setShowCustomCursor(false);
+  const handleInteractiveLeave = () => !isTouchDevice && setShowCustomCursor(true);
 
   return (
     <>
@@ -262,16 +261,12 @@ export function Hero() {
         className={cn(
           'relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-background py-24 md:py-32 lg:py-0'
         )}
-        onMouseEnter={() =>
-          !window.matchMedia('(pointer: coarse)').matches &&
-          setIsHovering(true)
-        }
-        onMouseLeave={() => setIsHovering(false)}
+        onMouseLeave={handleInteractiveLeave} 
+        onMouseEnter={handleInteractiveLeave} 
       >
         <canvas
           ref={canvasRef}
           className="absolute inset-0 z-0 h-full w-full"
-          key={resolvedTheme} // This forces remount on theme change
         />
 
         {isReady && (
@@ -282,7 +277,7 @@ export function Hero() {
                 className="font-headline text-4xl font-semibold tracking-tighter sm:text-5xl lg:text-7xl"
               >
                 <div className="overflow-hidden py-1">
-                  <span className="inline-block">
+                  <span className="inline-block" onMouseEnter={handleInteractiveEnter} onMouseLeave={handleInteractiveLeave}>
                     Engineering{' '}
                     <span className="inline-block cursor-pointer rounded-full border border-foreground/50 bg-background/50 px-4 py-1 backdrop-blur-sm transition-colors duration-300 ease-in-out hover:bg-foreground hover:text-background">
                       Elegance
@@ -291,7 +286,7 @@ export function Hero() {
                   </span>
                 </div>
                 <div className="overflow-hidden py-1">
-                  <span className="inline-block">
+                  <span className="inline-block" onMouseEnter={handleInteractiveEnter} onMouseLeave={handleInteractiveLeave}>
                     Designing{' '}
                     <span className="inline-block cursor-pointer rounded-full border border-foreground/50 bg-background/50 px-4 py-1 backdrop-blur-sm transition-colors duration-300 ease-in-out hover:bg-foreground hover:text-background">
                       Impact
@@ -313,7 +308,7 @@ export function Hero() {
               </p>
 
               <div ref={ctaRef} className="mt-8 opacity-0">
-                <Button size="lg" asChild>
+                <Button size="lg" asChild onMouseEnter={handleInteractiveEnter} onMouseLeave={handleInteractiveLeave}>
                   <Link href="#work">Explore Our Work</Link>
                 </Button>
               </div>
@@ -323,6 +318,7 @@ export function Hero() {
                   asChild
                   variant="ghost"
                   className="h-auto p-0 text-sm font-normal text-muted-foreground transition-colors hover:text-foreground"
+                  onMouseEnter={handleInteractiveEnter} onMouseLeave={handleInteractiveLeave}
                 >
                   <Link href="/blog">
                     <Sparkles className="mr-2 h-4 w-4 text-primary" />
@@ -333,9 +329,9 @@ export function Hero() {
             </div>
           </div>
         )}
-        <ScrollHint scrollTo="#about" />
+        <ScrollHint scrollTo="#about" onMouseEnter={handleInteractiveEnter} onMouseLeave={handleInteractiveLeave}/>
       </section>
-      {isHovering && <CustomCursor />}
+      {!isTouchDevice && showCustomCursor && <CustomCursor />}
     </>
   );
 }
