@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useRef, useState, useEffect } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { Sparkles } from 'lucide-react';
-import { ScrollHint } from '@/components/common/scroll-hint';
-import { usePreloaderDone } from '@/components/common/app-providers';
-import { useTheme } from 'next-themes';
-import { cn } from '@/lib/utils';
+import { useRef, useState, useEffect } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Sparkles } from "lucide-react";
+import { ScrollHint } from "@/components/common/scroll-hint";
+import { usePreloaderDone } from "@/components/common/app-providers";
+import { useTheme } from "next-themes";
+import { cn } from "@/lib/utils";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -45,7 +45,7 @@ function ElysiumIcon({ className }: { className?: string }) {
       viewBox="0 0 24 36"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={cn('w-auto', className)}
+      className={cn("w-auto", className)}
       preserveAspectRatio="xMidYMid meet"
     >
       <path
@@ -60,78 +60,91 @@ function ElysiumIcon({ className }: { className?: string }) {
 }
 
 // New Custom Cursor with Liquid Glass effect
-function CustomCursor({ isVisible }: { isVisible: boolean }) {
-  const cursorRef = useRef<HTMLDivElement>(null);
+// function CustomCursor({ isVisible }: { isVisible: boolean }) {
+//   const cursorRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const cursor = cursorRef.current;
-    if (!cursor) return;
+//   useEffect(() => {
+//     const cursor = cursorRef.current;
+//     if (!cursor) return;
 
-    // Set initial position and properties
-    gsap.set(cursor, {
-      xPercent: -50,
-      yPercent: -50,
-      scale: 0,
-      opacity: 0,
-    });
+//     // Set initial position and properties
+//     gsap.set(cursor, {
+//       xPercent: -50,
+//       yPercent: -50,
+//       scale: 0,
+//       opacity: 0,
+//     });
 
-    const onMouseMove = (e: MouseEvent) => {
-      gsap.to(cursor, {
-        x: e.clientX,
-        y: e.clientY,
-        duration: 0.5,
-        ease: 'power3.out',
-      });
-    };
-    
-    const interactiveElements = document.querySelectorAll('button, a, [role="button"]');
-    const onEnterInteractive = () => gsap.to(cursor, { scale: 0, duration: 0.3, ease: 'power3.out' });
-    const onLeaveInteractive = () => gsap.to(cursor, { scale: 1, duration: 0.3, ease: 'power3.out' });
+//     const onMouseMove = (e: MouseEvent) => {
+//       gsap.to(cursor, {
+//         x: e.clientX,
+//         y: e.clientY,
+//         duration: 0.5,
+//         ease: "power3.out",
+//       });
+//     };
 
-    if (isVisible) {
-      // Animate in
-      gsap.to(cursor, { scale: 1, opacity: 1, duration: 0.4, ease: 'power3.out' });
-      
-      // Add listeners ONLY when visible
-      window.addEventListener('mousemove', onMouseMove);
-      interactiveElements.forEach(el => {
-        el.addEventListener('mouseenter', onEnterInteractive);
-        el.addEventListener('mouseleave', onLeaveInteractive);
-      });
-    }
+//     const interactiveElements = document.querySelectorAll(
+//       'button, a, [role="button"]'
+//     );
+//     const onEnterInteractive = () =>
+//       gsap.to(cursor, { scale: 0, duration: 0.3, ease: "power3.out" });
+//     const onLeaveInteractive = () =>
+//       gsap.to(cursor, { scale: 1, duration: 0.3, ease: "power3.out" });
 
-    // Cleanup function: runs when isVisible becomes false or the component unmounts
-    return () => {
-      // Animate out
-      gsap.to(cursor, { scale: 0, opacity: 0, duration: 0.4, ease: 'power3.out' });
-      
-      // Remove listeners to ensure no more tracking
-      window.removeEventListener('mousemove', onMouseMove);
-      interactiveElements.forEach(el => {
-        el.removeEventListener('mouseenter', onEnterInteractive);
-        el.removeEventListener('mouseleave', onLeaveInteractive);
-      });
-    };
-  }, [isVisible]);
+//     if (isVisible) {
+//       // Animate in
+//       gsap.to(cursor, {
+//         scale: 1,
+//         opacity: 1,
+//         duration: 0.4,
+//         ease: "power3.out",
+//       });
 
-  return (
-    <div
-      ref={cursorRef}
-      className="pointer-events-none fixed left-0 top-0 z-30 flex h-12 w-12 items-center justify-center"
-      style={{ willChange: 'transform' }}
-    >
-      <div className="absolute inset-0 rounded-full border border-white/10 bg-white/10 backdrop-blur-sm transition-all duration-300"></div>
-      <ElysiumIcon className="relative h-6 w-6 text-foreground" />
-    </div>
-  );
-}
+//       // Add listeners ONLY when visible
+//       window.addEventListener("mousemove", onMouseMove);
+//       interactiveElements.forEach((el) => {
+//         el.addEventListener("mouseenter", onEnterInteractive);
+//         el.addEventListener("mouseleave", onLeaveInteractive);
+//       });
+//     }
 
+//     // Cleanup function: runs when isVisible becomes false or the component unmounts
+//     return () => {
+//       // Animate out
+//       gsap.to(cursor, {
+//         scale: 0,
+//         opacity: 0,
+//         duration: 0.4,
+//         ease: "power3.out",
+//       });
+
+//       // Remove listeners to ensure no more tracking
+//       window.removeEventListener("mousemove", onMouseMove);
+//       interactiveElements.forEach((el) => {
+//         el.removeEventListener("mouseenter", onEnterInteractive);
+//         el.removeEventListener("mouseleave", onLeaveInteractive);
+//       });
+//     };
+//   }, [isVisible]);
+
+//   return (
+//     <div
+//       ref={cursorRef}
+//       className="pointer-events-none fixed left-0 top-0 z-30 flex h-12 w-12 items-center justify-center"
+//       style={{ willChange: "transform" }}
+//     >
+//       <div className="absolute inset-0 rounded-full border border-white/10 bg-white/10 backdrop-blur-sm transition-all duration-300"></div>
+//       <ElysiumIcon className="relative h-6 w-6 text-foreground" />
+//     </div>
+//   );
+// }
 
 export function Hero() {
   const { preloaderDone } = usePreloaderDone();
   const [isReady, setIsReady] = useState(false);
   const [isTouchDevice, setIsTouchDevice] = useState<boolean | null>(null);
-  const [isHeroInView, setIsHeroInView] = useState(true);
+  const [isHeroInView, setIsHeroInView] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { resolvedTheme } = useTheme();
@@ -163,10 +176,10 @@ export function Hero() {
     if (!isReady) return;
 
     const tl = gsap.timeline({
-      defaults: { duration: 1, ease: 'power3.out' },
+      defaults: { duration: 1, ease: "power3.out" },
     });
 
-    const titleSpans = gsap.utils.toArray('span', titleRef.current);
+    const titleSpans = gsap.utils.toArray("span", titleRef.current);
 
     tl.fromTo(
       titleSpans,
@@ -177,27 +190,28 @@ export function Hero() {
         paragraphRef.current,
         { y: 20, opacity: 0 },
         { opacity: 1, y: 0 },
-        '-=0.8'
+        "-=0.8"
       )
       .fromTo(
         ctaRef.current,
         { y: 20, opacity: 0 },
         { opacity: 1, y: 0 },
-        '-=0.8'
+        "-=0.8"
       )
       .fromTo(
         hintRef.current,
         { y: 20, opacity: 0 },
         { opacity: 1, y: 0 },
-        '-=0.8'
+        "-=0.8"
       );
-      
+
     // This ScrollTrigger now correctly confines the cursor to the hero section
     const st = ScrollTrigger.create({
-        trigger: containerRef.current,
-        start: 'top top',
-        end: 'bottom top',
-        onToggle: self => setIsHeroInView(self.isActive)
+      trigger: containerRef.current,
+      start: "top top",
+      end: "center top",
+
+      onToggle: (self) => setIsHeroInView(self.isActive),
     });
 
     return () => {
@@ -215,95 +229,96 @@ export function Hero() {
     let localAnimationFrameId: number;
 
     const setupAndAnimate = () => {
-        const isDark = resolvedTheme === 'dark';
-        const primaryColor = isDark
-        ? 'hsla(0, 0%, 100%, 0.5)'
-        : 'hsla(0, 0%, 0%, 0.5)';
-        const mutedColor = isDark
-        ? 'hsla(0, 0%, 100%, 0.15)'
-        : 'hsla(0, 0%, 0%, 0.15)';
+      const isDark = resolvedTheme === "dark";
+      const primaryColor = isDark
+        ? "hsla(0, 0%, 100%, 0.5)"
+        : "hsla(0, 0%, 0%, 0.5)";
+      const mutedColor = isDark
+        ? "hsla(0, 0%, 100%, 0.15)"
+        : "hsla(0, 0%, 0%, 0.15)";
 
-        const dpr = window.devicePixelRatio || 1;
-        const rect = canvas.getBoundingClientRect();
-        canvas.width = rect.width * dpr;
-        canvas.height = rect.height * dpr;
-        
-        const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.scale(dpr, dpr);
+
+      dots.current = [];
+      const gap = 30;
+      const dotRadius = 1;
+      for (let x = gap / 2; x < rect.width; x += gap) {
+        for (let y = gap / 2; y < rect.height; y += gap) {
+          dots.current.push(new Dot(x, y, dotRadius, mutedColor));
+        }
+      }
+
+      const animate = () => {
         if (!ctx) return;
-        ctx.scale(dpr, dpr);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        dots.current = [];
-        const gap = 30;
-        const dotRadius = 1;
-        for (let x = gap / 2; x < rect.width; x += gap) {
-            for (let y = gap / 2; y < rect.height; y += gap) {
-            dots.current.push(new Dot(x, y, dotRadius, mutedColor));
-            }
-        }
-        
-        const animate = () => {
-            if (!ctx) return;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        dots.current.forEach((dot) => {
+          const dx = dot.x - mousePos.current.x;
+          const dy = dot.y - mousePos.current.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
 
-            dots.current.forEach(dot => {
-                const dx = dot.x - mousePos.current.x;
-                const dy = dot.y - mousePos.current.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
+          const maxDist = 100;
+          if (dist < maxDist) {
+            const force = (maxDist - dist) / maxDist;
+            dot.targetRadius = dot.originalRadius + force * 3;
+            dot.color = primaryColor;
+          } else {
+            dot.targetRadius = dot.originalRadius;
+            dot.color = mutedColor;
+          }
 
-                const maxDist = 100;
-                if (dist < maxDist) {
-                const force = (maxDist - dist) / maxDist;
-                dot.targetRadius = dot.originalRadius + force * 3;
-                dot.color = primaryColor;
-                } else {
-                dot.targetRadius = dot.originalRadius;
-                dot.color = mutedColor;
-                }
+          dot.radius += (dot.targetRadius - dot.radius) * 0.1;
+          dot.draw(ctx);
+        });
 
-                dot.radius += (dot.targetRadius - dot.radius) * 0.1;
-                dot.draw(ctx);
-            });
+        localAnimationFrameId = requestAnimationFrame(animate);
+        animationFrameId.current = localAnimationFrameId;
+      };
 
-            localAnimationFrameId = requestAnimationFrame(animate);
-            animationFrameId.current = localAnimationFrameId;
-        };
-        
-        if (animationFrameId.current) {
-            cancelAnimationFrame(animationFrameId.current);
-        }
-        animate();
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
+      }
+      animate();
     };
 
     const handleMouseMove = (e: MouseEvent) => {
-        if (!canvas) return;
-        const rect = canvas.getBoundingClientRect();
-        mousePos.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      mousePos.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
     };
 
     const handleMouseLeave = () => {
-        mousePos.current = { x: -9999, y: -9999 };
+      mousePos.current = { x: -9999, y: -9999 };
     };
 
     const handleResize = () => {
-        if (animationFrameId.current) cancelAnimationFrame(animationFrameId.current);
-        setupAndAnimate();
+      if (animationFrameId.current)
+        cancelAnimationFrame(animationFrameId.current);
+      setupAndAnimate();
     };
 
     if (!isTouchDevice) {
-        setupAndAnimate();
-        container.addEventListener('mousemove', handleMouseMove);
-        container.addEventListener('mouseleave', handleMouseLeave);
-        window.addEventListener('resize', handleResize);
+      setupAndAnimate();
+      container.addEventListener("mousemove", handleMouseMove);
+      container.addEventListener("mouseleave", handleMouseLeave);
+      window.addEventListener("resize", handleResize);
     }
-    
 
     return () => {
-      if (animationFrameId.current) cancelAnimationFrame(animationFrameId.current);
+      if (animationFrameId.current)
+        cancelAnimationFrame(animationFrameId.current);
       if (container) {
-        container.removeEventListener('mousemove', handleMouseMove);
-        container.removeEventListener('mouseleave', handleMouseLeave);
+        container.removeEventListener("mousemove", handleMouseMove);
+        container.removeEventListener("mouseleave", handleMouseLeave);
       }
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
     };
   }, [resolvedTheme, isTouchDevice]);
 
@@ -313,8 +328,8 @@ export function Hero() {
         id="home"
         ref={containerRef}
         className={cn(
-          'relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-background py-24 md:py-32 lg:py-0',
-          { 'opacity-0': !preloaderDone }
+          "relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-background py-24 md:py-32 lg:py-0",
+          { "opacity-0": !preloaderDone }
         )}
       >
         <canvas
@@ -332,7 +347,7 @@ export function Hero() {
               >
                 <div className="overflow-hidden py-1">
                   <span className="inline-block">
-                    Engineering{' '}
+                    Engineering{" "}
                     <span className="inline-block cursor-pointer rounded-full border border-foreground/50 bg-background/50 px-4 py-1 backdrop-blur-sm transition-colors duration-300 ease-in-out hover:bg-foreground hover:text-background">
                       Elegance
                     </span>
@@ -341,7 +356,7 @@ export function Hero() {
                 </div>
                 <div className="overflow-hidden py-1">
                   <span className="inline-block">
-                    Designing{' '}
+                    Designing{" "}
                     <span className="inline-block cursor-pointer rounded-full border border-foreground/50 bg-background/50 px-4 py-1 backdrop-blur-sm transition-colors duration-300 ease-in-out hover:bg-foreground hover:text-background">
                       Impact
                     </span>
@@ -384,7 +399,9 @@ export function Hero() {
         )}
         <ScrollHint scrollTo="#about" />
       </section>
-      {!isTouchDevice && <CustomCursor isVisible={isHeroInView} />}
+      {/* {!isTouchDevice && preloaderDone && (
+        <CustomCursor isVisible={isHeroInView} />
+      )} */}
     </>
   );
 }

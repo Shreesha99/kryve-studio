@@ -7,39 +7,38 @@ type PreloaderProps = {
   onAnimationComplete?: () => void;
 };
 
-// New component for the logo SVG, to be used inside the preloader
-function ElysiumLogo3D() {
-  return (
-    <svg
-      width="100%"
-      height="100%"
-      viewBox="0 0 80 80"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      preserveAspectRatio="xMidYMid meet"
-    >
-      <defs>
-        <linearGradient id="metallic-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style={{ stopColor: "hsl(var(--foreground))", stopOpacity: 0.7 }} />
-          <stop offset="50%" style={{ stopColor: "hsl(var(--foreground))", stopOpacity: 1 }} />
-          <stop offset="100%" style={{ stopColor: "hsl(var(--foreground))", stopOpacity: 0.7 }} />
-        </linearGradient>
-        <filter id="logo-shadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="1" dy="2" stdDeviation="1.5" floodColor="hsl(var(--primary))" floodOpacity="0.2"/>
-        </filter>
-      </defs>
-      <path
-        d="M60 17.5 H20 V32.5 H50 V47.5 H20 V62.5 H60"
-        stroke="url(#metallic-gradient)"
-        strokeWidth="6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        filter="url(#logo-shadow)"
-      />
-    </svg>
-  );
-}
-
+// // New component for the logo SVG, to be used inside the preloader
+// function ElysiumLogo3D() {
+//   return (
+//     <svg
+//       width="100%"
+//       height="100%"
+//       viewBox="0 0 80 80"
+//       fill="none"
+//       xmlns="http://www.w3.org/2000/svg"
+//       preserveAspectRatio="xMidYMid meet"
+//     >
+//       <defs>
+//         <linearGradient id="metallic-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+//           <stop offset="0%" style={{ stopColor: "hsl(var(--foreground))", stopOpacity: 0.7 }} />
+//           <stop offset="50%" style={{ stopColor: "hsl(var(--foreground))", stopOpacity: 1 }} />
+//           <stop offset="100%" style={{ stopColor: "hsl(var(--foreground))", stopOpacity: 0.7 }} />
+//         </linearGradient>
+//         <filter id="logo-shadow" x="-20%" y="-20%" width="140%" height="140%">
+//             <feDropShadow dx="1" dy="2" stdDeviation="1.5" floodColor="hsl(var(--primary))" floodOpacity="0.2"/>
+//         </filter>
+//       </defs>
+//       <path
+//         d="M60 17.5 H20 V32.5 H50 V47.5 H20 V62.5 H60"
+//         stroke="url(#metallic-gradient)"
+//         strokeWidth="6"
+//         strokeLinecap="round"
+//         strokeLinejoin="round"
+//         filter="url(#logo-shadow)"
+//       />
+//     </svg>
+//   );
+// }
 
 export default function Preloader({ onAnimationComplete }: PreloaderProps) {
   const overlayControls = useAnimation();
@@ -73,12 +72,12 @@ export default function Preloader({ onAnimationComplete }: PreloaderProps) {
       // Refined increment for a more noticeable slowdown at the end.
       const increment =
         remaining > 50
-          ? 1.0   // Fast start
+          ? 1.0 // Fast start
           : remaining > 20
-          ? 0.5   // Medium pace
+          ? 0.5 // Medium pace
           : remaining > 5
-          ? 0.2   // Slow down
-          : 0.1;  // Crawl to the finish
+          ? 0.2 // Slow down
+          : 0.1; // Crawl to the finish
 
       value = Math.min(100, value + increment);
       setProgress(value);
@@ -94,7 +93,7 @@ export default function Preloader({ onAnimationComplete }: PreloaderProps) {
     };
 
     raf = requestAnimationFrame(tick);
-    
+
     return () => {
       cancelAnimationFrame(raf);
       if (timeoutRef.current) {
@@ -131,7 +130,7 @@ export default function Preloader({ onAnimationComplete }: PreloaderProps) {
           }}
         >
           {/* ✨ 3D LOGO ADDED HERE ✨ */}
-          <motion.div
+          {/* <motion.div
             className="absolute top-1/2 left-1/2 h-[45%] w-[45%] -translate-x-1/2 -translate-y-1/2"
             style={{ transformStyle: "preserve-3d" }}
             animate={{ rotateY: -720 }} // Rotate in the opposite direction for contrast
@@ -142,13 +141,13 @@ export default function Preloader({ onAnimationComplete }: PreloaderProps) {
             }}
           >
             <ElysiumLogo3D />
-          </motion.div>
+          </motion.div> */}
 
           {points.map((p, i) => {
             const depth = (p.z + 1) / 2; // 0 (back) to 1 (front)
             const spread = 140; // controls the radius of the sphere
             const yOffset = Math.sin(i) * 10; // unique offset for wavy motion
-            
+
             // 🔥 NEW: Dynamic size and blur for 3D effect
             const size = 1.5 + depth * 3; // Particles in front are bigger
             const blurAmount = (1 - depth) * 1.5; // Particles in back are blurrier
@@ -162,7 +161,7 @@ export default function Preloader({ onAnimationComplete }: PreloaderProps) {
                   height: size,
                   background: p.color,
                   // 🔥 NEW: Emphasize front particles more
-                  opacity: 0.4 + depth * 0.6, 
+                  opacity: 0.4 + depth * 0.6,
                   // 🔥 NEW: Apply depth-of-field blur
                   filter: `blur(${blurAmount}px)`,
                 }}
