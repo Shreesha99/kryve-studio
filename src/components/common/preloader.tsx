@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useAnimation } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 
 type PreloaderProps = {
   onAnimationComplete?: () => void;
@@ -11,6 +11,7 @@ export default function Preloader({ onAnimationComplete }: PreloaderProps) {
   const overlayControls = useAnimation();
   const [progress, setProgress] = useState(0);
   const [visible, setVisible] = useState(true);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // 🔒 Sphere points MUST be stable across renders
   const points = useMemo(() => SPHERE_POINTS, []);
@@ -18,29 +19,6 @@ export default function Preloader({ onAnimationComplete }: PreloaderProps) {
   useEffect(() => {
     let value = 0;
     let raf: number;
-
-    const tick = () => {
-      const remaining = 100 - value;
-
-      // Slower, more gradual increment
-      const increment =
-        remaining > 50
-          ? 0.5
-          : remaining > 25
-          ? 0.25
-          : remaining > 10
-          ? 0.12
-          : 0.05;
-
-      value = Math.min(100, value + increment);
-      setProgress(value);
-
-      if (value < 100) {
-        raf = requestAnimationFrame(tick);
-      } else {
-        exit();
-      }
-    };
 
     const exit = async () => {
       // Reverted to only slide up, no fade
@@ -55,8 +33,38 @@ export default function Preloader({ onAnimationComplete }: PreloaderProps) {
       onAnimationComplete?.();
     };
 
+    const tick = () => {
+      const remaining = 100 - value;
+
+      // Faster, more dynamic increment. Starts fast, slows for the finale.
+      const increment =
+        remaining > 30
+          ? 1.0
+          : remaining > 10
+          ? 0.5
+          : 0.2;
+
+      value = Math.min(100, value + increment);
+      setProgress(value);
+
+      if (value < 100) {
+        raf = requestAnimationFrame(tick);
+      } else {
+        // Ensure 100% is rendered before starting the exit animation
+        setProgress(100);
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        timeoutRef.current = setTimeout(exit, 100); // Small delay
+      }
+    };
+
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    
+    return () => {
+      cancelAnimationFrame(raf);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
   }, [overlayControls, onAnimationComplete]);
 
   if (!visible) return null;
