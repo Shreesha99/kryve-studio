@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useLayoutEffect } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
@@ -11,49 +11,38 @@ import { useLenis } from "./smooth-scroll-provider";
 import { usePreloaderDone } from "./app-providers";
 
 export function Header() {
-  const logoPodRef = useRef<HTMLDivElement>(null);
-  const controlsPodRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const lenis = useLenis();
   const { preloaderDone } = usePreloaderDone();
 
-  // Animate header pods on initial load
+  // Animate header in after preloader
   useLayoutEffect(() => {
-    const pods = [logoPodRef.current, controlsPodRef.current].filter(Boolean);
-    if (pods.length === 0) return;
-
+    if (!preloaderDone || !headerRef.current) return;
+    
     const ctx = gsap.context(() => {
-      // Set initial state
-      gsap.set(pods, { opacity: 0, y: -20 });
-
-      if (preloaderDone) {
-        gsap.to(pods, {
-          opacity: 1,
-          y: 0,
-          duration: 1,
-          stagger: 0.1,
-          ease: "power3.out",
-          delay: 0.2,
-        });
-      }
-    });
+      gsap.fromTo(
+        headerRef.current,
+        { y: "-120%", opacity: 0 },
+        { y: "0%", opacity: 1, duration: 1.2, ease: "power3.out", delay: 0.5 }
+      );
+    }, headerRef);
 
     return () => ctx.revert();
   }, [preloaderDone]);
 
-  // Detect if page is scrolled to apply background to header
+  // Detect scroll to apply background
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
-
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Stop scrolling when the menu is open
+  // Lock/unlock scroll when menu opens/closes
   useEffect(() => {
     if (isMenuOpen) {
       lenis?.stop();
@@ -64,33 +53,35 @@ export function Header() {
 
   return (
     <>
-      <div
-        ref={logoPodRef}
+      <header
+        ref={headerRef}
         className={cn(
-          "pointer-events-auto fixed z-50 top-4 left-4 sm:top-6 sm:left-6 rounded-full border bg-background/60 backdrop-blur-md transition-colors duration-300",
-          isScrolled ? "border-border" : "border-transparent"
+          "fixed top-0 left-0 right-0 z-40 transition-all duration-300",
+          "opacity-0" // Initially hidden until GSAP animation
         )}
       >
-        <div className="flex items-center justify-center px-1.5 py-1">
-          <Logo />
+        <div
+          className={cn(
+            "mx-auto mt-4 max-w-7xl rounded-full border bg-transparent px-4 transition-all duration-300",
+            isScrolled
+              ? "border-border bg-background/60 backdrop-blur-md"
+              : "border-transparent"
+          )}
+        >
+          <div className="flex h-14 items-center justify-between">
+            <div className="pointer-events-auto">
+                <Logo />
+            </div>
+            <div className="pointer-events-auto flex items-center">
+              <ThemeToggle />
+              <HamburgerButton
+                isOpen={isMenuOpen}
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+              />
+            </div>
+          </div>
         </div>
-      </div>
-
-      <div
-        ref={controlsPodRef}
-        className={cn(
-          "pointer-events-auto fixed z-50 top-4 right-4 sm:top-6 sm:right-6 rounded-full border bg-background/60 backdrop-blur-md transition-colors duration-300",
-          isScrolled ? "border-border" : "border-transparent"
-        )}
-      >
-        <div className="flex items-center">
-          <ThemeToggle />
-          <HamburgerButton
-            isOpen={isMenuOpen}
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          />
-        </div>
-      </div>
+      </header>
 
       <FullScreenMenu
         isOpen={isMenuOpen}

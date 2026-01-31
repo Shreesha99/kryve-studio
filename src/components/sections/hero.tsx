@@ -9,7 +9,6 @@ import { ScrollHint } from '@/components/common/scroll-hint';
 import { usePreloaderDone } from '@/components/common/app-providers';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
-import { HeroCursor } from '../common/hero-cursor';
 
 // A single dot in the grid
 class Dot {
@@ -54,9 +53,6 @@ export function Hero() {
   const mousePos = useRef({ x: -9999, y: -9999 });
   const dots = useRef<Dot[]>([]);
   const animationFrameId = useRef<number>();
-
-  const heroCursorRef = useRef<HTMLDivElement>(null);
-  const [isHoveringHero, setIsHoveringHero] = useState(false);
 
   useEffect(() => {
     // This logic ensures the hero content animates in only *after* the preloader is done.
@@ -104,41 +100,6 @@ export function Hero() {
       tl.kill();
     };
   }, [isReady]);
-
-  // Custom Cursor Logic
-  useEffect(() => {
-    const heroSection = containerRef.current;
-    const cursor = heroCursorRef.current;
-    if (!heroSection || !cursor) return;
-
-    if (window.matchMedia("(pointer: coarse)").matches) {
-        return;
-    }
-
-    const onMouseMove = (e: MouseEvent) => {
-        gsap.to(cursor, {
-            x: e.clientX,
-            y: e.clientY,
-            duration: 0.1,
-            ease: 'power2.out'
-        });
-    };
-    
-    const onMouseEnter = () => setIsHoveringHero(true);
-    const onMouseLeave = () => setIsHoveringHero(false);
-    
-    heroSection.addEventListener('mouseenter', onMouseEnter);
-    heroSection.addEventListener('mouseleave', onMouseLeave);
-    window.addEventListener('mousemove', onMouseMove);
-
-    return () => {
-        heroSection.removeEventListener('mouseenter', onMouseEnter);
-        heroSection.removeEventListener('mouseleave', onMouseLeave);
-        window.removeEventListener('mousemove', onMouseMove);
-    }
-
-  }, []);
-
 
   // Canvas Drawing Logic
   useEffect(() => {
@@ -240,16 +201,13 @@ export function Hero() {
       id="home"
       ref={containerRef}
       className={cn(
-        "relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-background py-24 md:py-32 lg:py-0",
-        isHoveringHero && "cursor-none"
+        "relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-background py-24 md:py-32 lg:py-0"
       )}
     >
       <canvas
         ref={canvasRef}
         className="pointer-events-none absolute inset-0 z-0 h-full w-full"
       />
-
-      <HeroCursor ref={heroCursorRef} isActive={isHoveringHero} />
 
       {isReady && (
         <div
@@ -261,7 +219,7 @@ export function Hero() {
               className="font-headline text-4xl font-semibold tracking-tighter sm:text-5xl lg:text-7xl"
             >
               <div className="overflow-hidden py-1">
-                <span className="inline-block">
+                <span className="inline-block opacity-0">
                   Engineering{' '}
                   <span className="inline-block cursor-pointer rounded-full border border-foreground/50 bg-background/50 px-4 py-1 backdrop-blur-sm transition-colors duration-300 ease-in-out hover:bg-foreground hover:text-background">
                     Elegance
@@ -270,7 +228,7 @@ export function Hero() {
                 </span>
               </div>
               <div className="overflow-hidden py-1">
-                <span className="inline-block">
+                <span className="inline-block opacity-0">
                   Designing{' '}
                   <span className="inline-block cursor-pointer rounded-full border border-foreground/50 bg-background/50 px-4 py-1 backdrop-blur-sm transition-colors duration-300 ease-in-out hover:bg-foreground hover:text-background">
                     Impact
