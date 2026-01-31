@@ -22,14 +22,15 @@ export default function Preloader({ onAnimationComplete }: PreloaderProps) {
     const tick = () => {
       const remaining = 100 - value;
 
+      // Slower start, faster middle, gentle end
       const increment =
-        remaining > 50
-          ? 0.5
-          : remaining > 25
-          ? 0.25
+        remaining > 80
+          ? 0.2
+          : remaining > 30
+          ? 0.75
           : remaining > 10
-          ? 0.12
-          : 0.05;
+          ? 0.25
+          : 0.1;
 
       value = Math.min(100, value + increment);
       setProgress(Math.floor(value));
@@ -42,10 +43,16 @@ export default function Preloader({ onAnimationComplete }: PreloaderProps) {
     };
 
     const exit = async () => {
+      // Animate the sphere and text out first for a cleaner exit
+      await overlayControls.start({
+        opacity: 0,
+        transition: { duration: 0.5, ease: "easeOut" },
+      });
+      // Then slide the whole screen up
       await overlayControls.start({
         y: -window.innerHeight,
         transition: {
-          duration: 1.3,
+          duration: 1.0,
           ease: [0.4, 0, 0.2, 1] as const,
         },
       });
@@ -62,68 +69,73 @@ export default function Preloader({ onAnimationComplete }: PreloaderProps) {
   return (
     <motion.div
       className="fixed inset-0 z-[9999] bg-background"
-      initial={{ y: 0 }}
+      initial={{ y: 0, opacity: 1 }}
       animate={overlayControls}
     >
-      {/* 🌐 3D PARTICLE SPHERE */}
-      <div
-        className="absolute bottom-32 right-32 h-72 w-72"
-        style={{ perspective: "1200px" }}
-      >
-        <motion.div
-          className="relative h-full w-full"
-          style={{ transformStyle: "preserve-3d" }}
-          animate={{
-            rotateY: 360,
-            rotateX: 180,
-            scale: [1, 1.06, 1], // ❤️ heartbeat
-          }}
-          transition={{
-            rotateY: { duration: 28, repeat: Infinity, ease: "linear" },
-            rotateX: { duration: 20, repeat: Infinity, ease: "linear" },
-            scale: { duration: 1.8, repeat: Infinity, ease: "easeInOut" },
-          }}
+      <div className="flex h-full w-full items-center justify-center">
+        {/* 🌐 3D PARTICLE SPHERE - Centered & Responsive */}
+        <div
+          className="absolute top-1/2 left-1/2 h-[70vmin] w-[70vmin] max-h-[24rem] max-w-[24rem] -translate-x-1/2 -translate-y-1/2"
+          style={{ perspective: "1200px" }}
         >
-          {points.map((p, i) => {
-            const depth = (p.z + 1) / 2;
+          <motion.div
+            className="relative h-full w-full"
+            style={{ transformStyle: "preserve-3d" }}
+            animate={{
+              rotateY: 360,
+              rotateX: 180,
+            }}
+            transition={{
+              rotateY: { duration: 32, repeat: Infinity, ease: "linear" },
+              rotateX: { duration: 24, repeat: Infinity, ease: "linear" },
+            }}
+          >
+            {points.map((p, i) => {
+              const depth = (p.z + 1) / 2; // 0 (back) to 1 (front)
+              const spread = 140; // controls the radius of the sphere
+              const yOffset = Math.sin(i) * 10; // unique offset for wavy motion
 
-            return (
-              <motion.span
-                key={i}
-                className="absolute left-1/2 top-1/2 rounded-full"
-                style={{
-                  width: 3,
-                  height: 3,
-                  background: p.color,
-                  opacity: 0.35 + depth * 0.65,
-                }}
-                initial={{
-                  x: p.x * 120,
-                  y: p.y * 120,
-                  z: p.z * 120,
-                }}
-                animate={{
-                  scale: [0.8, 1.25, 0.8], // 🌊 wave per particle
-                }}
-                transition={{
-                  duration: 3 + (i % 6),
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              />
-            );
-          })}
-        </motion.div>
-      </div>
+              return (
+                <motion.span
+                  key={i}
+                  className="absolute left-1/2 top-1/2 rounded-full"
+                  style={{
+                    width: 4,
+                    height: 4,
+                    background: p.color,
+                    // Opacity increases with depth for a 3D effect
+                    opacity: 0.5 + depth * 0.5,
+                  }}
+                  initial={{
+                    x: p.x * spread,
+                    y: p.y * spread,
+                    z: p.z * spread,
+                  }}
+                  // More organic "wiggly/wavy" animation
+                  animate={{
+                    scale: [0.9, 1.2, 0.9],
+                    y: [p.y * spread, p.y * spread + yOffset, p.y * spread],
+                  }}
+                  transition={{
+                    duration: 4 + (i % 7), // Varied duration for realism
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                />
+              );
+            })}
+          </motion.div>
+        </div>
 
-      {/* 🔢 HUGE PERCENTAGE */}
-      <div className="absolute bottom-10 right-10 select-none">
-        <span className="text-[9rem] leading-none font-semibold tracking-tight text-foreground">
-          {progress}
-        </span>
-        <span className="absolute right-[-1.5rem] top-3 text-3xl text-foreground/40">
-          %
-        </span>
+        {/* 🔢 HUGE PERCENTAGE - Centered */}
+        <div className="relative flex select-none items-start justify-center">
+          <span className="text-[10rem] font-semibold leading-none tracking-tighter text-foreground sm:text-[12rem]">
+            {progress}
+          </span>
+          <span className="mt-5 text-3xl font-medium text-foreground/40 sm:text-4xl">
+            %
+          </span>
+        </div>
       </div>
     </motion.div>
   );
@@ -131,12 +143,13 @@ export default function Preloader({ onAnimationComplete }: PreloaderProps) {
 
 /* ---------------- SPHERE DATA ---------------- */
 
+// New vibrant color palette
 const COLORS = [
-  "rgba(59,130,246,0.9)",
-  "rgba(99,102,241,0.9)",
-  "rgba(14,165,233,0.9)",
-  "rgba(148,163,184,0.8)",
-  "rgba(236,72,153,0.6)",
+  "rgba(236, 72, 153, 1)", // Vibrant Pink
+  "rgba(139, 92, 246, 1)", // Bright Violet
+  "rgba(34, 211, 238, 1)", // Sharp Cyan
+  "rgba(99, 102, 241, 1)", // Vivid Indigo
+  "rgba(56, 189, 248, 1)", // Bold Sky Blue
 ];
 
 const SPHERE_POINTS = Array.from({ length: 96 }).map((_, i) => {
