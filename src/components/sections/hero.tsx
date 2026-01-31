@@ -67,7 +67,6 @@ function CustomCursor({ isVisible }: { isVisible: boolean }) {
     const cursor = cursorRef.current;
     if (!cursor) return;
 
-    // This ensures the cursor's center is aligned with the mouse pointer
     gsap.set(cursor, { xPercent: -50, yPercent: -50 });
 
     const onMouseMove = (e: MouseEvent) => {
@@ -84,18 +83,43 @@ function CustomCursor({ isVisible }: { isVisible: boolean }) {
   }, []);
 
   useEffect(() => {
-    gsap.to(cursorRef.current, {
+    const cursor = cursorRef.current;
+    if (!cursor) return;
+
+    // Animate visibility based on the isVisible prop (controlled by Hero's ScrollTrigger)
+    gsap.to(cursor, {
       scale: isVisible ? 1 : 0,
       opacity: isVisible ? 1 : 0,
-      duration: 0.3,
+      duration: 0.4,
       ease: 'power3.out',
     });
+
+    // If the cursor isn't supposed to be visible, don't add hover listeners
+    if (!isVisible) return;
+
+    // These listeners make the cursor hide when hovering over interactive elements
+    const interactiveElements = document.querySelectorAll('button, a, [role="button"]');
+    const onEnter = () => gsap.to(cursor, { scale: 0, duration: 0.3, ease: 'power3.out' });
+    const onLeave = () => gsap.to(cursor, { scale: 1, duration: 0.3, ease: 'power3.out' });
+
+    interactiveElements.forEach(el => {
+      el.addEventListener('mouseenter', onEnter);
+      el.addEventListener('mouseleave', onLeave);
+    });
+
+    // Cleanup function to remove listeners
+    return () => {
+      interactiveElements.forEach(el => {
+        el.removeEventListener('mouseenter', onEnter);
+        el.removeEventListener('mouseleave', onLeave);
+      });
+    };
   }, [isVisible]);
 
   return (
     <div
       ref={cursorRef}
-      className="pointer-events-none fixed left-0 top-0 z-10 flex h-12 w-12 items-center justify-center"
+      className="pointer-events-none fixed left-0 top-0 z-30 flex h-12 w-12 items-center justify-center"
       style={{ willChange: 'transform' }}
     >
       <div className="absolute inset-0 rounded-full border border-white/10 bg-white/10 backdrop-blur-sm transition-all duration-300"></div>
@@ -108,7 +132,6 @@ function CustomCursor({ isVisible }: { isVisible: boolean }) {
 export function Hero() {
   const { preloaderDone } = usePreloaderDone();
   const [isReady, setIsReady] = useState(false);
-  const [showCustomCursor, setShowCustomCursor] = useState(true);
   const [isTouchDevice, setIsTouchDevice] = useState<boolean | null>(null);
   const [isHeroInView, setIsHeroInView] = useState(true);
 
@@ -171,6 +194,7 @@ export function Hero() {
         '-=0.8'
       );
       
+    // This ScrollTrigger now correctly confines the cursor to the hero section
     const st = ScrollTrigger.create({
         trigger: containerRef.current,
         start: 'top top',
@@ -273,27 +297,6 @@ export function Hero() {
     };
   }, [resolvedTheme, isTouchDevice]);
 
-
-  const handleInteractiveEnter = useCallback(() => !isTouchDevice && setShowCustomCursor(false), [isTouchDevice]);
-  const handleInteractiveLeave = useCallback(() => !isTouchDevice && setShowCustomCursor(true), [isTouchDevice]);
-
-  useEffect(() => {
-    if (isTouchDevice) return;
-
-    const header = document.querySelector('header');
-    if (header) {
-        header.addEventListener('mouseenter', handleInteractiveEnter);
-        header.addEventListener('mouseleave', handleInteractiveLeave);
-    }
-
-    return () => {
-        if (header) {
-            header.removeEventListener('mouseenter', handleInteractiveEnter);
-            header.removeEventListener('mouseleave', handleInteractiveLeave);
-        }
-    };
-  }, [isTouchDevice, handleInteractiveEnter, handleInteractiveLeave]);
-
   return (
     <>
       <section
@@ -316,7 +319,7 @@ export function Hero() {
                 className="font-headline text-4xl font-semibold tracking-tighter sm:text-5xl lg:text-7xl"
               >
                 <div className="overflow-hidden py-1">
-                  <span className="inline-block" onMouseEnter={handleInteractiveEnter} onMouseLeave={handleInteractiveLeave}>
+                  <span className="inline-block">
                     Engineering{' '}
                     <span className="inline-block cursor-pointer rounded-full border border-foreground/50 bg-background/50 px-4 py-1 backdrop-blur-sm transition-colors duration-300 ease-in-out hover:bg-foreground hover:text-background">
                       Elegance
@@ -325,7 +328,7 @@ export function Hero() {
                   </span>
                 </div>
                 <div className="overflow-hidden py-1">
-                  <span className="inline-block" onMouseEnter={handleInteractiveEnter} onMouseLeave={handleInteractiveLeave}>
+                  <span className="inline-block">
                     Designing{' '}
                     <span className="inline-block cursor-pointer rounded-full border border-foreground/50 bg-background/50 px-4 py-1 backdrop-blur-sm transition-colors duration-300 ease-in-out hover:bg-foreground hover:text-background">
                       Impact
@@ -347,7 +350,7 @@ export function Hero() {
               </p>
 
               <div ref={ctaRef} className="mt-8 opacity-0">
-                <Button size="lg" asChild onMouseEnter={handleInteractiveEnter} onMouseLeave={handleInteractiveLeave}>
+                <Button size="lg" asChild>
                   <Link href="#work">Explore Our Work</Link>
                 </Button>
               </div>
@@ -357,7 +360,6 @@ export function Hero() {
                   asChild
                   variant="ghost"
                   className="h-auto p-0 text-sm font-normal text-muted-foreground transition-colors hover:text-foreground"
-                  onMouseEnter={handleInteractiveEnter} onMouseLeave={handleInteractiveLeave}
                 >
                   <Link href="/blog">
                     <Sparkles className="mr-2 h-4 w-4 text-primary" />
@@ -368,9 +370,9 @@ export function Hero() {
             </div>
           </div>
         )}
-        <ScrollHint scrollTo="#about" onMouseEnter={handleInteractiveEnter} onMouseLeave={handleInteractiveLeave}/>
+        <ScrollHint scrollTo="#about" />
       </section>
-      {!isTouchDevice && <CustomCursor isVisible={showCustomCursor && isHeroInView} />}
+      {!isTouchDevice && <CustomCursor isVisible={isHeroInView} />}
     </>
   );
 }
