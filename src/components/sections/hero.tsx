@@ -61,6 +61,7 @@ export function Hero() {
   const [isReady, setIsReady] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { resolvedTheme } = useTheme();
+  const [canvasKey, setCanvasKey] = useState(0);
 
   // Refs for animation
   const containerRef = useRef<HTMLElement>(null);
@@ -68,12 +69,17 @@ export function Hero() {
   const paragraphRef = useRef<HTMLParagraphElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
   const hintRef = useRef<HTMLDivElement>(null);
-  const customCursorRef = useRef<HTMLDivElement>(null);
 
   // Refs for canvas animation
   const mousePos = useRef({ x: -9999, y: -9999 });
   const dots = useRef<Dot[]>([]);
   const animationFrameId = useRef<number>();
+
+  useEffect(() => {
+    // Whenever the theme changes, update the key. This will force React to
+    // unmount the old canvas and mount a new one, guaranteeing a clean state.
+    setCanvasKey(prevKey => prevKey + 1);
+  }, [resolvedTheme]);
 
   useEffect(() => {
     // This logic ensures the hero content animates in only *after* the preloader is done.
@@ -137,11 +143,11 @@ export function Hero() {
 
     const isDark = resolvedTheme === 'dark';
     const primaryColor = isDark
-      ? 'hsla(0, 0%, 100%, 0.5)'
-      : 'hsla(0, 0%, 0%, 0.5)';
+      ? 'hsla(0, 0%, 100%, 0.6)'
+      : 'hsla(0, 0%, 0%, 0.6)';
     const mutedColor = isDark
-      ? 'hsla(0, 0%, 100%, 0.15)'
-      : 'hsla(0, 0%, 0%, 0.2)';
+      ? 'hsla(0, 0%, 100%, 0.3)'
+      : 'hsla(0, 0%, 0%, 0.3)';
 
     const setCanvasDimensions = () => {
       const dpr = window.devicePixelRatio || 1;
@@ -215,82 +221,19 @@ export function Hero() {
         cancelAnimationFrame(animationFrameId.current);
       }
     };
-  }, [resolvedTheme]);
-
-  // Custom Cursor Logic
-  useEffect(() => {
-    const heroSection = containerRef.current;
-    const customCursor = customCursorRef.current;
-    if (!heroSection || !customCursor) return;
-
-    const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
-    if (isTouchDevice) {
-      customCursor.style.display = 'none';
-      return;
-    }
-
-    gsap.set(customCursor, {
-      xPercent: -50,
-      yPercent: -50,
-      opacity: 0,
-      scale: 0.5,
-    });
-
-    const onMouseMove = (e: MouseEvent) => {
-      gsap.to(customCursor, {
-        x: e.clientX,
-        y: e.clientY,
-        duration: 0.5,
-        ease: 'power3.out',
-      });
-    };
-
-    const onMouseEnter = () => {
-      gsap.to(customCursor, {
-        opacity: 1,
-        scale: 1,
-        duration: 0.3,
-        ease: 'power3.out',
-      });
-    };
-
-    const onMouseLeave = () => {
-      gsap.to(customCursor, {
-        opacity: 0,
-        scale: 0.5,
-        duration: 0.3,
-        ease: 'power3.in',
-      });
-    };
-
-    window.addEventListener('mousemove', onMouseMove);
-    heroSection.addEventListener('mouseenter', onMouseEnter);
-    heroSection.addEventListener('mouseleave', onMouseLeave);
-
-    return () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      heroSection.removeEventListener('mouseenter', onMouseEnter);
-      heroSection.removeEventListener('mouseleave', onMouseLeave);
-    };
-  }, []);
+  }, []); // This effect now runs only once per mount, handled by the key change.
 
   return (
     <>
-      <div
-        ref={customCursorRef}
-        className="pointer-events-none fixed left-0 top-0 z-[9998] flex h-10 w-10 items-center justify-center rounded-full bg-background/50 text-foreground shadow-md backdrop-blur-sm"
-      >
-        <ElysiumIcon className="h-5" />
-      </div>
       <section
         id="home"
         ref={containerRef}
         className={cn(
-          'relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-background py-24 md:py-32 lg:py-0',
-          !isReady && 'cursor-none'
+          'relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-background py-24 md:py-32 lg:py-0'
         )}
       >
         <canvas
+          key={canvasKey}
           ref={canvasRef}
           className="pointer-events-none absolute inset-0 z-0 h-full w-full"
         />
@@ -324,7 +267,7 @@ export function Hero() {
 
               <p
                 ref={paragraphRef}
-                className="mx-auto mt-8 max-w-2xl text-lg text-muted-foreground md:text-xl opacity-0"
+                className="mx-auto mt-8 max-w-2xl text-lg text-muted-foreground md:text-xl"
               >
                 We are the architects of the digital frontier. A studio where
                 visionary design and precision engineering are not just goals,
@@ -333,13 +276,13 @@ export function Hero() {
                 impact.
               </p>
 
-              <div ref={ctaRef} className="mt-8 opacity-0">
+              <div ref={ctaRef} className="mt-8">
                 <Button size="lg" asChild>
                   <Link href="#work">Explore Our Work</Link>
                 </Button>
               </div>
 
-              <div ref={hintRef} className="mt-6 opacity-0">
+              <div ref={hintRef} className="mt-6">
                 <Button
                   asChild
                   variant="ghost"
