@@ -1,121 +1,94 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
-import { cn } from "@/lib/utils";
+import React, { Suspense, useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-interface PreloaderProps {
-  onAnimationComplete: () => void;
-}
+// Lazy load Spline to avoid making it part of the main bundle
+const Spline = React.lazy(() => import('@splinetool/react-spline'));
 
-function ElysiumIcon({
-  pathRef,
-  ringRef,
-  className,
-}: {
-  pathRef: React.Ref<SVGPathElement>;
-  ringRef: React.Ref<SVGCircleElement>;
-  className?: string;
-}) {
-  return (
-    <svg viewBox="0 0 120 120" className={cn("h-full w-full", className)}>
-      <circle
-        ref={ringRef}
-        cx="60"
-        cy="60"
-        r="52"
-        stroke="currentColor"
-        strokeWidth="4"
-        fill="none"
-        opacity="0.3"
-      />
-      <path
-        ref={pathRef}
-        d="M80 30H40V50H70V70H40V90H80"
-        stroke="currentColor"
-        strokeWidth="8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-    </svg>
-  );
-}
+const slideUp = {
+  initial: {
+    top: 0,
+  },
+  exit: {
+    top: '-100vh',
+    transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1], delay: 0.2 },
+  },
+};
 
-export function Preloader({ onAnimationComplete }: PreloaderProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const pathRef = useRef<SVGPathElement>(null);
-  const ringRef = useRef<SVGCircleElement>(null);
+const opacity = {
+  initial: {
+    opacity: 1,
+  },
+  enter: {
+    opacity: 0,
+    duration: 0.5,
+  },
+};
 
+export function Preloader({ onAnimationComplete }: { onAnimationComplete: () => void }) {
+  const [progress, setProgress] = useState(0);
+  const [isSplineLoaded, setIsSplineLoaded] = useState(false);
+  const [show, setShow] = useState(true);
+  
   useEffect(() => {
-    const container = containerRef.current;
-    const path = pathRef.current;
-    const ring = ringRef.current;
+    if (!isSplineLoaded) return;
 
-    if (!container || !path || !ring) return;
+    let start = 0;
+    const increment = () => {
+      if (start >= 100) {
+        // When progress reaches 100, trigger the exit animation
+        setShow(false);
+        return;
+      }
+      start += 1;
+      setProgress(start);
+      // Adjust timing to feel natural
+      const timeout = 20 + Math.random() * 30;
+      setTimeout(increment, timeout);
+    };
+    
+    // Start loading after a short delay to let the spline scene settle
+    setTimeout(increment, 500);
 
-    const pathLength = path.getTotalLength();
-    const ringLength = ring.getTotalLength();
-
-    // Initial states
-    gsap.set(path, {
-      strokeDasharray: pathLength,
-      strokeDashoffset: pathLength,
-    });
-    gsap.set(ring, {
-      strokeDasharray: ringLength,
-      strokeDashoffset: ringLength,
-      rotate: -90,
-      transformOrigin: '50% 50%',
-    });
-    gsap.set(container, { autoAlpha: 1 });
-
-    const masterTl = gsap.timeline({
-      delay: 0.5,
-      onComplete: () => {
-        // After exit animation is done, call the final callback
-        if (onAnimationComplete) {
-          onAnimationComplete();
-        }
-      },
-    });
-
-    masterTl
-      // Animate In
-      .to(path, {
-        strokeDashoffset: 0,
-        duration: 1.5,
-        ease: 'power2.inOut',
-      })
-      .to(
-        ring,
-        {
-          strokeDashoffset: 0,
-          duration: 1.5,
-          ease: 'power2.inOut',
-        },
-        '-=1.2'
-      )
-      // Hold for a moment
-      .to({}, { duration: 0.8 })
-      // Animate Out
-      .to(container, {
-        scale: 0.9,
-        opacity: 0,
-        duration: 0.8,
-        ease: 'power2.in',
-      });
-      
-    return () => {
-      masterTl.kill();
-    }
-  }, [onAnimationComplete]);
+  }, [isSplineLoaded]);
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-background">
-      <div ref={containerRef} className="h-24 w-24 text-foreground">
-        <ElysiumIcon pathRef={pathRef} ringRef={ringRef} />
-      </div>
-    </div>
+    <AnimatePresence mode="wait" onExitComplete={onAnimationComplete}>
+      {show && (
+        <motion.div
+          variants={slideUp}
+          initial="initial"
+          exit="exit"
+          className="fixed inset-0 z-[999] flex items-center justify-center bg-background text-foreground"
+        >
+          <div className="relative h-full w-full">
+            <Suspense fallback={null}>
+              <Spline
+                scene="https://prod.spline.design/6Wq1Q7YGyM-iab9i/scene.splinecode"
+                className="absolute inset-0 h-full w-full"
+                onLoad={() => setIsSplineLoaded(true)}
+              />
+            </Suspense>
+            
+            <motion.p
+              variants={opacity}
+              initial="initial"
+              animate={isSplineLoaded ? 'enter' : 'initial'}
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl"
+            >
+              Loading...
+            </motion.p>
+            
+            {isSplineLoaded && (
+              <p className="absolute bottom-10 left-1/2 -translate-x-1/2 font-headline text-7xl md:text-9xl">
+                {progress}
+                <span className="text-3xl md:text-5xl">%</span>
+              </p>
+            )}
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
