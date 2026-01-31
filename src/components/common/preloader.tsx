@@ -76,7 +76,7 @@ export function Preloader({ onAnimationComplete }: PreloaderProps) {
             <Suspense fallback={<div className="h-full w-full" />}>
               <Spline
                 // A premium, abstract 3D object that fits the brand
-                scene="https://prod.spline.design/6Wq123V92J3p3v66/scene.splinecode"
+                scene="https://prod.spline.design/A-q1FhE7yI318a3d/scene.splinecode"
               />
             </Suspense>
           </motion.div>
