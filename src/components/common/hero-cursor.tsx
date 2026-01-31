@@ -37,7 +37,7 @@ export const HeroCursor = forwardRef<HTMLDivElement, HeroCursorProps>(
       <div
         ref={ref}
         className={cn(
-          'pointer-events-none fixed z-[9999] h-8 w-8 -translate-x-1/2 -translate-y-1/2 opacity-0 transition-opacity duration-300',
+          'pointer-events-none fixed z-[9999] h-8 w-8 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center opacity-0 transition-opacity duration-300',
           isActive && 'opacity-100',
           resolvedTheme === 'dark' ? 'text-white' : 'text-black',
           className
