@@ -271,8 +271,7 @@ export function Hero() {
         id="home"
         ref={containerRef}
         className={cn(
-          'relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-background py-24 md:py-32 lg:py-0',
-          !isTouchDevice && 'cursor-none'
+          'relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-background py-24 md:py-32 lg:py-0'
         )}
       >
         <canvas

@@ -7,6 +7,29 @@ type PreloaderProps = {
   onAnimationComplete?: () => void;
 };
 
+// New component for the logo SVG, to be used inside the preloader
+function ElysiumLogo3D() {
+  return (
+    <svg
+      width="100%"
+      height="100%"
+      viewBox="0 0 80 80" // Generous viewBox for rotation
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      preserveAspectRatio="xMidYMid meet"
+    >
+      <path
+        d="M65 20H25V35H55V50H25V65H65"
+        stroke="hsl(var(--foreground))" // Use theme-aware color
+        strokeWidth="5" // Thicker for visibility
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+
 export default function Preloader({ onAnimationComplete }: PreloaderProps) {
   const overlayControls = useAnimation();
   const [progress, setProgress] = useState(0);
@@ -96,6 +119,20 @@ export default function Preloader({ onAnimationComplete }: PreloaderProps) {
             scale: { duration: 1.8, repeat: Infinity, ease: "easeInOut" },
           }}
         >
+          {/* ✨ 3D LOGO ADDED HERE ✨ */}
+          <motion.div
+            className="absolute top-1/2 left-1/2 h-[45%] w-[45%] -translate-x-1/2 -translate-y-1/2"
+            style={{ transformStyle: "preserve-3d" }}
+            animate={{ rotateY: -720 }} // Rotate in the opposite direction for contrast
+            transition={{
+              duration: 28,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+          >
+            <ElysiumLogo3D />
+          </motion.div>
+
           {points.map((p, i) => {
             const depth = (p.z + 1) / 2; // 0 (back) to 1 (front)
             const spread = 140; // controls the radius of the sphere
