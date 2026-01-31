@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
@@ -10,6 +9,32 @@ import { ScrollHint } from '@/components/common/scroll-hint';
 import { usePreloaderDone } from '@/components/common/app-providers';
 import { useTheme } from 'next-themes';
 
+// A single dot in the grid
+class Dot {
+  x: number;
+  y: number;
+  radius: number;
+  originalRadius: number;
+  color: string;
+  targetRadius: number;
+
+  constructor(x: number, y: number, radius: number, color: string) {
+    this.x = x;
+    this.y = y;
+    this.radius = radius;
+    this.originalRadius = radius;
+    this.targetRadius = radius;
+    this.color = color;
+  }
+
+  draw(ctx: CanvasRenderingContext2D) {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    ctx.fillStyle = this.color;
+    ctx.fill();
+  }
+}
+
 export function Hero() {
   const { preloaderDone } = usePreloaderDone();
   const [isReady, setIsReady] = useState(false);
@@ -17,8 +42,8 @@ export function Hero() {
   const { resolvedTheme } = useTheme();
 
   // Refs for canvas animation
-  const mousePos = useRef({ x: 0, y: 0 });
-  const lastPos = useRef({ x: 0, y: 0 });
+  const mousePos = useRef({ x: -9999, y: -9999 });
+  const dots = useRef<Dot[]>([]);
   const animationFrameId = useRef<number>();
 
   useEffect(() => {
@@ -35,64 +60,85 @@ export function Hero() {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    
+    const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
+    if(isTouchDevice) {
+      canvas.style.display = 'none';
+      return;
+    }
+
+    const primaryColor = `hsl(${getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()})`;
+    const mutedColor = `hsla(${getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()}, 0.2)`;
 
     const setCanvasDimensions = () => {
       const dpr = window.devicePixelRatio || 1;
-      canvas.width = window.innerWidth * dpr;
-      canvas.height = window.innerHeight * dpr;
-      canvas.style.width = `${window.innerWidth}px`;
-      canvas.style.height = `${window.innerHeight}px`;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
       ctx.scale(dpr, dpr);
+      createDots(rect.width, rect.height);
     };
+
+    const createDots = (width: number, height: number) => {
+        dots.current = [];
+        const gap = 30;
+        const dotRadius = 1;
+        for (let x = gap / 2; x < width; x += gap) {
+            for (let y = gap / 2; y < height; y += gap) {
+                dots.current.push(new Dot(x, y, dotRadius, mutedColor));
+            }
+        }
+    }
 
     setCanvasDimensions();
     window.addEventListener('resize', setCanvasDimensions);
 
     const handleMouseMove = (e: MouseEvent) => {
-      mousePos.current = { x: e.clientX, y: e.clientY };
+      const rect = canvas.getBoundingClientRect();
+      mousePos.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    };
+    
+    const handleMouseLeave = () => {
+      mousePos.current = { x: -9999, y: -9999 };
     };
 
-    // Only add listener on non-touch devices
-    const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
-    if (!isTouchDevice) {
-      window.addEventListener('mousemove', handleMouseMove);
-      lastPos.current = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-    }
+    window.addEventListener('mousemove', handleMouseMove);
+    canvas.addEventListener('mouseleave', handleMouseLeave);
+
 
     const animate = () => {
-      if (!isTouchDevice) {
-        // Fading effect
-        ctx.fillStyle = resolvedTheme === 'dark' 
-            ? 'rgba(5, 5, 10, 0.12)' 
-            : 'rgba(255, 255, 255, 0.25)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Line drawing from last frame's position to current mouse position
-        ctx.beginPath();
-        ctx.moveTo(lastPos.current.x, lastPos.current.y);
-        ctx.lineTo(mousePos.current.x, mousePos.current.y);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
-        ctx.strokeStyle = `hsl(${primaryColor})`;
-        ctx.lineWidth = 2;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.stroke();
+        dots.current.forEach(dot => {
+            const dx = dot.x - mousePos.current.x;
+            const dy = dot.y - mousePos.current.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
 
-        // Smoothly interpolate lastPos towards the current mouse position
-        lastPos.current.x += (mousePos.current.x - lastPos.current.x) * 0.2;
-        lastPos.current.y += (mousePos.current.y - lastPos.current.y) * 0.2;
-      }
-      animationFrameId.current = requestAnimationFrame(animate);
+            const maxDist = 100;
+            if (dist < maxDist) {
+                const force = (maxDist - dist) / maxDist;
+                dot.targetRadius = dot.originalRadius + force * 3;
+                dot.color = primaryColor;
+            } else {
+                dot.targetRadius = dot.originalRadius;
+                dot.color = mutedColor;
+            }
+
+            // easing
+            dot.radius += (dot.targetRadius - dot.radius) * 0.1;
+            
+            dot.draw(ctx);
+        });
+        
+        animationFrameId.current = requestAnimationFrame(animate);
     };
 
     animate();
 
     return () => {
       window.removeEventListener('resize', setCanvasDimensions);
-      if (!isTouchDevice) {
-        window.removeEventListener('mousemove', handleMouseMove);
-      }
+      window.removeEventListener('mousemove', handleMouseMove);
+      canvas.removeEventListener('mouseleave', handleMouseLeave);
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
       }
@@ -122,9 +168,9 @@ export function Hero() {
   return (
     <section
       id="home"
-      className="relative flex min-h-screen w-full cursor-crosshair items-center justify-center overflow-hidden bg-background py-24 md:py-32 lg:py-0"
+      className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-background py-24 md:py-32 lg:py-0"
     >
-      <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 z-0" />
+      <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 z-0 h-full w-full" />
 
       {isReady && (
         <motion.div
@@ -162,7 +208,7 @@ export function Hero() {
               variants={itemVariants}
               className="mx-auto mt-8 max-w-2xl text-lg text-muted-foreground md:text-xl"
             >
-              We are a digital atelier where art, code, and strategy converge. We don't just build websites; we forge landmark digital experiences that are not only beautiful but brilliant—and built to last.
+              We are the architects of the digital frontier. A studio where visionary design and precision engineering are not just goals, but absolute standards. We craft high-performance web experiences that captivate users and create lasting market impact.
             </motion.p>
 
             <motion.div variants={itemVariants} className="mt-8">
@@ -190,4 +236,3 @@ export function Hero() {
     </section>
   );
 }
-    
