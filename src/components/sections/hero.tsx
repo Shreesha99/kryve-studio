@@ -1,7 +1,8 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Sparkles } from 'lucide-react';
@@ -9,6 +10,8 @@ import { ScrollHint } from '@/components/common/scroll-hint';
 import { usePreloaderDone } from '@/components/common/app-providers';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
+
+gsap.registerPlugin(ScrollTrigger);
 
 // A single dot in the grid
 class Dot {
@@ -39,7 +42,7 @@ class Dot {
 function ElysiumIcon({ className }: { className?: string }) {
   return (
     <svg
-      viewBox="0 1 24 34"
+      viewBox="0 0 24 36"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={cn('w-auto', className)}
@@ -107,6 +110,7 @@ export function Hero() {
   const [isReady, setIsReady] = useState(false);
   const [showCustomCursor, setShowCustomCursor] = useState(true);
   const [isTouchDevice, setIsTouchDevice] = useState<boolean | null>(null);
+  const [isHeroInView, setIsHeroInView] = useState(true);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { resolvedTheme } = useTheme();
@@ -166,9 +170,17 @@ export function Hero() {
         { opacity: 1, y: 0 },
         '-=0.8'
       );
+      
+    const st = ScrollTrigger.create({
+        trigger: containerRef.current,
+        start: 'top top',
+        end: 'bottom top',
+        onToggle: self => setIsHeroInView(self.isActive)
+    });
 
     return () => {
       tl.kill();
+      st.kill();
     };
   }, [isReady]);
 
@@ -262,8 +274,25 @@ export function Hero() {
   }, [resolvedTheme, isTouchDevice]);
 
 
-  const handleInteractiveEnter = () => !isTouchDevice && setShowCustomCursor(false);
-  const handleInteractiveLeave = () => !isTouchDevice && setShowCustomCursor(true);
+  const handleInteractiveEnter = useCallback(() => !isTouchDevice && setShowCustomCursor(false), [isTouchDevice]);
+  const handleInteractiveLeave = useCallback(() => !isTouchDevice && setShowCustomCursor(true), [isTouchDevice]);
+
+  useEffect(() => {
+    if (isTouchDevice) return;
+
+    const header = document.querySelector('header');
+    if (header) {
+        header.addEventListener('mouseenter', handleInteractiveEnter);
+        header.addEventListener('mouseleave', handleInteractiveLeave);
+    }
+
+    return () => {
+        if (header) {
+            header.removeEventListener('mouseenter', handleInteractiveEnter);
+            header.removeEventListener('mouseleave', handleInteractiveLeave);
+        }
+    };
+  }, [isTouchDevice, handleInteractiveEnter, handleInteractiveLeave]);
 
   return (
     <>
@@ -341,7 +370,7 @@ export function Hero() {
         )}
         <ScrollHint scrollTo="#about" onMouseEnter={handleInteractiveEnter} onMouseLeave={handleInteractiveLeave}/>
       </section>
-      {!isTouchDevice && <CustomCursor isVisible={showCustomCursor} />}
+      {!isTouchDevice && <CustomCursor isVisible={showCustomCursor && isHeroInView} />}
     </>
   );
 }

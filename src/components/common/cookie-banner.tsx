@@ -93,7 +93,7 @@ export function CookieBanner() {
           <div className="flex-grow text-center sm:text-left">
             <h3 className="font-headline text-lg font-semibold">Our Site Has Cookies (The Digital Kind)</h3>
             <p className="mt-1 text-sm text-muted-foreground">
-              We use them to keep things running smoothly, not to follow you around the internet. It’s all about making your experience better. Is that cool? Learn more in our{' '}
+              We use them to keep things running smoothly, not to build a secret profile on you. It’s all about making your experience better. Is that cool? Learn more in our{' '}
               <Link href="/legal/privacy-policy" className="underline hover:text-primary">
                 Privacy Policy
               </Link>.
