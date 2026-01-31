@@ -9,8 +9,7 @@ import { MorphingSvg } from "@/components/common/morphing-svg";
 import { AnimatedGradient } from "../common/animated-gradient";
 import { ScrollHint } from "@/components/common/scroll-hint";
 import { Sparkles } from "lucide-react";
-
-const PRELOADER_EXIT_DURATION = 1.35; // seconds — must match preloader
+import { usePreloaderDone } from "@/components/common/app-providers";
 
 export function Hero() {
   const headlineRef = useRef<HTMLHeadingElement>(null);
@@ -21,20 +20,21 @@ export function Hero() {
 
   const { resolvedTheme } = useTheme();
   const [isSvgReady, setIsSvgReady] = useState(false);
+  const { preloaderDone } = usePreloaderDone();
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
       const headlineSpans = gsap.utils.toArray("span", headlineRef.current);
 
       // 🔒 Set initial state immediately
-      gsap.set(headlineSpans, { yPercent: 120 });
       gsap.set(paragraphRef.current, { opacity: 0, y: 20 });
       gsap.set(buttonRef.current, { opacity: 0, y: 20 });
       gsap.set(svgRef.current, { opacity: 0, y: 40, scale: 0.94 });
       gsap.set(hintRef.current, { opacity: 0, y: 20 });
+      gsap.set(headlineSpans, { yPercent: 120 });
 
-      // ⏳ Delay animation until preloader is gone
-      gsap.delayedCall(PRELOADER_EXIT_DURATION, () => {
+      // Animate in only after the preloader is done
+      if (preloaderDone) {
         const tl = gsap.timeline({
           defaults: { ease: "power4.out", duration: 1.2 },
         });
@@ -58,11 +58,11 @@ export function Hero() {
             "-=0.9"
           )
           .to(hintRef.current, { opacity: 1, y: 0 }, "-=0.5");
-      });
+      }
     });
 
     return () => ctx.revert();
-  }, []);
+  }, [preloaderDone]);
 
   return (
     <section

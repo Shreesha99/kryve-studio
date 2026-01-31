@@ -1,152 +1,114 @@
 "use client";
 
-import { motion, useAnimation } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { useLayoutEffect, useRef } from 'react';
+import { gsap } from 'gsap';
+import { cn } from "@/lib/utils";
 
-type PreloaderProps = {
-  onAnimationComplete?: () => void;
-};
-
-export default function Preloader({ onAnimationComplete }: PreloaderProps) {
-  const overlayControls = useAnimation();
-  const [progress, setProgress] = useState(0);
-  const [visible, setVisible] = useState(true);
-
-  // 🔒 Sphere points MUST be stable across renders
-  const points = useMemo(() => SPHERE_POINTS, []);
-
-  useEffect(() => {
-    let value = 0;
-    let raf: number;
-
-    const tick = () => {
-      const remaining = 100 - value;
-
-      const increment =
-        remaining > 50
-          ? 0.5
-          : remaining > 25
-          ? 0.25
-          : remaining > 10
-          ? 0.12
-          : 0.05;
-
-      value = Math.min(100, value + increment);
-      setProgress(Math.floor(value));
-
-      if (value < 100) {
-        raf = requestAnimationFrame(tick);
-      } else {
-        exit();
-      }
-    };
-
-    const exit = async () => {
-      await overlayControls.start({
-        y: -window.innerHeight,
-        transition: {
-          duration: 1.3,
-          ease: [0.4, 0, 0.2, 1] as const,
-        },
-      });
-      setVisible(false);
-      onAnimationComplete?.();
-    };
-
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [overlayControls, onAnimationComplete]);
-
-  if (!visible) return null;
-
+// The SVG icon component
+function ElysiumIcon({
+  pathRef,
+  ringRef,
+  className,
+}: {
+  pathRef: React.Ref<SVGPathElement>;
+  ringRef: React.Ref<SVGCircleElement>;
+  className?: string;
+}) {
   return (
-    <motion.div
-      className="fixed inset-0 z-[9999] bg-background"
-      initial={{ y: 0 }}
-      animate={overlayControls}
-    >
-      {/* 🌐 3D PARTICLE SPHERE */}
-      <div
-        className="absolute bottom-32 right-32 h-72 w-72"
-        style={{ perspective: "1200px" }}
-      >
-        <motion.div
-          className="relative h-full w-full"
-          style={{ transformStyle: "preserve-3d" }}
-          animate={{
-            rotateY: 360,
-            rotateX: 180,
-            scale: [1, 1.06, 1], // ❤️ heartbeat
-          }}
-          transition={{
-            rotateY: { duration: 28, repeat: Infinity, ease: "linear" },
-            rotateX: { duration: 20, repeat: Infinity, ease: "linear" },
-            scale: { duration: 1.8, repeat: Infinity, ease: "easeInOut" },
-          }}
-        >
-          {points.map((p, i) => {
-            const depth = (p.z + 1) / 2;
-
-            return (
-              <motion.span
-                key={i}
-                className="absolute left-1/2 top-1/2 rounded-full"
-                style={{
-                  width: 3,
-                  height: 3,
-                  background: p.color,
-                  opacity: 0.35 + depth * 0.65,
-                }}
-                initial={{
-                  x: p.x * 120,
-                  y: p.y * 120,
-                  z: p.z * 120,
-                }}
-                animate={{
-                  scale: [0.8, 1.25, 0.8], // 🌊 wave per particle
-                }}
-                transition={{
-                  duration: 3 + (i % 6),
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              />
-            );
-          })}
-        </motion.div>
-      </div>
-
-      {/* 🔢 HUGE PERCENTAGE */}
-      <div className="absolute bottom-10 right-10 select-none">
-        <span className="text-[9rem] leading-none font-semibold tracking-tight text-foreground">
-          {progress}
-        </span>
-        <span className="absolute right-[-1.5rem] top-3 text-3xl text-foreground/40">
-          %
-        </span>
-      </div>
-    </motion.div>
+    <svg viewBox="0 0 120 120" className={cn("h-full w-full", className)}>
+      <circle
+        ref={ringRef}
+        cx="60"
+        cy="60"
+        r="52"
+        stroke="currentColor"
+        strokeWidth="4"
+        fill="none"
+      />
+      <path
+        ref={pathRef}
+        d="M80 30H40V50H70V70H40V90H80"
+        stroke="currentColor"
+        strokeWidth="6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </svg>
   );
 }
 
-/* ---------------- SPHERE DATA ---------------- */
+type PreloaderProps = {
+    onAnimationComplete?: () => void;
+};
 
-const COLORS = [
-  "rgba(59,130,246,0.9)",
-  "rgba(99,102,241,0.9)",
-  "rgba(14,165,233,0.9)",
-  "rgba(148,163,184,0.8)",
-  "rgba(236,72,153,0.6)",
-];
+export default function Preloader({ onAnimationComplete }: PreloaderProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const pathRef = useRef<SVGPathElement>(null);
+  const ringRef = useRef<SVGCircleElement>(null);
+  const preloaderRef = useRef<HTMLDivElement>(null);
 
-const SPHERE_POINTS = Array.from({ length: 96 }).map((_, i) => {
-  const phi = Math.acos(1 - (2 * (i + 0.5)) / 96);
-  const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+  useLayoutEffect(() => {
+    const path = pathRef.current;
+    const ring = ringRef.current;
+    const preloader = preloaderRef.current;
 
-  return {
-    x: Math.cos(theta) * Math.sin(phi),
-    y: Math.sin(theta) * Math.sin(phi),
-    z: Math.cos(phi),
-    color: COLORS[i % COLORS.length],
-  };
-});
+    if (!path || !ring || !preloader) return;
+
+    const pathLength = path.getTotalLength();
+    const ringLength = ring.getTotalLength();
+
+    // Initial states, run before first paint
+    gsap.set(path, {
+      strokeDasharray: pathLength,
+      strokeDashoffset: pathLength,
+    });
+    gsap.set(ring, {
+      strokeDasharray: ringLength,
+      strokeDashoffset: ringLength,
+      rotate: -90,
+      transformOrigin: "50% 50%",
+    });
+    
+    const tl = gsap.timeline({
+        onComplete: () => {
+            // Animate preloader out
+            gsap.to(preloader, {
+                yPercent: -100,
+                duration: 1.2,
+                ease: 'power3.inOut',
+                onComplete: () => {
+                    onAnimationComplete?.();
+                }
+            });
+        }
+    });
+
+    tl
+      // Animate in
+      .to(path, {
+        strokeDashoffset: 0,
+        duration: 1.1,
+        ease: 'power2.inOut',
+      })
+      .to(ring, {
+        strokeDashoffset: 0,
+        duration: 1.4,
+        ease: 'power2.inOut',
+      }, '-=0.5')
+      // Pause
+      .to({}, { duration: 0.5 });
+      
+    return () => {
+        tl.kill();
+    }
+  }, [onAnimationComplete]);
+
+  return (
+    <div ref={preloaderRef} className="fixed inset-0 z-[999] flex items-center justify-center bg-background">
+      <div ref={containerRef} className="h-20 w-20 text-foreground">
+        <ElysiumIcon pathRef={pathRef} ringRef={ringRef} />
+      </div>
+    </div>
+  );
+}
