@@ -4,7 +4,7 @@ import { useRef, useState, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Sparkles, Crosshair } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { ScrollHint } from '@/components/common/scroll-hint';
 import { usePreloaderDone } from '@/components/common/app-providers';
 import { useTheme } from 'next-themes';
@@ -36,32 +36,11 @@ class Dot {
   }
 }
 
-function ElysiumIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 1 24 34"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={cn('w-auto', className)}
-      preserveAspectRatio="xMidYMid meet"
-    >
-      <path
-        d="M25 7H7V13H20V19H7V25H25"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 export function Hero() {
   const { preloaderDone } = usePreloaderDone();
   const [isReady, setIsReady] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { resolvedTheme } = useTheme();
-  const [canvasKey, setCanvasKey] = useState(0);
 
   // Refs for animation
   const containerRef = useRef<HTMLElement>(null);
@@ -73,13 +52,6 @@ export function Hero() {
   // Refs for canvas animation
   const mousePos = useRef({ x: -9999, y: -9999 });
   const dots = useRef<Dot[]>([]);
-  const animationFrameId = useRef<number>();
-
-  useEffect(() => {
-    // Whenever the theme changes, update the key. This will force React to
-    // unmount the old canvas and mount a new one, guaranteeing a clean state.
-    setCanvasKey(prevKey => prevKey + 1);
-  }, [resolvedTheme]);
 
   useEffect(() => {
     // This logic ensures the hero content animates in only *after* the preloader is done.
@@ -106,19 +78,19 @@ export function Hero() {
     )
       .fromTo(
         paragraphRef.current,
-        { opacity: 0, y: 20 },
+        { y: 20, opacity: 0 },
         { opacity: 1, y: 0 },
         '-=0.8'
       )
       .fromTo(
         ctaRef.current,
-        { opacity: 0, y: 20 },
+        { y: 20, opacity: 0 },
         { opacity: 1, y: 0 },
         '-=0.8'
       )
       .fromTo(
         hintRef.current,
-        { opacity: 0, y: 20 },
+        { y: 20, opacity: 0 },
         { opacity: 1, y: 0 },
         '-=0.8'
       );
@@ -139,6 +111,8 @@ export function Hero() {
     if (isTouchDevice) {
       canvas.style.display = 'none';
       return;
+    } else {
+      canvas.style.display = 'block';
     }
 
     const isDark = resolvedTheme === 'dark';
@@ -148,6 +122,8 @@ export function Hero() {
     const mutedColor = isDark
       ? 'hsla(0, 0%, 100%, 0.3)'
       : 'hsla(0, 0%, 0%, 0.3)';
+
+    let animationFrameId: number;
 
     const setCanvasDimensions = () => {
       const dpr = window.devicePixelRatio || 1;
@@ -208,20 +184,21 @@ export function Hero() {
         dot.draw(ctx);
       });
 
-      animationFrameId.current = requestAnimationFrame(animate);
+      animationFrameId = requestAnimationFrame(animate);
     };
 
     animate();
 
     return () => {
+      cancelAnimationFrame(animationFrameId);
       window.removeEventListener('resize', setCanvasDimensions);
-      canvas.removeEventListener('mousemove', handleMouseMove);
-      canvas.removeEventListener('mouseleave', handleMouseLeave);
-      if (animationFrameId.current) {
-        cancelAnimationFrame(animationFrameId.current);
+      // Check if canvas still exists before removing listeners
+      if (canvas) {
+        canvas.removeEventListener('mousemove', handleMouseMove);
+        canvas.removeEventListener('mouseleave', handleMouseLeave);
       }
     };
-  }, []); // This effect now runs only once per mount, handled by the key change.
+  }, [resolvedTheme]);
 
   return (
     <>
@@ -233,7 +210,6 @@ export function Hero() {
         )}
       >
         <canvas
-          key={canvasKey}
           ref={canvasRef}
           className="pointer-events-none absolute inset-0 z-0 h-full w-full"
         />
