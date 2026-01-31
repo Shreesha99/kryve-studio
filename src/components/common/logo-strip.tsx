@@ -7,59 +7,72 @@ const LOGOS = [
   'Evolve', 'Synergy', 'Catalyst', 'Orbit', 'Fusion', 'Zenith', 'Nova'
 ];
 
-// The content of the strip, rendered once.
-const StripContent = () => (
+// We render the logos multiple times in a single component for a seamless loop.
+const RibbonContent = () => (
   <>
     {LOGOS.map((logo, index) => (
-      <div key={index} className="flex h-full w-56 flex-shrink-0 items-center justify-center border-x border-black/10 px-4 dark:border-white/10">
-        <span className="font-headline text-3xl font-bold tracking-wider text-background opacity-80">
-          {logo}
-        </span>
-      </div>
+      <span key={index} className="mx-12 text-5xl font-bold tracking-wider text-foreground/20 dark:text-foreground/10">
+        {logo}
+      </span>
     ))}
   </>
 );
 
+// A single orbiting ribbon component.
+function Ribbon({
+  rotateY,
+  duration,
+  reverse = false,
+}: {
+  rotateY: number;
+  duration: number;
+  reverse?: boolean;
+}) {
+  return (
+    <motion.div
+      className="absolute flex w-max items-center"
+      style={{
+        // Positions each ribbon in a circle around the center
+        transform: `rotateY(${rotateY}deg) translateZ(450px)`,
+        transformStyle: 'preserve-3d',
+      }}
+    >
+      <motion.div
+        className="flex"
+        animate={{ x: reverse ? '100%' : '-100%' }}
+        transition={{
+          ease: 'linear',
+          duration: duration,
+          repeat: Infinity,
+        }}
+      >
+        {/* The content is rendered multiple times to fill the space for a seamless loop */}
+        <RibbonContent />
+        <RibbonContent />
+        <RibbonContent />
+        <RibbonContent />
+      </motion.div>
+    </motion.div>
+  );
+}
+
 export function LogoStrip() {
   return (
     <div
-      className="absolute inset-x-0 bottom-0 z-0 h-64 overflow-hidden"
-      style={{ perspective: '800px' }}
+      className="absolute inset-0 z-0 flex items-center justify-center overflow-hidden"
+      style={{ perspective: '1000px' }}
       aria-hidden="true"
     >
       <motion.div
-        className="absolute left-0 top-1/2 flex w-max"
-        style={{
-          transformStyle: 'preserve-3d',
-          transform: 'rotateX(50deg) rotateY(0deg) rotateZ(-15deg) translateY(-50%)',
-        }}
-        animate={{
-          x: ['0%', '-50%'],
-          transition: {
-            ease: 'linear',
-            duration: 100,
-            repeat: Infinity,
-          },
-        }}
+        className="relative h-96 w-96 font-headline"
+        style={{ transformStyle: 'preserve-3d' }}
+        animate={{ rotateY: -360 }} // The whole system slowly rotates
+        transition={{ ease: 'linear', duration: 150, repeat: Infinity }}
       >
-        {/* The single, continuous strip element */}
-        <div className="relative flex h-28 flex-shrink-0 items-center bg-foreground/90 p-2 shadow-2xl backdrop-blur-sm dark:bg-black/70">
-            {/* Sprocket holes using repeating gradients */}
-            <div className="absolute top-2 left-0 h-2 w-full bg-repeat-x" style={{
-                backgroundImage: `radial-gradient(hsl(var(--background)) 35%, transparent 40%)`,
-                backgroundSize: '20px 20px',
-            }}/>
-            
-            {/* The content is duplicated for seamless loop */}
-            <StripContent />
-            <StripContent />
-
-            {/* Sprocket holes using repeating gradients */}
-            <div className="absolute bottom-2 left-0 h-2 w-full bg-repeat-x" style={{
-                backgroundImage: `radial-gradient(hsl(var(--background)) 35%, transparent 40%)`,
-                backgroundSize: '20px 20px',
-            }}/>
-        </div>
+        {/* We create multiple ribbons at different angles and speeds for a complex, layered effect. */}
+        <Ribbon rotateY={0} duration={60} />
+        <Ribbon rotateY={60} duration={70} reverse />
+        <Ribbon rotateY={120} duration={55} />
       </motion.div>
     </div>
   );
