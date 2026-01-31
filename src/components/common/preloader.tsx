@@ -90,17 +90,23 @@ export default function Preloader({ onAnimationComplete }: PreloaderProps) {
             const depth = (p.z + 1) / 2; // 0 (back) to 1 (front)
             const spread = 140; // controls the radius of the sphere
             const yOffset = Math.sin(i) * 10; // unique offset for wavy motion
+            
+            // 🔥 NEW: Dynamic size and blur for 3D effect
+            const size = 1.5 + depth * 3; // Particles in front are bigger
+            const blurAmount = (1 - depth) * 1.5; // Particles in back are blurrier
 
             return (
               <motion.span
                 key={i}
                 className="absolute left-1/2 top-1/2 rounded-full"
                 style={{
-                  width: 4,
-                  height: 4,
+                  width: size,
+                  height: size,
                   background: p.color,
-                  // Opacity increases with depth for a 3D effect
-                  opacity: 0.5 + depth * 0.5,
+                  // 🔥 NEW: Emphasize front particles more
+                  opacity: 0.4 + depth * 0.6, 
+                  // 🔥 NEW: Apply depth-of-field blur
+                  filter: `blur(${blurAmount}px)`,
                 }}
                 initial={{
                   x: p.x * spread,
