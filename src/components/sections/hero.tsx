@@ -57,37 +57,50 @@ function ElysiumIcon({ className }: { className?: string }) {
 }
 
 // New Custom Cursor with Liquid Glass effect
-function CustomCursor() {
-    const cursorRef = useRef<HTMLDivElement>(null);
-  
-    useEffect(() => {
-      const cursor = cursorRef.current;
-      if (!cursor) return;
-  
-      const onMouseMove = (e: MouseEvent) => {
-        gsap.to(cursor, {
-          x: e.clientX,
-          y: e.clientY,
-          duration: 0.5,
-          ease: 'power3.out',
-        });
-      };
-  
-      window.addEventListener('mousemove', onMouseMove);
-      return () => window.removeEventListener('mousemove', onMouseMove);
-    }, []);
-  
-    return (
-      <div
-        ref={cursorRef}
-        className="pointer-events-none fixed -left-6 -top-6 z-[9998] flex h-12 w-12 items-center justify-center"
-        style={{ willChange: 'transform' }}
-      >
-        <div className="absolute inset-0 rounded-full border border-white/10 bg-white/10 backdrop-blur-sm transition-all duration-300"></div>
-        <ElysiumIcon className="relative h-6 w-6 text-foreground" />
-      </div>
-    );
-  }
+function CustomCursor({ isVisible }: { isVisible: boolean }) {
+  const cursorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const cursor = cursorRef.current;
+    if (!cursor) return;
+
+    // This ensures the cursor's center is aligned with the mouse pointer
+    gsap.set(cursor, { xPercent: -50, yPercent: -50 });
+
+    const onMouseMove = (e: MouseEvent) => {
+      gsap.to(cursor, {
+        x: e.clientX,
+        y: e.clientY,
+        duration: 0.5,
+        ease: 'power3.out',
+      });
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    return () => window.removeEventListener('mousemove', onMouseMove);
+  }, []);
+
+  useEffect(() => {
+    gsap.to(cursorRef.current, {
+      scale: isVisible ? 1 : 0,
+      opacity: isVisible ? 1 : 0,
+      duration: 0.3,
+      ease: 'power3.out',
+    });
+  }, [isVisible]);
+
+  return (
+    <div
+      ref={cursorRef}
+      className="pointer-events-none fixed left-0 top-0 z-[9998] flex h-12 w-12 items-center justify-center"
+      style={{ willChange: 'transform' }}
+    >
+      <div className="absolute inset-0 rounded-full border border-white/10 bg-white/10 backdrop-blur-sm transition-all duration-300"></div>
+      <ElysiumIcon className="relative h-6 w-6 text-foreground" />
+    </div>
+  );
+}
+
 
 export function Hero() {
   const { preloaderDone } = usePreloaderDone();
@@ -108,6 +121,7 @@ export function Hero() {
   // Refs for canvas animation
   const mousePos = useRef({ x: -9999, y: -9999 });
   const dots = useRef<Dot[]>([]);
+  const animationFrameId = useRef<number>();
 
   useEffect(() => {
     setIsTouchDevice(window.matchMedia("(pointer: coarse)").matches);
@@ -172,8 +186,6 @@ export function Hero() {
       ? 'hsla(0, 0%, 100%, 0.15)'
       : 'hsla(0, 0%, 0%, 0.15)';
 
-    let animationFrameId: number;
-
     const setCanvasDimensions = () => {
       const dpr = window.devicePixelRatio || 1;
       const rect = canvas.getBoundingClientRect();
@@ -234,13 +246,13 @@ export function Hero() {
         dot.draw(ctx);
       });
 
-      animationFrameId = requestAnimationFrame(animate);
+      animationFrameId.current = requestAnimationFrame(animate);
     };
 
     animate();
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameId.current) cancelAnimationFrame(animationFrameId.current);
       window.removeEventListener('resize', setCanvasDimensions);
       if (container) {
         container.removeEventListener('mousemove', handleMouseMove);
@@ -259,10 +271,9 @@ export function Hero() {
         id="home"
         ref={containerRef}
         className={cn(
-          'relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-background py-24 md:py-32 lg:py-0'
+          'relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-background py-24 md:py-32 lg:py-0',
+          !isTouchDevice && 'cursor-none'
         )}
-        onMouseLeave={handleInteractiveLeave} 
-        onMouseEnter={handleInteractiveLeave} 
       >
         <canvas
           ref={canvasRef}
@@ -298,7 +309,7 @@ export function Hero() {
 
               <p
                 ref={paragraphRef}
-                className="mx-auto mt-8 max-w-2xl text-lg text-muted-foreground opacity-0 md:text-xl"
+                className="mx-auto mt-8 max-w-2xl text-lg text-muted-foreground"
               >
                 We are the architects of the digital frontier. A studio where
                 visionary design and precision engineering are not just goals,
@@ -331,7 +342,7 @@ export function Hero() {
         )}
         <ScrollHint scrollTo="#about" onMouseEnter={handleInteractiveEnter} onMouseLeave={handleInteractiveLeave}/>
       </section>
-      {!isTouchDevice && showCustomCursor && <CustomCursor />}
+      {!isTouchDevice && <CustomCursor isVisible={showCustomCursor} />}
     </>
   );
 }
