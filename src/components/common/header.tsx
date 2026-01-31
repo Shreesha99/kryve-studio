@@ -24,12 +24,11 @@ export function Header() {
 
     const ctx = gsap.context(() => {
       // Set initial state
-      gsap.set(headerEl, { perspective: 800 });
+      gsap.set(headerEl, { perspective: 800, opacity: 0, y: -20, rotationX: -45, transformOrigin: "top center" });
 
       if (preloaderDone) {
-        gsap.fromTo(
+        gsap.to(
           headerEl,
-          { y: -20, opacity: 0, rotationX: -45, transformOrigin: "top center" },
           {
             y: 0,
             opacity: 1,
