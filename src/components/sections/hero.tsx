@@ -47,8 +47,9 @@ export function Hero() {
   const animationFrameId = useRef<number>();
 
   useEffect(() => {
+    // This logic ensures the hero content animates in only *after* the preloader is done.
     if (preloaderDone) {
-      // Delay readiness to allow preloader to exit
+      // Small delay to let the preloader animation finish completely
       const timer = setTimeout(() => setIsReady(true), 100);
       return () => clearTimeout(timer);
     }
@@ -67,8 +68,11 @@ export function Hero() {
       return;
     }
 
-    const primaryColor = `hsl(${getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()})`;
-    const mutedColor = `hsla(${getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim()}, 0.2)`;
+    // --- RELIABLE COLOR LOGIC ---
+    // Directly use the theme state to determine colors, avoiding race conditions.
+    const isDark = resolvedTheme === 'dark';
+    const primaryColor = isDark ? 'hsl(0, 0%, 98%)' : 'hsl(240, 5.9%, 10%)';
+    const mutedColor = isDark ? 'hsla(0, 0%, 100%, 0.15)' : 'hsla(0, 0%, 0%, 0.2)';
 
     const setCanvasDimensions = () => {
       const dpr = window.devicePixelRatio || 1;
@@ -85,6 +89,7 @@ export function Hero() {
         const dotRadius = 1;
         for (let x = gap / 2; x < width; x += gap) {
             for (let y = gap / 2; y < height; y += gap) {
+                // The dots array is rebuilt with the correct color
                 dots.current.push(new Dot(x, y, dotRadius, mutedColor));
             }
         }
@@ -133,6 +138,7 @@ export function Hero() {
         animationFrameId.current = requestAnimationFrame(animate);
     };
 
+    // Start the animation loop. The cleanup function will handle stopping it.
     animate();
 
     return () => {
@@ -143,7 +149,7 @@ export function Hero() {
         cancelAnimationFrame(animationFrameId.current);
       }
     };
-  }, [resolvedTheme]);
+  }, [resolvedTheme]); // Re-run this entire effect when the theme changes.
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -185,7 +191,7 @@ export function Hero() {
               className="font-headline text-4xl font-semibold tracking-tighter sm:text-5xl lg:text-7xl"
             >
               <div className="overflow-hidden py-1">
-                <span className="inline-block">
+                <span className="inline-block opacity-0" style={{ animation: isReady ? 'fade-in-up 0.8s ease-out 0.3s forwards' : 'none' }}>
                   Engineering{' '}
                   <span className="inline-block cursor-pointer rounded-full border border-foreground/50 bg-background/50 px-4 py-1 backdrop-blur-sm transition-colors duration-300 ease-in-out hover:bg-foreground hover:text-background">
                     Elegance
@@ -194,7 +200,7 @@ export function Hero() {
                 </span>
               </div>
               <div className="overflow-hidden py-1">
-                <span className="inline-block">
+                <span className="inline-block opacity-0" style={{ animation: isReady ? 'fade-in-up 0.8s ease-out 0.5s forwards' : 'none' }}>
                   Designing{' '}
                   <span className="inline-block cursor-pointer rounded-full border border-foreground/50 bg-background/50 px-4 py-1 backdrop-blur-sm transition-colors duration-300 ease-in-out hover:bg-foreground hover:text-background">
                     Impact
