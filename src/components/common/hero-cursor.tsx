@@ -4,11 +4,11 @@ import { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 import { useTheme } from 'next-themes';
 
-// Re-creating the icon here to make the component self-contained
+// The "E" icon SVG, corrected for proper centering.
 function ElysiumIcon({ className }: { className?: string }) {
   return (
     <svg
-      viewBox="0 1 24 34"
+      viewBox="0 0 32 32"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={cn('w-auto h-full', className)}

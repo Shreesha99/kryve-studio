@@ -11,38 +11,36 @@ import { useLenis } from "./smooth-scroll-provider";
 import { usePreloaderDone } from "./app-providers";
 
 export function Header() {
-  const headerRef = useRef<HTMLDivElement>(null);
+  const logoPodRef = useRef<HTMLDivElement>(null);
+  const controlsPodRef = useRef<HTMLDivElement>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const lenis = useLenis();
   const { preloaderDone } = usePreloaderDone();
 
-  // Animate header on initial load
+  // Animate header pods on initial load
   useLayoutEffect(() => {
-    const headerEl = headerRef.current;
-    if (!headerEl) return;
+    const pods = [logoPodRef.current, controlsPodRef.current].filter(Boolean);
+    if (pods.length === 0) return;
 
     const ctx = gsap.context(() => {
       // Set initial state
-      gsap.set(headerEl, { perspective: 800, opacity: 0, y: -20, rotationX: -45, transformOrigin: "top center" });
+      gsap.set(pods, { opacity: 0, y: -20 });
 
       if (preloaderDone) {
-        gsap.to(
-          headerEl,
-          {
-            y: 0,
-            opacity: 1,
-            rotationX: 0,
-            duration: 1.2,
-            ease: "power3.out",
-          }
-        );
+        gsap.to(pods, {
+          opacity: 1,
+          y: 0,
+          duration: 1,
+          stagger: 0.1,
+          ease: "power3.out",
+          delay: 0.2,
+        });
       }
-    }, headerRef);
+    });
 
     return () => ctx.revert();
   }, [preloaderDone]);
-
 
   // Detect if page is scrolled to apply background to header
   useEffect(() => {
@@ -66,28 +64,34 @@ export function Header() {
 
   return (
     <>
-      <header ref={headerRef} className="fixed top-0 z-50 w-full p-4 opacity-0">
-        <div
-          className={cn(
-            "mx-auto flex h-16 max-w-7xl items-center justify-between rounded-full border px-6 shadow-lg transition-colors duration-300",
-            isScrolled
-              ? "border-border bg-background/80 backdrop-blur-sm"
-              : "border-border bg-transparent"
-          )}
-        >
-          <div className="flex items-center justify-start">
-            <Logo />
-          </div>
-
-          <div className="flex items-center justify-end gap-2">
-            <ThemeToggle />
-            <HamburgerButton
-              isOpen={isMenuOpen}
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            />
-          </div>
+      <div
+        ref={logoPodRef}
+        className={cn(
+          "pointer-events-auto fixed z-50 top-4 left-4 sm:top-6 sm:left-6 rounded-full border bg-background/60 backdrop-blur-md transition-colors duration-300",
+          isScrolled ? "border-border" : "border-transparent"
+        )}
+      >
+        <div className="flex items-center justify-center px-1.5 py-1">
+          <Logo />
         </div>
-      </header>
+      </div>
+
+      <div
+        ref={controlsPodRef}
+        className={cn(
+          "pointer-events-auto fixed z-50 top-4 right-4 sm:top-6 sm:right-6 rounded-full border bg-background/60 backdrop-blur-md transition-colors duration-300",
+          isScrolled ? "border-border" : "border-transparent"
+        )}
+      >
+        <div className="flex items-center">
+          <ThemeToggle />
+          <HamburgerButton
+            isOpen={isMenuOpen}
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          />
+        </div>
+      </div>
+
       <FullScreenMenu
         isOpen={isMenuOpen}
         onClose={() => setIsMenuOpen(false)}
