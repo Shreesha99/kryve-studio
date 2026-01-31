@@ -76,7 +76,7 @@ export function Header() {
       <header
         ref={headerRef}
         className={cn(
-          "fixed top-0 left-0 right-0 z-40 flex h-24 items-center p-4",
+          "fixed top-0 left-0 right-0 z-50 flex h-24 items-center p-4",
           !preloaderDone && "opacity-0"
         )}
       >

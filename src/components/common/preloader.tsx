@@ -13,17 +13,28 @@ function ElysiumLogo3D() {
     <svg
       width="100%"
       height="100%"
-      viewBox="0 0 80 80" // Generous viewBox for rotation
+      viewBox="0 0 80 80"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       preserveAspectRatio="xMidYMid meet"
     >
+      <defs>
+        <linearGradient id="metallic-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style={{ stopColor: "hsl(var(--foreground))", stopOpacity: 0.7 }} />
+          <stop offset="50%" style={{ stopColor: "hsl(var(--foreground))", stopOpacity: 1 }} />
+          <stop offset="100%" style={{ stopColor: "hsl(var(--foreground))", stopOpacity: 0.7 }} />
+        </linearGradient>
+        <filter id="logo-shadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="1" dy="2" stdDeviation="1.5" floodColor="hsl(var(--primary))" floodOpacity="0.2"/>
+        </filter>
+      </defs>
       <path
-        d="M65 20H25V35H55V50H25V65H65"
-        stroke="hsl(var(--foreground))" // Use theme-aware color
-        strokeWidth="5" // Thicker for visibility
+        d="M60 17.5 H20 V32.5 H50 V47.5 H20 V62.5 H60"
+        stroke="url(#metallic-gradient)"
+        strokeWidth="6"
         strokeLinecap="round"
         strokeLinejoin="round"
+        filter="url(#logo-shadow)"
       />
     </svg>
   );

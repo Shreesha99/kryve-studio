@@ -92,7 +92,7 @@ function CustomCursor({ isVisible }: { isVisible: boolean }) {
   return (
     <div
       ref={cursorRef}
-      className="pointer-events-none fixed left-0 top-0 z-[9998] flex h-12 w-12 items-center justify-center"
+      className="pointer-events-none fixed left-0 top-0 z-10 flex h-12 w-12 items-center justify-center"
       style={{ willChange: 'transform' }}
     >
       <div className="absolute inset-0 rounded-full border border-white/10 bg-white/10 backdrop-blur-sm transition-all duration-300"></div>
