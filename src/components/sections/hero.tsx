@@ -8,6 +8,8 @@ import { Sparkles } from 'lucide-react';
 import { ScrollHint } from '@/components/common/scroll-hint';
 import { usePreloaderDone } from '@/components/common/app-providers';
 import { useTheme } from 'next-themes';
+import { cn } from '@/lib/utils';
+import { HeroCursor } from '../common/hero-cursor';
 
 // A single dot in the grid
 class Dot {
@@ -42,7 +44,7 @@ export function Hero() {
   const { resolvedTheme } = useTheme();
 
   // Refs for animation
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const paragraphRef = useRef<HTMLParagraphElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
@@ -52,6 +54,9 @@ export function Hero() {
   const mousePos = useRef({ x: -9999, y: -9999 });
   const dots = useRef<Dot[]>([]);
   const animationFrameId = useRef<number>();
+
+  const heroCursorRef = useRef<HTMLDivElement>(null);
+  const [isHoveringHero, setIsHoveringHero] = useState(false);
 
   useEffect(() => {
     // This logic ensures the hero content animates in only *after* the preloader is done.
@@ -70,9 +75,6 @@ export function Hero() {
     });
 
     const titleSpans = gsap.utils.toArray('span', titleRef.current);
-
-    // Set container to visible, as children are hidden
-    gsap.set(containerRef.current, { opacity: 1 });
 
     tl.fromTo(
       titleSpans,
@@ -102,6 +104,41 @@ export function Hero() {
       tl.kill();
     };
   }, [isReady]);
+
+  // Custom Cursor Logic
+  useEffect(() => {
+    const heroSection = containerRef.current;
+    const cursor = heroCursorRef.current;
+    if (!heroSection || !cursor) return;
+
+    if (window.matchMedia("(pointer: coarse)").matches) {
+        return;
+    }
+
+    const onMouseMove = (e: MouseEvent) => {
+        gsap.to(cursor, {
+            x: e.clientX,
+            y: e.clientY,
+            duration: 0.1,
+            ease: 'power2.out'
+        });
+    };
+    
+    const onMouseEnter = () => setIsHoveringHero(true);
+    const onMouseLeave = () => setIsHoveringHero(false);
+    
+    heroSection.addEventListener('mouseenter', onMouseEnter);
+    heroSection.addEventListener('mouseleave', onMouseLeave);
+    window.addEventListener('mousemove', onMouseMove);
+
+    return () => {
+        heroSection.removeEventListener('mouseenter', onMouseEnter);
+        heroSection.removeEventListener('mouseleave', onMouseLeave);
+        window.removeEventListener('mousemove', onMouseMove);
+    }
+
+  }, []);
+
 
   // Canvas Drawing Logic
   useEffect(() => {
@@ -201,17 +238,22 @@ export function Hero() {
   return (
     <section
       id="home"
-      className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-background py-24 md:py-32 lg:py-0"
+      ref={containerRef}
+      className={cn(
+        "relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-background py-24 md:py-32 lg:py-0",
+        isHoveringHero && "cursor-none"
+      )}
     >
       <canvas
         ref={canvasRef}
         className="pointer-events-none absolute inset-0 z-0 h-full w-full"
       />
 
+      <HeroCursor ref={heroCursorRef} isActive={isHoveringHero} />
+
       {isReady && (
         <div
-          ref={containerRef}
-          className="container z-10 mx-auto px-4 text-center md:px-6 opacity-0"
+          className="container z-10 mx-auto px-4 text-center md:px-6"
         >
           <div className="relative flex flex-col items-center justify-center">
             <h1

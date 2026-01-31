@@ -3,7 +3,6 @@ import "./globals.css";
 import { AppProviders } from "@/components/common/app-providers";
 import { cn } from "@/lib/utils";
 import { ScrollToTop } from "@/components/common/scroll-to-top";
-import { CustomCursor } from "@/components/common/custom-cursor";
 import { CookieBanner } from "@/components/common/cookie-banner";
 import { FirebaseClientProvider } from "@/firebase/client-provider";
 import { Toaster } from "@/components/ui/toaster";
@@ -110,7 +109,6 @@ export default function RootLayout({
       <body className={cn("font-body antialiased")}>
         <FirebaseClientProvider>
           <AppProviders>
-            {/* <CustomCursor /> */}
             {children}
             <ScrollToTop />
           </AppProviders>
