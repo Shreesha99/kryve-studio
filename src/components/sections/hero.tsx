@@ -68,10 +68,7 @@ export function Hero() {
     }
 
     const primaryColor = `hsl(${getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()})`;
-    const mutedColor = resolvedTheme === 'dark'
-      ? `hsla(${getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()}, 0.2)`
-      : `hsl(${getComputedStyle(document.documentElement).getPropertyValue('--muted-foreground').trim()})`;
-
+    const mutedColor = `hsla(${getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim()}, 0.2)`;
 
     const setCanvasDimensions = () => {
       const dpr = window.devicePixelRatio || 1;
@@ -188,7 +185,7 @@ export function Hero() {
               className="font-headline text-4xl font-semibold tracking-tighter sm:text-5xl lg:text-7xl"
             >
               <div className="overflow-hidden py-1">
-                <span className="inline-block opacity-0">
+                <span className="inline-block">
                   Engineering{' '}
                   <span className="inline-block cursor-pointer rounded-full border border-foreground/50 bg-background/50 px-4 py-1 backdrop-blur-sm transition-colors duration-300 ease-in-out hover:bg-foreground hover:text-background">
                     Elegance
@@ -197,7 +194,7 @@ export function Hero() {
                 </span>
               </div>
               <div className="overflow-hidden py-1">
-                <span className="inline-block opacity-0">
+                <span className="inline-block">
                   Designing{' '}
                   <span className="inline-block cursor-pointer rounded-full border border-foreground/50 bg-background/50 px-4 py-1 backdrop-blur-sm transition-colors duration-300 ease-in-out hover:bg-foreground hover:text-background">
                     Impact
