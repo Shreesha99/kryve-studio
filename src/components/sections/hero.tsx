@@ -36,9 +36,66 @@ class Dot {
   }
 }
 
+function ElysiumIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 32 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={cn('w-auto', className)}
+      preserveAspectRatio="xMidYMid meet"
+    >
+      <path
+        d="M25 7H7V13H20V19H7V25H25"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function CustomCursor() {
+  const cursorRef = useRef<HTMLDivElement>(null);
+  const { resolvedTheme } = useTheme();
+
+  useEffect(() => {
+    const cursor = cursorRef.current;
+    if (!cursor) return;
+
+    const onMouseMove = (e: MouseEvent) => {
+      gsap.to(cursor, {
+        x: e.clientX,
+        y: e.clientY,
+        duration: 0.4,
+        ease: 'power3.out',
+      });
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    return () => window.removeEventListener('mousemove', onMouseMove);
+  }, []);
+
+  const color =
+    resolvedTheme === 'dark' ? 'hsl(0 0% 98%)' : 'hsl(240 10% 3.9%)';
+
+  return (
+    <div
+      ref={cursorRef}
+      className="pointer-events-none fixed -left-4 -top-4 z-[9998] flex h-8 w-8 items-center justify-center rounded-full"
+      style={{ willChange: 'transform' }}
+    >
+      <ElysiumIcon className="h-5 w-5" style={{ color }} />
+    </div>
+  );
+}
+
 export function Hero() {
   const { preloaderDone } = usePreloaderDone();
   const [isReady, setIsReady] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { resolvedTheme } = useTheme();
 
@@ -54,9 +111,7 @@ export function Hero() {
   const dots = useRef<Dot[]>([]);
 
   useEffect(() => {
-    // This logic ensures the hero content animates in only *after* the preloader is done.
     if (preloaderDone) {
-      // Small delay to let the preloader animation finish completely
       const timer = setTimeout(() => setIsReady(true), 100);
       return () => clearTimeout(timer);
     }
@@ -178,9 +233,7 @@ export function Hero() {
           dot.color = mutedColor;
         }
 
-        // easing
         dot.radius += (dot.targetRadius - dot.radius) * 0.1;
-
         dot.draw(ctx);
       });
 
@@ -192,7 +245,6 @@ export function Hero() {
     return () => {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('resize', setCanvasDimensions);
-      // Check if canvas still exists before removing listeners
       if (canvas) {
         canvas.removeEventListener('mousemove', handleMouseMove);
         canvas.removeEventListener('mouseleave', handleMouseLeave);
@@ -208,6 +260,11 @@ export function Hero() {
         className={cn(
           'relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-background py-24 md:py-32 lg:py-0'
         )}
+        onMouseEnter={() =>
+          !window.matchMedia('(pointer: coarse)').matches &&
+          setIsHovering(true)
+        }
+        onMouseLeave={() => setIsHovering(false)}
       >
         <canvas
           ref={canvasRef}
@@ -275,6 +332,7 @@ export function Hero() {
         )}
         <ScrollHint scrollTo="#about" />
       </section>
+      {isHovering && <CustomCursor />}
     </>
   );
 }
