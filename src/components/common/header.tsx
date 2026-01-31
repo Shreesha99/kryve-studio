@@ -54,10 +54,6 @@ export function Header() {
             duration: 0.5,
             ease: "power3.out",
           });
-          gsap.to([logoRef.current, podRef.current], {
-            color: self.progress > 0.5 ? "hsl(var(--foreground))" : "inherit",
-            duration: 0.5,
-          });
         },
       });
     }, headerRef);
@@ -80,15 +76,15 @@ export function Header() {
       <header
         ref={headerRef}
         className={cn(
-          "fixed top-0 left-0 right-0 z-40 p-4",
-          "opacity-1" // Let GSAP handle initial opacity
+          "fixed top-0 left-0 right-0 z-40 flex h-24 items-center p-4",
+          !preloaderDone && "opacity-0"
         )}
       >
-        <div className="relative mx-auto flex h-14 max-w-7xl items-center justify-between">
+        <div className="relative mx-auto flex h-14 w-full max-w-7xl items-center justify-between">
             {/* Background Pill */}
             <div ref={bgRef} className="absolute inset-x-0 top-0 h-full origin-center scale-x-0 rounded-full border border-border bg-background/60 opacity-0 shadow-sm backdrop-blur-md" />
 
-            {/* Logo - always visible */}
+            {/* Logo */}
             <div ref={logoRef} className="relative z-10 pointer-events-auto opacity-0">
                 <Logo />
             </div>
