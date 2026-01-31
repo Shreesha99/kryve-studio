@@ -1,136 +1,94 @@
-"use client";
+'use client';
 
-import { useEffect, useLayoutEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { cn } from "@/lib/utils";
+import React, { Suspense, useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// Lazy load the Spline component to avoid increasing the main bundle size
+const Spline = React.lazy(() => import('@splinetool/react-spline'));
 
 interface PreloaderProps {
   onAnimationComplete: () => void;
 }
 
-function ElysiumIcon({
-  pathRef,
-  ringRef,
-  className,
-}: {
-  pathRef: React.Ref<SVGPathElement>;
-  ringRef: React.Ref<SVGCircleElement>;
-  className?: string;
-}) {
-  return (
-    <svg viewBox="0 0 120 120" className={cn("h-full w-full", className)}>
-      {/* Progress ring */}
-      <circle
-        ref={ringRef}
-        cx="60"
-        cy="60"
-        r="52"
-        stroke="currentColor"
-        strokeWidth="4"
-        fill="none"
-        opacity="1"
-      />
+// A component to display the loading percentage counter
+const LoadingCounter = ({ onHundred }: { onHundred: () => void }) => {
+  const [count, setCount] = useState(0);
 
-      {/* Custom E */}
-      <path
-        ref={pathRef}
-        d="M80 30H40V50H70V70H40V90H80"
-        stroke="currentColor"
-        strokeWidth="6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-    </svg>
+  useEffect(() => {
+    // Animate count from 0 to 100
+    const interval = setInterval(() => {
+      setCount(prevCount => {
+        if (prevCount >= 100) {
+          clearInterval(interval);
+          onHundred();
+          return 100;
+        }
+        return prevCount + 1;
+      });
+    }, 30); // 30ms * 100 = 3 seconds for the count up
+
+    return () => clearInterval(interval);
+  }, [onHundred]);
+
+  return (
+    <motion.p
+      className="font-headline text-5xl md:text-6xl text-foreground"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      {count}%
+    </motion.p>
   );
-}
+};
 
 export function Preloader({ onAnimationComplete }: PreloaderProps) {
-  const preloaderRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const pathRef = useRef<SVGPathElement>(null);
-  const ringRef = useRef<SVGCircleElement>(null);
+  const [isCounting, setIsCounting] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
 
-  useLayoutEffect(() => {
-    const preloader = preloaderRef.current;
-    const container = containerRef.current;
-    const path = pathRef.current;
-    const ring = ringRef.current;
+  useEffect(() => {
+    // Start the percentage counter after a brief delay
+    const timer = setTimeout(() => setIsCounting(true), 500);
+    return () => clearTimeout(timer);
+  }, []);
 
-    if (!preloader || !container || !path || !ring) return;
-
-    const pathLength = path.getTotalLength();
-    const ringLength = ring.getTotalLength();
-
-    // Initial states
-    gsap.set(path, {
-      strokeDasharray: pathLength,
-      strokeDashoffset: pathLength,
-    });
-
-    gsap.set(ring, {
-      strokeDasharray: ringLength,
-      strokeDashoffset: ringLength,
-      rotate: -90,
-      transformOrigin: "50% 50%",
-      opacity: 0, // <-- FIX
-    });
-
-    const tl = gsap.timeline({
-      delay: 0.5,
-      defaults: { ease: "power3.out" },
-      onComplete: () => {
-        preloader.style.display = "none";
-        onAnimationComplete();
-      },
-    });
-
-    gsap.set(container, { opacity: 1 });
-
-    tl
-
-      // Draw E
-      .to(path, {
-        strokeDashoffset: 0,
-        duration: 1.1,
-      })
-
-      // Animate ring AFTER E completes
-      .to(ring, {
-        opacity: 1,
-        strokeDashoffset: 0,
-        duration: 1.4,
-        ease: "power2.inOut",
-      })
-
-      // small cinematic pause
-      .to({}, { duration: 0.35 })
-
-      // exit
-      .to(container, {
-        scale: 0.92,
-        opacity: 0,
-        duration: 0.5,
-        ease: "power2.in",
-      })
-      .to(
-        preloader,
-        {
-          opacity: 0,
-          duration: 0.35,
-        },
-        "-=0.3"
-      );
-  }, [onAnimationComplete]);
+  // This function is called after the main container's exit animation finishes
+  const handleExitComplete = () => {
+    onAnimationComplete();
+  };
 
   return (
-    <div
-      ref={preloaderRef}
-      className="fixed inset-0 z-[999] flex items-center justify-center bg-background"
-    >
-      <div ref={containerRef} className="h-20 w-20 text-foreground opacity-0">
-        <ElysiumIcon pathRef={pathRef} ringRef={ringRef} />
-      </div>
-    </div>
+    <AnimatePresence onExitComplete={handleExitComplete}>
+      {!isComplete && (
+        <motion.div
+          className="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-background"
+          exit={{ opacity: 0, transition: { duration: 1.2, ease: 'circOut' } }}
+        >
+          {/* Main 3D object container */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.7 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, ease: 'easeOut' }}
+            className="relative h-64 w-64 md:h-80 md:w-80"
+          >
+            {/* Use Suspense to handle the lazy loading of the Spline component */}
+            <Suspense fallback={<div className="h-full w-full" />}>
+              <Spline
+                // A premium, abstract 3D object that fits the brand
+                scene="https://prod.spline.design/6Wq123V92J3p3v66/scene.splinecode"
+              />
+            </Suspense>
+          </motion.div>
+
+          {/* Absolute positioned counter to overlay the 3D object */}
+          {isCounting && (
+            <div className="absolute">
+              <LoadingCounter onHundred={() => setIsComplete(true)} />
+            </div>
+          )}
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
