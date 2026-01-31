@@ -34,9 +34,10 @@ export function Hero() {
       });
 
       tl.fromTo(headlineSpans, 
-        { yPercent: 120 },
+        { yPercent: 120, opacity: 0 },
         {
           yPercent: 0,
+          opacity: 1,
           stagger: 0.1,
           ease: "power3.out",
         })
@@ -75,7 +76,7 @@ export function Hero() {
               className="font-headline text-4xl font-semibold tracking-tighter sm:text-5xl lg:text-7xl"
             >
               <div className="overflow-hidden py-1">
-                <span className="inline-block">
+                <span className="inline-block opacity-0">
                   Engineering{" "}
                   <span className="inline-block cursor-pointer rounded-full border border-foreground/50 px-4 py-1 transition-colors duration-300 ease-in-out hover:bg-foreground hover:text-background">
                     Elegance
@@ -84,7 +85,7 @@ export function Hero() {
                 </span>
               </div>
               <div className="overflow-hidden py-1">
-                <span className="inline-block">
+                <span className="inline-block opacity-0">
                   Designing{" "}
                   <span className="inline-block cursor-pointer rounded-full border border-foreground/50 px-4 py-1 transition-colors duration-300 ease-in-out hover:bg-foreground hover:text-background">
                     Impact
