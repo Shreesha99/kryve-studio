@@ -78,10 +78,12 @@ export default function Preloader({ onAnimationComplete }: PreloaderProps) {
           animate={{
             rotateY: 360,
             rotateX: 180,
+            scale: [1, 1.06, 1], // ❤️ Heartbeat effect
           }}
           transition={{
             rotateY: { duration: 32, repeat: Infinity, ease: "linear" },
             rotateX: { duration: 24, repeat: Infinity, ease: "linear" },
+            scale: { duration: 1.8, repeat: Infinity, ease: "easeInOut" },
           }}
         >
           {points.map((p, i) => {
@@ -144,8 +146,8 @@ const COLORS = [
   "rgba(56, 189, 248, 1)", // Bold Sky Blue
 ];
 
-const SPHERE_POINTS = Array.from({ length: 96 }).map((_, i) => {
-  const phi = Math.acos(1 - (2 * (i + 0.5)) / 96);
+const SPHERE_POINTS = Array.from({ length: 144 }).map((_, i) => {
+  const phi = Math.acos(1 - (2 * (i + 0.5)) / 144);
   const theta = Math.PI * (1 + Math.sqrt(5)) * i;
 
   return {
