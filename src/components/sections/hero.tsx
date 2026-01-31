@@ -4,7 +4,7 @@ import { useRef, useState, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Crosshair } from 'lucide-react';
 import { ScrollHint } from '@/components/common/scroll-hint';
 import { usePreloaderDone } from '@/components/common/app-providers';
 import { useTheme } from 'next-themes';
@@ -36,6 +36,26 @@ class Dot {
   }
 }
 
+function ElysiumIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 1 24 34"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={cn('w-auto', className)}
+      preserveAspectRatio="xMidYMid meet"
+    >
+      <path
+        d="M25 7H7V13H20V19H7V25H25"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function Hero() {
   const { preloaderDone } = usePreloaderDone();
   const [isReady, setIsReady] = useState(false);
@@ -48,6 +68,7 @@ export function Hero() {
   const paragraphRef = useRef<HTMLParagraphElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
   const hintRef = useRef<HTMLDivElement>(null);
+  const customCursorRef = useRef<HTMLDivElement>(null);
 
   // Refs for canvas animation
   const mousePos = useRef({ x: -9999, y: -9999 });
@@ -154,7 +175,7 @@ export function Hero() {
       mousePos.current = { x: -9999, y: -9999 };
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
+    canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mouseleave', handleMouseLeave);
 
     const animate = () => {
@@ -188,7 +209,7 @@ export function Hero() {
 
     return () => {
       window.removeEventListener('resize', setCanvasDimensions);
-      window.removeEventListener('mousemove', handleMouseMove);
+      canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseleave', handleMouseLeave);
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
@@ -196,80 +217,145 @@ export function Hero() {
     };
   }, [resolvedTheme]);
 
+  // Custom Cursor Logic
+  useEffect(() => {
+    const heroSection = containerRef.current;
+    const customCursor = customCursorRef.current;
+    if (!heroSection || !customCursor) return;
+
+    const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+    if (isTouchDevice) {
+      customCursor.style.display = 'none';
+      return;
+    }
+
+    gsap.set(customCursor, {
+      xPercent: -50,
+      yPercent: -50,
+      opacity: 0,
+      scale: 0.5,
+    });
+
+    const onMouseMove = (e: MouseEvent) => {
+      gsap.to(customCursor, {
+        x: e.clientX,
+        y: e.clientY,
+        duration: 0.5,
+        ease: 'power3.out',
+      });
+    };
+
+    const onMouseEnter = () => {
+      gsap.to(customCursor, {
+        opacity: 1,
+        scale: 1,
+        duration: 0.3,
+        ease: 'power3.out',
+      });
+    };
+
+    const onMouseLeave = () => {
+      gsap.to(customCursor, {
+        opacity: 0,
+        scale: 0.5,
+        duration: 0.3,
+        ease: 'power3.in',
+      });
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    heroSection.addEventListener('mouseenter', onMouseEnter);
+    heroSection.addEventListener('mouseleave', onMouseLeave);
+
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      heroSection.removeEventListener('mouseenter', onMouseEnter);
+      heroSection.removeEventListener('mouseleave', onMouseLeave);
+    };
+  }, []);
+
   return (
-    <section
-      id="home"
-      ref={containerRef}
-      className={cn(
-        "relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-background py-24 md:py-32 lg:py-0"
-      )}
-    >
-      <canvas
-        ref={canvasRef}
-        className="pointer-events-none absolute inset-0 z-0 h-full w-full"
-      />
+    <>
+      <div
+        ref={customCursorRef}
+        className="pointer-events-none fixed left-0 top-0 z-[9998] flex h-10 w-10 items-center justify-center rounded-full bg-background/50 text-foreground shadow-md backdrop-blur-sm"
+      >
+        <ElysiumIcon className="h-5" />
+      </div>
+      <section
+        id="home"
+        ref={containerRef}
+        className={cn(
+          'relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-background py-24 md:py-32 lg:py-0',
+          !isReady && 'cursor-none'
+        )}
+      >
+        <canvas
+          ref={canvasRef}
+          className="pointer-events-none absolute inset-0 z-0 h-full w-full"
+        />
 
-      {isReady && (
-        <div
-          className="container z-10 mx-auto px-4 text-center md:px-6"
-        >
-          <div className="relative flex flex-col items-center justify-center">
-            <h1
-              ref={titleRef}
-              className="font-headline text-4xl font-semibold tracking-tighter sm:text-5xl lg:text-7xl"
-            >
-              <div className="overflow-hidden py-1">
-                <span className="inline-block opacity-0">
-                  Engineering{' '}
-                  <span className="inline-block cursor-pointer rounded-full border border-foreground/50 bg-background/50 px-4 py-1 backdrop-blur-sm transition-colors duration-300 ease-in-out hover:bg-foreground hover:text-background">
-                    Elegance
-                  </span>
-                  .
-                </span>
-              </div>
-              <div className="overflow-hidden py-1">
-                <span className="inline-block opacity-0">
-                  Designing{' '}
-                  <span className="inline-block cursor-pointer rounded-full border border-foreground/50 bg-background/50 px-4 py-1 backdrop-blur-sm transition-colors duration-300 ease-in-out hover:bg-foreground hover:text-background">
-                    Impact
-                  </span>
-                  .
-                </span>
-              </div>
-            </h1>
-
-            <p
-              ref={paragraphRef}
-              className="mx-auto mt-8 max-w-2xl text-lg text-muted-foreground md:text-xl opacity-0"
-            >
-              We are the architects of the digital frontier. A studio where
-              visionary design and precision engineering are not just goals, but
-              absolute standards. We craft high-performance web experiences
-              that captivate users and create lasting market impact.
-            </p>
-
-            <div ref={ctaRef} className="mt-8 opacity-0">
-              <Button size="lg" asChild>
-                <Link href="#work">Explore Our Work</Link>
-              </Button>
-            </div>
-
-            <div ref={hintRef} className="mt-6 opacity-0">
-              <Button
-                asChild
-                variant="ghost"
-                className="h-auto p-0 text-sm font-normal text-muted-foreground transition-colors hover:text-foreground"
+        {isReady && (
+          <div className="container z-10 mx-auto px-4 text-center md:px-6">
+            <div className="relative flex flex-col items-center justify-center">
+              <h1
+                ref={titleRef}
+                className="font-headline text-4xl font-semibold tracking-tighter sm:text-5xl lg:text-7xl"
               >
-                <Link href="/blog">
-                  <Sparkles className="mr-2 h-4 w-4 text-primary" />
-                  <span>Psst! Check out our new AI tools on the blog.</span>
-                </Link>
-              </Button>
+                <div className="overflow-hidden py-1">
+                  <span className="inline-block">
+                    Engineering{' '}
+                    <span className="inline-block cursor-pointer rounded-full border border-foreground/50 bg-background/50 px-4 py-1 backdrop-blur-sm transition-colors duration-300 ease-in-out hover:bg-foreground hover:text-background">
+                      Elegance
+                    </span>
+                    .
+                  </span>
+                </div>
+                <div className="overflow-hidden py-1">
+                  <span className="inline-block">
+                    Designing{' '}
+                    <span className="inline-block cursor-pointer rounded-full border border-foreground/50 bg-background/50 px-4 py-1 backdrop-blur-sm transition-colors duration-300 ease-in-out hover:bg-foreground hover:text-background">
+                      Impact
+                    </span>
+                    .
+                  </span>
+                </div>
+              </h1>
+
+              <p
+                ref={paragraphRef}
+                className="mx-auto mt-8 max-w-2xl text-lg text-muted-foreground md:text-xl opacity-0"
+              >
+                We are the architects of the digital frontier. A studio where
+                visionary design and precision engineering are not just goals,
+                but absolute standards. We craft high-performance web
+                experiences that captivate users and create lasting market
+                impact.
+              </p>
+
+              <div ref={ctaRef} className="mt-8 opacity-0">
+                <Button size="lg" asChild>
+                  <Link href="#work">Explore Our Work</Link>
+                </Button>
+              </div>
+
+              <div ref={hintRef} className="mt-6 opacity-0">
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="h-auto p-0 text-sm font-normal text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <Link href="/blog">
+                    <Sparkles className="mr-2 h-4 w-4 text-primary" />
+                    <span>Psst! Check out our new AI tools on the blog.</span>
+                  </Link>
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-      <ScrollHint scrollTo="#about" />
-    </section>
+        )}
+        <ScrollHint scrollTo="#about" />
+      </section>
+    </>
   );
 }
