@@ -1,116 +1,152 @@
-'use client';
+"use client";
 
-import { useLayoutEffect, useRef } from 'react';
-import { gsap } from 'gsap';
-import { cn } from "@/lib/utils";
+import { motion, useAnimation } from "framer-motion";
+import { useEffect, useMemo, useState } from "react";
 
-function ElysiumIcon({
-  pathRef,
-  ringRef,
-  className,
-}: {
-  pathRef: React.Ref<SVGPathElement>;
-  ringRef: React.Ref<SVGCircleElement>;
-  className?: string;
-}) {
-  return (
-    <svg viewBox="0 0 120 120" className={cn("h-full w-full", className)}>
-      <circle
-        ref={ringRef}
-        cx="60"
-        cy="60"
-        r="52"
-        stroke="currentColor"
-        strokeWidth="4"
-        fill="none"
-      />
-      <path
-        ref={pathRef}
-        d="M80 30H40V50H70V70H40V90H80"
-        stroke="currentColor"
-        strokeWidth="6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-    </svg>
-  );
-}
+type PreloaderProps = {
+  onAnimationComplete?: () => void;
+};
 
-export function Preloader({ onAnimationComplete }: { onAnimationComplete: () => void }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const pathRef = useRef<SVGPathElement>(null);
-  const ringRef = useRef<SVGCircleElement>(null);
+export default function Preloader({ onAnimationComplete }: PreloaderProps) {
+  const overlayControls = useAnimation();
+  const [progress, setProgress] = useState(0);
+  const [visible, setVisible] = useState(true);
 
-  useLayoutEffect(() => {
-    const container = containerRef.current;
-    const path = pathRef.current;
-    const ring = ringRef.current;
+  // 🔒 Sphere points MUST be stable across renders
+  const points = useMemo(() => SPHERE_POINTS, []);
 
-    if (!container || !path || !ring) return;
+  useEffect(() => {
+    let value = 0;
+    let raf: number;
 
-    const pathLength = path.getTotalLength();
-    const ringLength = ring.getTotalLength();
+    const tick = () => {
+      const remaining = 100 - value;
 
-    // Initial animation state
-    gsap.set(container, { yPercent: 0 });
-    gsap.set(path, {
-      strokeDasharray: pathLength,
-      strokeDashoffset: pathLength,
-    });
-    gsap.set(ring, {
-      strokeDasharray: ringLength,
-      strokeDashoffset: ringLength,
-      rotate: -90,
-      transformOrigin: "50% 50%",
-    });
-    
-    // Create the master timeline
-    const tl = gsap.timeline({
-      delay: 0.2,
-      onComplete: () => {
-        // This ensures the main app content is rendered after the animation
-        if (onAnimationComplete) {
-          onAnimationComplete();
-        }
-      },
-    });
+      const increment =
+        remaining > 50
+          ? 0.5
+          : remaining > 25
+          ? 0.25
+          : remaining > 10
+          ? 0.12
+          : 0.05;
 
-    tl
-      // Draw in the SVG logo
-      .to(path, {
-        strokeDashoffset: 0,
-        duration: 1.2,
-        ease: 'power2.inOut',
-      })
-      .to(ring, {
-        strokeDashoffset: 0,
-        duration: 1.5,
-        ease: 'power2.inOut',
-      }, '-=0.8')
-      // Hold for a moment for the user to see the logo
-      .to({}, { duration: 0.5 })
-      // Animate the preloader away by sliding it up
-      .to(container, {
-        yPercent: -105,
-        duration: 1.2,
-        ease: 'power3.inOut',
-      });
-      
-    // Cleanup function
-    return () => {
-      tl.kill();
+      value = Math.min(100, value + increment);
+      setProgress(Math.floor(value));
+
+      if (value < 100) {
+        raf = requestAnimationFrame(tick);
+      } else {
+        exit();
+      }
     };
-  }, [onAnimationComplete]);
+
+    const exit = async () => {
+      await overlayControls.start({
+        y: -window.innerHeight,
+        transition: {
+          duration: 1.3,
+          ease: [0.4, 0, 0.2, 1] as const,
+        },
+      });
+      setVisible(false);
+      onAnimationComplete?.();
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [overlayControls, onAnimationComplete]);
+
+  if (!visible) return null;
 
   return (
-    <div
-      ref={containerRef}
-      className="fixed inset-0 z-[999] flex items-center justify-center bg-background"
+    <motion.div
+      className="fixed inset-0 z-[9999] bg-background"
+      initial={{ y: 0 }}
+      animate={overlayControls}
     >
-      <div className="h-24 w-24 text-foreground">
-        <ElysiumIcon pathRef={pathRef} ringRef={ringRef} />
+      {/* 🌐 3D PARTICLE SPHERE */}
+      <div
+        className="absolute bottom-32 right-32 h-72 w-72"
+        style={{ perspective: "1200px" }}
+      >
+        <motion.div
+          className="relative h-full w-full"
+          style={{ transformStyle: "preserve-3d" }}
+          animate={{
+            rotateY: 360,
+            rotateX: 180,
+            scale: [1, 1.06, 1], // ❤️ heartbeat
+          }}
+          transition={{
+            rotateY: { duration: 28, repeat: Infinity, ease: "linear" },
+            rotateX: { duration: 20, repeat: Infinity, ease: "linear" },
+            scale: { duration: 1.8, repeat: Infinity, ease: "easeInOut" },
+          }}
+        >
+          {points.map((p, i) => {
+            const depth = (p.z + 1) / 2;
+
+            return (
+              <motion.span
+                key={i}
+                className="absolute left-1/2 top-1/2 rounded-full"
+                style={{
+                  width: 3,
+                  height: 3,
+                  background: p.color,
+                  opacity: 0.35 + depth * 0.65,
+                }}
+                initial={{
+                  x: p.x * 120,
+                  y: p.y * 120,
+                  z: p.z * 120,
+                }}
+                animate={{
+                  scale: [0.8, 1.25, 0.8], // 🌊 wave per particle
+                }}
+                transition={{
+                  duration: 3 + (i % 6),
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+            );
+          })}
+        </motion.div>
       </div>
-    </div>
+
+      {/* 🔢 HUGE PERCENTAGE */}
+      <div className="absolute bottom-10 right-10 select-none">
+        <span className="text-[9rem] leading-none font-semibold tracking-tight text-foreground">
+          {progress}
+        </span>
+        <span className="absolute right-[-1.5rem] top-3 text-3xl text-foreground/40">
+          %
+        </span>
+      </div>
+    </motion.div>
   );
 }
+
+/* ---------------- SPHERE DATA ---------------- */
+
+const COLORS = [
+  "rgba(59,130,246,0.9)",
+  "rgba(99,102,241,0.9)",
+  "rgba(14,165,233,0.9)",
+  "rgba(148,163,184,0.8)",
+  "rgba(236,72,153,0.6)",
+];
+
+const SPHERE_POINTS = Array.from({ length: 96 }).map((_, i) => {
+  const phi = Math.acos(1 - (2 * (i + 0.5)) / 96);
+  const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+
+  return {
+    x: Math.cos(theta) * Math.sin(phi),
+    y: Math.sin(theta) * Math.sin(phi),
+    z: Math.cos(phi),
+    color: COLORS[i % COLORS.length],
+  };
+});
