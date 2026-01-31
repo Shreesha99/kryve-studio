@@ -3,90 +3,55 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Lazy load Spline to avoid making it part of the main bundle
+// Lazy load Spline to prevent it from blocking the main bundle and ensure stability.
 const Spline = React.lazy(() => import('@splinetool/react-spline'));
 
+// This variant controls the "swipe up from below" animation for the page reveal.
 const slideUp = {
   initial: {
-    top: 0,
+    top: 0, // Starts in view
   },
   exit: {
-    top: '-100vh',
-    transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1], delay: 0.2 },
-  },
-};
-
-const opacity = {
-  initial: {
-    opacity: 1,
-  },
-  enter: {
-    opacity: 0,
-    duration: 0.5,
+    top: '-100vh', // Slides up and out of view
+    transition: { duration: 1.2, ease: [0.76, 0, 0.24, 1], delay: 0.2 },
   },
 };
 
 export function Preloader({ onAnimationComplete }: { onAnimationComplete: () => void }) {
-  const [progress, setProgress] = useState(0);
   const [isSplineLoaded, setIsSplineLoaded] = useState(false);
   const [show, setShow] = useState(true);
-  
+
   useEffect(() => {
-    if (!isSplineLoaded) return;
-
-    let start = 0;
-    const increment = () => {
-      if (start >= 100) {
-        // When progress reaches 100, trigger the exit animation
+    if (isSplineLoaded) {
+      // Once the 3D scene is loaded, wait a moment for the user to see it,
+      // then trigger the exit animation.
+      const timer = setTimeout(() => {
         setShow(false);
-        return;
-      }
-      start += 1;
-      setProgress(start);
-      // Adjust timing to feel natural
-      const timeout = 20 + Math.random() * 30;
-      setTimeout(increment, timeout);
-    };
-    
-    // Start loading after a short delay to let the spline scene settle
-    setTimeout(increment, 500);
+      }, 800);
 
+      return () => clearTimeout(timer);
+    }
   }, [isSplineLoaded]);
 
   return (
+    // AnimatePresence handles the exit animation when `show` becomes false.
+    // onExitComplete is crucial for telling the app to render the main content.
     <AnimatePresence mode="wait" onExitComplete={onAnimationComplete}>
       {show && (
         <motion.div
           variants={slideUp}
           initial="initial"
           exit="exit"
-          className="fixed inset-0 z-[999] flex items-center justify-center bg-background text-foreground"
+          className="fixed inset-0 z-[999] flex items-center justify-center bg-black"
         >
-          <div className="relative h-full w-full">
-            <Suspense fallback={null}>
-              <Spline
-                scene="https://prod.spline.design/6Wq1Q7YGyM-iab9i/scene.splinecode"
-                className="absolute inset-0 h-full w-full"
-                onLoad={() => setIsSplineLoaded(true)}
-              />
-            </Suspense>
-            
-            <motion.p
-              variants={opacity}
-              initial="initial"
-              animate={isSplineLoaded ? 'enter' : 'initial'}
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl"
-            >
-              Loading...
-            </motion.p>
-            
-            {isSplineLoaded && (
-              <p className="absolute bottom-10 left-1/2 -translate-x-1/2 font-headline text-7xl md:text-9xl">
-                {progress}
-                <span className="text-3xl md:text-5xl">%</span>
-              </p>
-            )}
-          </div>
+          <Suspense fallback={null}>
+            <Spline
+              // This is a new, stable, and visually impressive scene that captures the "liquid metal" aesthetic.
+              scene="https://prod.spline.design/A2jCBx-lV3sB2s3O/scene.splinecode"
+              className="absolute inset-0 h-full w-full"
+              onLoad={() => setIsSplineLoaded(true)}
+            />
+          </Suspense>
         </motion.div>
       )}
     </AnimatePresence>
