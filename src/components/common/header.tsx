@@ -3,7 +3,7 @@
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
-import { Logo } from "./logo";
+import Link from "next/link";
 import { ThemeToggle } from "./theme-toggle";
 import { cn } from "@/lib/utils";
 import { HamburgerButton } from "./hamburger-button";
@@ -15,60 +15,104 @@ gsap.registerPlugin(ScrollTrigger);
 
 export function Header() {
   const headerRef = useRef<HTMLElement>(null);
-  const logoRef = useRef<HTMLDivElement>(null);
   const podRef = useRef<HTMLDivElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
+  const talkRef = useRef<HTMLAnchorElement>(null);
+  const underlineRef = useRef<HTMLSpanElement>(null);
+  const arrowRef = useRef<HTMLSpanElement>(null);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const lenis = useLenis();
   const { preloaderDone } = usePreloaderDone();
 
-  // Animate header in after preloader
+  /* ---------------- INTRO ANIMATION ---------------- */
+
   useLayoutEffect(() => {
-    if (!preloaderDone || !headerRef.current) return;
-    
+    if (!preloaderDone || !podRef.current) return;
+
     const ctx = gsap.context(() => {
       gsap.fromTo(
-        [logoRef.current, podRef.current],
+        podRef.current,
         { y: "-120%", opacity: 0 },
-        { y: "0%", opacity: 1, duration: 1.2, ease: "power3.out", stagger: 0.1, delay: 0.5 }
+        {
+          y: "0%",
+          opacity: 1,
+          duration: 1.2,
+          ease: "power3.out",
+          delay: 0.4,
+        }
       );
     }, headerRef);
 
     return () => ctx.revert();
   }, [preloaderDone]);
 
-  // Handle scroll-based background animation
+  /* ---------------- SCROLL BACKGROUND ---------------- */
+
   useEffect(() => {
     if (!preloaderDone) return;
-    
-    const ctx = gsap.context(() => {
-      ScrollTrigger.create({
-        trigger: "body",
-        start: "top top",
-        end: "top+=100",
-        onUpdate: (self) => {
-          gsap.to(bgRef.current, {
-            opacity: self.progress > 0 ? 1 : 0,
-            scaleX: self.progress,
-            duration: 0.5,
-            ease: "power3.out",
-          });
-        },
-      });
-    }, headerRef);
-    
-    return () => ctx.revert();
 
+    ScrollTrigger.create({
+      trigger: "body",
+      start: "top top",
+      end: "top+=100",
+      onUpdate: (self) => {
+        gsap.to(bgRef.current, {
+          opacity: self.progress > 0 ? 1 : 0,
+          scaleX: self.progress,
+          duration: 0.4,
+          ease: "power3.out",
+        });
+      },
+    });
   }, [preloaderDone]);
 
-  // Lock/unlock scroll when menu opens/closes
+  /* ---------------- LET’S TALK HOVER ---------------- */
+
   useEffect(() => {
-    if (isMenuOpen) {
-      lenis?.stop();
-    } else {
-      lenis?.start();
-    }
+    if (!talkRef.current || !underlineRef.current || !arrowRef.current) return;
+
+    const enter = () => {
+      gsap.to(arrowRef.current, {
+        rotate: 0,
+        duration: 0.3,
+        ease: "power3.out",
+      });
+      gsap.to(underlineRef.current, {
+        scaleX: 1,
+        transformOrigin: "left",
+        duration: 0.35,
+        ease: "power3.out",
+      });
+    };
+
+    const leave = () => {
+      gsap.to(arrowRef.current, {
+        rotate: -45,
+        duration: 0.3,
+        ease: "power3.out",
+      });
+      gsap.to(underlineRef.current, {
+        scaleX: 0,
+        transformOrigin: "right",
+        duration: 0.25,
+        ease: "power3.out",
+      });
+    };
+
+    talkRef.current.addEventListener("mouseenter", enter);
+    talkRef.current.addEventListener("mouseleave", leave);
+
+    return () => {
+      talkRef.current?.removeEventListener("mouseenter", enter);
+      talkRef.current?.removeEventListener("mouseleave", leave);
+    };
+  }, []);
+
+  /* ---------------- SCROLL LOCK ---------------- */
+
+  useEffect(() => {
+    isMenuOpen ? lenis?.stop() : lenis?.start();
   }, [isMenuOpen, lenis]);
 
   return (
@@ -76,27 +120,53 @@ export function Header() {
       <header
         ref={headerRef}
         className={cn(
-          "fixed top-0 left-0 right-0 z-50 flex h-24 items-center p-4",
+          "fixed top-0 left-0 right-0 z-[2000] h-24",
           !preloaderDone && "opacity-0"
         )}
       >
-        <div className="relative mx-auto flex h-14 w-full max-w-7xl items-center justify-between">
-            {/* Background Pill */}
-            <div ref={bgRef} className="absolute inset-x-0 top-0 h-full origin-center scale-x-0 rounded-full border border-border bg-background/60 opacity-0 shadow-sm backdrop-blur-md" />
+        {/* Background pill */}
 
-            {/* Logo */}
-            <div ref={logoRef} className="relative z-10 pointer-events-auto opacity-0">
-                <Logo />
-            </div>
+        {/* Right-aligned controls only */}
+        <div className="relative mx-auto flex h-full w-full items-center justify-end px-6">
+          <div
+            ref={podRef}
+            className="relative flex items-center gap-6 opacity-0"
+          >
+            {/* GLASS BACKGROUND – RIGHT SIDE ONLY */}
+            <div
+              ref={bgRef}
+              className="pointer-events-none absolute -inset-y-2 -inset-x-4 origin-right scale-x-0 rounded-full border border-border bg-background/60 opacity-0 shadow-sm backdrop-blur-md"
+            />
 
-            {/* Control Pod */}
-            <div ref={podRef} className="relative z-10 flex items-center justify-center gap-2 rounded-full pointer-events-auto opacity-0">
-                <ThemeToggle />
-                <HamburgerButton
+            {/* CONTENT ABOVE GLASS */}
+            <div className="relative z-10 flex items-center gap-6">
+              {/* LET’S TALK */}
+              <Link
+                ref={talkRef}
+                href="#contact"
+                className="relative hidden items-center gap-2 text-sm uppercase tracking-wide md:flex"
+              >
+                <span className="relative inline-block">
+                  <span>Let’s Talk</span>
+                  <span
+                    ref={underlineRef}
+                    className="absolute -bottom-1 left-0 h-px w-full origin-left scale-x-0 bg-foreground"
+                  />
+                </span>
+
+                <span ref={arrowRef} className="inline-block rotate-[-45deg]">
+                  →
+                </span>
+              </Link>
+
+              <ThemeToggle />
+
+              <HamburgerButton
                 isOpen={isMenuOpen}
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                />
+                onClick={() => setIsMenuOpen((v) => !v)}
+              />
             </div>
+          </div>
         </div>
       </header>
 
