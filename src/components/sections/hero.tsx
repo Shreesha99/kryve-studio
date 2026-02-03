@@ -17,6 +17,9 @@ export function Hero() {
     }
   };
 
+  /* ============================= */
+  /* INTRO ANIMATIONS */
+  /* ============================= */
   useEffect(() => {
     if (!preloaderDone) return;
 
@@ -53,6 +56,97 @@ export function Hero() {
     return () => ctx.revert();
   }, [preloaderDone]);
 
+  /* ============================= */
+  /* PER-LETTER UPWARD HOVER BOUNCE */
+  /* ============================= */
+  useEffect(() => {
+    const title = brandRef.current;
+    if (!title) return;
+
+    const letters = Array.from(title.querySelectorAll<HTMLElement>("span"));
+
+    // Ensure clean baseline (important for load + hover overlap)
+    gsap.set(letters, { y: 0 });
+
+    const onEnter = (el: HTMLElement) => {
+      gsap.killTweensOf(el);
+
+      gsap.to(el, {
+        y: -14, // upward only
+        duration: 0.45,
+        ease: "elastic.out(1, 0.4)",
+      });
+    };
+
+    const onLeave = (el: HTMLElement) => {
+      gsap.killTweensOf(el);
+
+      gsap.to(el, {
+        y: 0,
+        duration: 0.6,
+        ease: "power3.out",
+      });
+    };
+
+    letters.forEach((el) => {
+      const enter = () => onEnter(el);
+      const leave = () => onLeave(el);
+
+      el.addEventListener("pointerenter", enter);
+      el.addEventListener("pointerleave", leave);
+
+      // Store refs for cleanup
+      (el as any)._enter = enter;
+      (el as any)._leave = leave;
+    });
+
+    return () => {
+      letters.forEach((el) => {
+        el.removeEventListener("pointerenter", (el as any)._enter);
+        el.removeEventListener("pointerleave", (el as any)._leave);
+      });
+    };
+  }, []);
+
+  /* ============================= */
+  /* MOBILE AUTOPLAY MICRO BOUNCE */
+  /* ============================= */
+  useEffect(() => {
+    // Only run on touch devices
+    if (!window.matchMedia("(pointer: coarse)").matches) return;
+
+    const title = brandRef.current;
+    if (!title) return;
+
+    const letters = Array.from(title.querySelectorAll<HTMLElement>("span"));
+
+    // subtle baseline
+    gsap.set(letters, { y: 0 });
+
+    const tl = gsap.timeline({
+      repeat: -1,
+      yoyo: true,
+      defaults: {
+        ease: "sine.inOut",
+      },
+    });
+
+    letters.forEach((el, i) => {
+      tl.to(
+        el,
+        {
+          y: -6, // VERY subtle upward lift
+          duration: 1.2,
+        },
+        i * 0.15 // wave offset
+      );
+    });
+
+    return () => {
+      tl.kill();
+    };
+  }, []);
+
   return (
     <section
       ref={sectionRef}
@@ -65,18 +159,21 @@ export function Hero() {
         <div className="relative mx-auto flex flex-col items-center md:w-fit">
           <span
             ref={addRevealRef}
-            className="mb-2 text-[18px] lowercase tracking-[0.3em] text-muted-foreground md:absolute md:-top-5 md:left-0 md:text-[30px]"
+            className="mb-2 text-[18px] lowercase tracking-[0.3em] md:absolute md:-top-5 md:left-0 md:text-[30px]"
           >
             The
           </span>
 
           <h1
             ref={brandRef}
-            className="text-center font-headline font-semibold leading-none tracking-tight text-[18vw]"
+            className="text-center font-headline font-semibold leading-none tracking-tight text-[18vw] cursor-default"
           >
             <div className="overflow-hidden">
               {["e", "l", "y", "s", "i", "u", "m"].map((c, i) => (
-                <span key={i} className="inline-block">
+                <span
+                  key={i}
+                  className="inline-block bg-elysium-gradient bg-clip-text text-transparent"
+                >
                   {c}
                 </span>
               ))}
@@ -85,14 +182,13 @@ export function Hero() {
 
           <span
             ref={addRevealRef}
-            className="mt-2 text-[18px] lowercase tracking-[0.3em] md:absolute md:-bottom-5 md:right-0 md:text-[30px] text-[#D1F2EB]"
+            className="mt-2 text-[18px] lowercase tracking-[0.3em] md:absolute md:-bottom-5 md:right-0 md:text-[30px] "
           >
             Project
           </span>
         </div>
       </div>
 
-      {/* BOTTOM LEFT */}
       {/* BOTTOM LEFT */}
       <div
         ref={addRevealRef}

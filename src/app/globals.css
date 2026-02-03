@@ -103,6 +103,19 @@
   fill: hsl(var(--foreground));
 }
 
+.bg-elysium-gradient {
+  background-image: linear-gradient(
+    180deg,
+    #ff3b3b 0%,
+    /* pure vivid red */ #c1121f 30%,
+    /* deep crimson */ #5a189a 65%,
+    /* royal purple */ #1b0033 100%
+  );
+
+  background-size: 100% 300%;
+  background-position: 50% var(--elysium-y, 50%);
+}
+
 @layer utilities {
   .animated-gradient {
     --gradient-color-1: hsl(220 80% 96%);
