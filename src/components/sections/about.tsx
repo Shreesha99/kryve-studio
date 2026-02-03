@@ -198,10 +198,14 @@ export function About() {
               <p className="reveal text-sm uppercase tracking-widest text-foreground">
                 Who we are
               </p>
+              <p className="reveal flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
+                <span className="fi fi-in"></span>
+                Bengaluru, India
+              </p>
 
               <p className="reveal">
                 We’re a new web development studio building thoughtful digital
-                experiences — not disposable websites.
+                experiences, not disposable websites.
               </p>
 
               <p className="reveal">

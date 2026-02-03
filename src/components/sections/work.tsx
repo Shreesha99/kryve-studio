@@ -12,6 +12,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 export function Work() {
   const sectionRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
   const cardsRef = useRef<HTMLDivElement[]>([]);
   const { preloaderDone } = usePreloaderDone();
 
@@ -19,6 +20,31 @@ export function Work() {
     null
   );
   const [open, setOpen] = useState(false);
+
+  /* ---------------- TITLE REVEAL ---------------- */
+
+  useEffect(() => {
+    if (!preloaderDone || !titleRef.current) return;
+
+    const spans = titleRef.current.querySelectorAll("span");
+
+    gsap.fromTo(
+      spans,
+      { yPercent: 120 },
+      {
+        yPercent: 0,
+        stagger: 0.12,
+        duration: 1.2,
+        ease: "power4.out",
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top 75%",
+        },
+      }
+    );
+  }, [preloaderDone]);
+
+  /* ---------------- STACK SCROLL ---------------- */
 
   useEffect(() => {
     if (!preloaderDone) return;
@@ -28,7 +54,6 @@ export function Work() {
       const travel = window.innerHeight;
       const isTouch = ScrollTrigger.isTouch === 1;
 
-      // All cards start below
       gsap.set(cards, {
         y: travel,
         scale: 0.96,
@@ -37,7 +62,7 @@ export function Work() {
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
-          start: isTouch ? "top+=1 top" : "top top", // 🔥 FIX
+          start: isTouch ? "top+=1 top" : "top top",
           end: `+=${(cards.length - 1) * 100}%`,
           pin: true,
           scrub: isTouch ? 1.4 : 1,
@@ -56,7 +81,6 @@ export function Work() {
         },
       });
 
-      // First card visible immediately
       tl.to(cards[0], {
         y: 0,
         scale: 1,
@@ -99,8 +123,31 @@ export function Work() {
         id="work"
         className="relative h-screen bg-background"
       >
-        {/* Stacked stage */}
-        <div className="relative flex h-screen items-center justify-center overflow-hidden pt-20 md:pt-24 lg:pt-24 touch-pan-y">
+        {/* SECTION TITLE */}
+        <div className="relative z-30 mb-20 text-center">
+          <h2
+            ref={titleRef}
+            className="font-headline text-4xl sm:text-5xl font-semibold tracking-tight"
+          >
+            <div className="overflow-hidden">
+              <span className="inline-block">Selected</span>
+            </div>
+            <div className="overflow-hidden">
+              <span className="inline-block">Work</span>
+            </div>
+          </h2>
+        </div>
+
+        {/* STACKED STAGE (PUSHED DOWN) */}
+        <div
+          className="
+    relative flex flex-1
+    items-center justify-center
+    overflow-hidden
+    pt-24 md:pt-28 lg:pt-32
+    touch-pan-y
+  "
+        >
           {Projects.map((project, i) => (
             <div
               key={project.id}
@@ -137,10 +184,8 @@ export function Work() {
                   sizes="(min-width: 1024px) 1100px, 94vw"
                 />
 
-                {/* Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/25 to-transparent" />
 
-                {/* Title */}
                 <div className="absolute bottom-0 left-0 p-6 sm:p-8">
                   <h3 className="font-headline text-3xl sm:text-4xl font-semibold text-white">
                     {project.title}
@@ -157,7 +202,7 @@ export function Work() {
         </div>
       </section>
 
-      {/* Modal */}
+      {/* MODAL */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-4xl overflow-hidden bg-background/95 backdrop-blur-xl">
           {activeProject && (

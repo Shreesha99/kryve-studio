@@ -85,7 +85,7 @@ export function Hero() {
 
           <span
             ref={addRevealRef}
-            className="mt-2 text-[18px] lowercase tracking-[0.3em] text-muted-foreground md:absolute md:-bottom-5 md:right-0 md:text-[30px]"
+            className="mt-2 text-[18px] lowercase tracking-[0.3em] md:absolute md:-bottom-5 md:right-0 md:text-[30px] text-[#D1F2EB]"
           >
             Project
           </span>
@@ -93,19 +93,23 @@ export function Hero() {
       </div>
 
       {/* BOTTOM LEFT */}
+      {/* BOTTOM LEFT */}
       <div
         ref={addRevealRef}
         className="absolute bottom-10 left-10 text-sm leading-relaxed text-muted-foreground"
       >
         <p>
-          Strategy, Design,
+          Designing digital
           <br />
-          Performance.
+          experiences
+          <br />
+          from India.
         </p>
         <br />
         <p>
-          Global Creative
-          <br />& Technology Agency.
+          Crafted for brands
+          <br />
+          that think globally.
         </p>
       </div>
 

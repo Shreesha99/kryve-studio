@@ -14,7 +14,7 @@ const navLinks = [
   { href: "#services", label: "Services" },
   { href: "#work", label: "Work" },
   { href: "#contact", label: "Contact" },
-  { href: "/blog", label: "Blog" },
+  // { href: "/blog", label: "Blog" },
 ];
 
 interface FullScreenMenuProps {

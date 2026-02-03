@@ -139,7 +139,7 @@ export function Header() {
             <div className="relative z-10 flex items-center gap-6">
               <Link
                 href="#contact"
-                className="group hidden items-center gap-2 text-sm uppercase tracking-wide md:inline-flex transition-colors hover:text-foreground/80"
+                className="group items-center gap-2 text-sm uppercase tracking-wide inline-flex transition-colors hover:text-foreground/80"
               >
                 <span className="relative">
                   Let’s Talk

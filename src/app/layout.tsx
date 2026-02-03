@@ -37,7 +37,6 @@ const siteConfig = {
   ],
 };
 
-
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
@@ -114,7 +113,7 @@ export default function RootLayout({
           </AppProviders>
           <CookieBanner />
           <Toaster />
-          <EasterEggHint />
+          {/* <EasterEggHint /> */}
         </FirebaseClientProvider>
       </body>
     </html>
