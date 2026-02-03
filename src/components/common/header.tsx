@@ -4,6 +4,7 @@ import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 import Link from "next/link";
+import Image from "next/image";
 import { ThemeToggle } from "./theme-toggle";
 import { cn } from "@/lib/utils";
 import { HamburgerButton } from "./hamburger-button";
@@ -17,6 +18,10 @@ export function Header() {
   const headerRef = useRef<HTMLElement>(null);
   const podRef = useRef<HTMLDivElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
+
+  const logoWrapRef = useRef<HTMLDivElement>(null);
+  const logoInnerRef = useRef<HTMLDivElement>(null);
+
   const talkRef = useRef<HTMLAnchorElement>(null);
   const underlineRef = useRef<HTMLSpanElement>(null);
   const arrowRef = useRef<HTMLSpanElement>(null);
@@ -46,6 +51,33 @@ export function Header() {
 
     return () => ctx.revert();
   }, [preloaderDone]);
+
+  /* ---------------- LOGO REVEAL ON SCROLL ---------------- */
+
+  useEffect(() => {
+    if (!logoWrapRef.current || !logoInnerRef.current) return;
+
+    gsap.set(logoInnerRef.current, { yPercent: 120 });
+
+    ScrollTrigger.create({
+      trigger: document.body,
+      start: "top -80vh", // ~80vh past hero
+      onEnter: () => {
+        gsap.to(logoInnerRef.current, {
+          yPercent: 0,
+          duration: 0.9,
+          ease: "power3.out",
+        });
+      },
+      onLeaveBack: () => {
+        gsap.to(logoInnerRef.current, {
+          yPercent: 120,
+          duration: 0.6,
+          ease: "power3.in",
+        });
+      },
+    });
+  }, []);
 
   /* ---------------- SCROLL BACKGROUND ---------------- */
 
@@ -124,23 +156,32 @@ export function Header() {
           !preloaderDone && "opacity-0"
         )}
       >
-        {/* Background pill */}
+        <div className="relative mx-auto flex h-full w-full items-center justify-between px-6">
+          {/* LEFT LOGO SLOT */}
+          <div ref={logoWrapRef} className="relative h-10 w-14 overflow-hidden">
+            <div ref={logoInnerRef}>
+              <Image
+                src="/favicon.svg"
+                alt="Logo"
+                width={30}
+                height={30}
+                priority
+              />
+            </div>
+          </div>
 
-        {/* Right-aligned controls only */}
-        <div className="relative mx-auto flex h-full w-full items-center justify-end px-6">
+          {/* RIGHT CONTROLS */}
           <div
             ref={podRef}
             className="relative flex items-center gap-6 opacity-0"
           >
-            {/* GLASS BACKGROUND – RIGHT SIDE ONLY */}
+            {/* GLASS BACKGROUND */}
             <div
               ref={bgRef}
               className="pointer-events-none absolute -inset-y-2 -inset-x-4 origin-right scale-x-0 rounded-full border border-border bg-background/60 opacity-0 shadow-sm backdrop-blur-md"
             />
 
-            {/* CONTENT ABOVE GLASS */}
             <div className="relative z-10 flex items-center gap-6">
-              {/* LET’S TALK */}
               <Link
                 ref={talkRef}
                 href="#contact"
