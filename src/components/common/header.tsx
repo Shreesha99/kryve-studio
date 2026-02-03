@@ -11,6 +11,7 @@ import { HamburgerButton } from "./hamburger-button";
 import { FullScreenMenu } from "./full-screen-menu";
 import { useLenis } from "./smooth-scroll-provider";
 import { usePreloaderDone } from "./app-providers";
+import { ArrowRight } from "lucide-react";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -21,10 +22,6 @@ export function Header() {
 
   const logoWrapRef = useRef<HTMLDivElement>(null);
   const logoInnerRef = useRef<HTMLDivElement>(null);
-
-  const talkRef = useRef<HTMLAnchorElement>(null);
-  const underlineRef = useRef<HTMLSpanElement>(null);
-  const arrowRef = useRef<HTMLSpanElement>(null);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const lenis = useLenis();
@@ -99,48 +96,6 @@ export function Header() {
     });
   }, [preloaderDone]);
 
-  /* ---------------- LET’S TALK HOVER ---------------- */
-
-  useEffect(() => {
-    if (!talkRef.current || !underlineRef.current || !arrowRef.current) return;
-
-    const enter = () => {
-      gsap.to(arrowRef.current, {
-        rotate: 0,
-        duration: 0.3,
-        ease: "power3.out",
-      });
-      gsap.to(underlineRef.current, {
-        scaleX: 1,
-        transformOrigin: "left",
-        duration: 0.35,
-        ease: "power3.out",
-      });
-    };
-
-    const leave = () => {
-      gsap.to(arrowRef.current, {
-        rotate: -45,
-        duration: 0.3,
-        ease: "power3.out",
-      });
-      gsap.to(underlineRef.current, {
-        scaleX: 0,
-        transformOrigin: "right",
-        duration: 0.25,
-        ease: "power3.out",
-      });
-    };
-
-    talkRef.current.addEventListener("mouseenter", enter);
-    talkRef.current.addEventListener("mouseleave", leave);
-
-    return () => {
-      talkRef.current?.removeEventListener("mouseenter", enter);
-      talkRef.current?.removeEventListener("mouseleave", leave);
-    };
-  }, []);
-
   /* ---------------- SCROLL LOCK ---------------- */
 
   useEffect(() => {
@@ -183,21 +138,18 @@ export function Header() {
 
             <div className="relative z-10 flex items-center gap-6">
               <Link
-                ref={talkRef}
                 href="#contact"
-                className="relative hidden items-center gap-2 text-sm uppercase tracking-wide md:flex"
+                className="group hidden items-center gap-2 text-sm uppercase tracking-wide md:inline-flex transition-colors hover:text-foreground/80"
               >
-                <span className="relative inline-block">
-                  <span>Let’s Talk</span>
-                  <span
-                    ref={underlineRef}
-                    className="absolute -bottom-1 left-0 h-px w-full origin-left scale-x-0 bg-foreground"
-                  />
+                <span className="relative">
+                  Let’s Talk
+                  <span className="absolute bottom-0 left-0 h-px w-full origin-left scale-x-0 bg-foreground transition-transform duration-300 ease-out group-hover:scale-x-100" />
                 </span>
 
-                <span ref={arrowRef} className="inline-block rotate-[-45deg]">
-                  →
-                </span>
+                <ArrowRight
+                  className="h-5 w-5 transition-transform duration-300 ease-in-out group-hover:rotate-[-45deg]"
+                  strokeWidth={1.5}
+                />
               </Link>
 
               <ThemeToggle />

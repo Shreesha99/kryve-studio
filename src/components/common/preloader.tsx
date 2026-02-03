@@ -80,7 +80,7 @@ export default function Preloader({ onAnimationComplete }: PreloaderProps) {
           <span className="inline-block">Build</span>
         </div>
         <div className="overflow-hidden">
-          <span className="inline-block">Bold</span>
+          <span className="inline-block text-[#50C878]">Bold</span>
         </div>
         <div className="overflow-hidden">
           <span className="inline-block">Visions.</span>

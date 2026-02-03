@@ -4,13 +4,15 @@ import { useFormState, useFormStatus } from "react-dom";
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "next-themes";
 import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 import { sendEmail, type ContactFormState } from "@/actions/send-email";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Check, X, Send, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { AnimateOnScroll } from "../common/animate-on-scroll";
+
+gsap.registerPlugin(ScrollTrigger);
 
 function SubmitButton({ status }: { status: "idle" | "success" | "error" }) {
   const { pending } = useFormStatus();
@@ -50,8 +52,16 @@ function SubmitButton({ status }: { status: "idle" | "success" | "error" }) {
 }
 
 const tags = [
-  '#contact', '#hello', '#connect', '#inbox', '#message', '#send',
-  '#elysium', '#letstalk', '#collaboration', '#inquiry'
+  "#contact",
+  "#hello",
+  "#connect",
+  "#inbox",
+  "#message",
+  "#send",
+  "#elysium",
+  "#letstalk",
+  "#collaboration",
+  "#inquiry",
 ];
 
 export function Contact() {
@@ -60,58 +70,122 @@ export function Contact() {
     message: "",
     errors: {},
   };
-  const [state, formAction] = useFormState(sendEmail, initialState);
-  const formRef = useRef<HTMLFormElement>(null);
-  const containerRef = useRef<HTMLElement>(null);
-  const { resolvedTheme } = useTheme();
 
+  const [state, formAction] = useFormState(sendEmail, initialState);
   const [submitStatus, setSubmitStatus] = useState<
     "idle" | "success" | "error"
   >("idle");
 
+  const containerRef = useRef<HTMLElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // 🔥 NEW: text reveal refs (hero-style)
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const subtitleRef = useRef<HTMLParagraphElement>(null);
+
+  const { resolvedTheme } = useTheme();
+
+  /* ---------------- HERO-STYLE TEXT REVEAL ---------------- */
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const ctx = gsap.context(() => {
+      if (titleRef.current) {
+        const lines = gsap.utils.toArray("span", titleRef.current);
+
+        gsap.fromTo(
+          lines,
+          { yPercent: 120 },
+          {
+            yPercent: 0,
+            stagger: 0.1,
+            duration: 1.2,
+            ease: "power4.out",
+            scrollTrigger: {
+              trigger: containerRef.current,
+              start: "top 70%",
+            },
+          }
+        );
+      }
+
+      if (subtitleRef.current) {
+        gsap.fromTo(
+          subtitleRef.current,
+          { y: 24, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 1,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: containerRef.current,
+              start: "top 65%",
+            },
+          }
+        );
+      }
+    }, containerRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  /* ---------------- FLOATING TAGS (UNCHANGED) ---------------- */
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-    
-    let isCancelled = false;
-    
-    const createAndAnimateTag = () => {
-        if (isCancelled) return;
-        
-        const tagEl = document.createElement('span');
-        tagEl.innerText = tags[gsap.utils.random(0, tags.length - 1, 1)];
-        tagEl.className = 'contact-bg-tag pointer-events-none absolute z-0 select-none font-headline text-lg md:text-2xl opacity-0';
-        tagEl.style.color = resolvedTheme === 'dark' ? 'hsl(var(--primary) / 0.05)' : 'hsl(var(--primary) / 0.05)';
-        
-        container.appendChild(tagEl);
 
-        const bounds = container.getBoundingClientRect();
+    let cancelled = false;
 
-        gsap.set(tagEl, {
-            x: gsap.utils.random(0, bounds.width),
-            y: gsap.utils.random(0, bounds.height),
-        });
+    const spawnTag = () => {
+      if (cancelled) return;
 
-        gsap.timeline({ onComplete: () => tagEl.remove() })
-            .to(tagEl, { autoAlpha: 1, duration: 1, ease: 'power2.out' })
-            .to(tagEl, {
-                x: '+=random(-50, 50)',
-                y: '+=random(-50, 50)',
-                rotation: 'random(-15, 15)',
-                duration: gsap.utils.random(5, 8),
-                ease: 'none'
-            }, 0)
-            .to(tagEl, { autoAlpha: 0, duration: 1.5, ease: 'power2.in' }, '>-1.5');
+      const el = document.createElement("span");
+      el.innerText = tags[gsap.utils.random(0, tags.length - 1, 1)];
+      el.className =
+        "contact-bg-tag pointer-events-none absolute z-0 select-none font-headline text-lg md:text-2xl opacity-0";
+      el.style.color =
+        resolvedTheme === "dark"
+          ? "hsl(var(--primary) / 0.05)"
+          : "hsl(var(--primary) / 0.05)";
+
+      container.appendChild(el);
+
+      const bounds = container.getBoundingClientRect();
+
+      gsap.set(el, {
+        x: gsap.utils.random(0, bounds.width),
+        y: gsap.utils.random(0, bounds.height),
+      });
+
+      gsap
+        .timeline({ onComplete: () => el.remove() })
+        .to(el, { autoAlpha: 1, duration: 1 })
+        .to(
+          el,
+          {
+            x: "+=random(-50, 50)",
+            y: "+=random(-50, 50)",
+            rotation: "random(-15, 15)",
+            duration: gsap.utils.random(5, 8),
+            ease: "none",
+          },
+          0
+        )
+        .to(el, { autoAlpha: 0, duration: 1.5 }, ">-1.5");
     };
 
-    const interval = setInterval(createAndAnimateTag, 800);
-
+    const interval = setInterval(spawnTag, 800);
     return () => {
-        isCancelled = true;
-        clearInterval(interval);
-        container.querySelectorAll('.contact-bg-tag').forEach(el => el.remove());
+      cancelled = true;
+      clearInterval(interval);
+      container.querySelectorAll(".contact-bg-tag").forEach((n) => n.remove());
     };
   }, [resolvedTheme]);
+
+  /* ---------------- FORM STATUS ---------------- */
 
   useEffect(() => {
     if (state.message || state.errors) {
@@ -122,10 +196,7 @@ export function Contact() {
         setSubmitStatus("error");
       }
 
-      const timer = setTimeout(() => {
-        setSubmitStatus("idle");
-      }, 5000);
-
+      const timer = setTimeout(() => setSubmitStatus("idle"), 5000);
       return () => clearTimeout(timer);
     }
   }, [state]);
@@ -138,73 +209,61 @@ export function Contact() {
     >
       <div className="container relative z-10 mx-auto px-4 md:px-6">
         <div className="mx-auto max-w-3xl text-center">
-          <AnimateOnScroll>
-            <h2 className="font-headline text-4xl font-semibold tracking-tight sm:text-5xl">
-              Let's build something great together.
-            </h2>
-          </AnimateOnScroll>
-          <AnimateOnScroll delay="150ms">
-            <p className="mt-4 text-lg text-muted-foreground">
-              Have a project in mind or just want to say hello? Drop us a line.
-            </p>
-          </AnimateOnScroll>
+          {/* HERO-STYLE TITLE */}
+          <h2
+            ref={titleRef}
+            className="font-headline text-4xl font-semibold tracking-tight sm:text-5xl"
+          >
+            <div className="overflow-hidden">
+              <span className="inline-block">
+                Let’s build something great together.
+              </span>
+            </div>
+          </h2>
+
+          {/* SUBTITLE */}
+          <p
+            ref={subtitleRef}
+            className="mt-4 text-lg text-muted-foreground opacity-0"
+          >
+            Have a project in mind or just want to say hello? Drop us a line.
+          </p>
         </div>
 
-        <AnimateOnScroll delay="300ms" className="mx-auto mt-12 max-w-xl">
+        <div className="mx-auto mt-12 max-w-xl">
           <div className="rounded-xl border bg-card/50 p-6 shadow-2xl backdrop-blur-sm sm:p-8">
             <form ref={formRef} action={formAction} className="space-y-4">
               {!state.success && state.message && (
-                <div
-                  className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-center text-sm text-destructive"
-                  role="alert"
-                >
+                <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-center text-sm text-destructive">
                   {state.message}
                 </div>
               )}
+
               <div className="space-y-6">
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                  <div className="space-y-1">
-                    <Input name="name" placeholder="Your Name" required />
-                    {state.errors?.name && (
-                      <p className="text-xs text-destructive">
-                        {state.errors.name[0]}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-1">
-                    <Input
-                      name="email"
-                      type="email"
-                      placeholder="Your Email"
-                      required
-                    />
-                    {state.errors?.email && (
-                      <p className="text-xs text-destructive">
-                        {state.errors.email[0]}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <Textarea
-                    name="message"
-                    placeholder="Your Message"
-                    rows={5}
+                  <Input name="name" placeholder="Your Name" required />
+                  <Input
+                    name="email"
+                    type="email"
+                    placeholder="Your Email"
                     required
                   />
-                  {state.errors?.message && (
-                    <p className="text-xs text-destructive">
-                      {state.errors.message[0]}
-                    </p>
-                  )}
                 </div>
+
+                <Textarea
+                  name="message"
+                  placeholder="Your Message"
+                  rows={5}
+                  required
+                />
+
                 <div className="text-center">
                   <SubmitButton status={submitStatus} />
                 </div>
               </div>
             </form>
           </div>
-        </AnimateOnScroll>
+        </div>
       </div>
     </section>
   );
