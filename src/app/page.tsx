@@ -4,9 +4,9 @@ import { Footer } from "@/components/common/footer";
 import { Hero } from "@/components/sections/hero";
 import { About } from "@/components/sections/about";
 import { Services } from "@/components/sections/services";
-import { Work } from "@/components/sections/work";
+// import { Work } from "@/components/sections/work";
 import { Contact } from "@/components/sections/contact";
-import { ProjectsCopy } from "@/components/sections/projects";
+import { Projects } from "@/components/sections/projects";
 
 // The root metadata is defined in layout.tsx
 // We can override it for specific pages like this.
@@ -59,7 +59,7 @@ export default function Home() {
         <Services />
         {/* <ServicesSecond /> */}
         {/* <Work /> */}
-        <ProjectsCopy />
+        <Projects />
         <Contact />
       </main>
       <Footer />
