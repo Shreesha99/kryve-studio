@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { cn } from "@/lib/utils";
 import { usePreloaderDone } from "@/components/common/app-providers";
+import ColorBends from "@/components/ColorBends";
 
 export function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -21,6 +22,31 @@ export function Hero() {
   /* ============================= */
   /* INTRO ANIMATIONS */
   /* ============================= */
+
+  useEffect(() => {
+    if (!preloaderDone) return;
+
+    const el = document.querySelector(".color-bends-container");
+    if (!el) return;
+
+    gsap.fromTo(
+      el,
+      {
+        opacity: 0,
+        scale: 1.05,
+        filter: "blur(12px)",
+      },
+      {
+        opacity: 1,
+        scale: 1,
+        filter: "blur(0px)",
+        duration: 1.4,
+        ease: "power3.out",
+        delay: 0.2,
+      }
+    );
+  }, [preloaderDone]);
+
   useEffect(() => {
     if (!preloaderDone) return;
 
@@ -166,6 +192,22 @@ export function Hero() {
         }
       )}
     >
+      <ColorBends
+        colors={["#ff5c7a", "#8a5cff", "#00ffd1"]}
+        rotation={50}
+        speed={0.59}
+        scale={2}
+        frequency={1}
+        warpStrength={1}
+        mouseInfluence={2}
+        parallax={0.5}
+        noise={0}
+        transparent
+        autoRotate={2}
+        className={undefined}
+        style={undefined}
+      />
+
       {/* BRAND */}
       <div className="absolute left-1/2 top-1/2 w-full -translate-x-1/2 -translate-y-1/2 px-10">
         <div className="relative mx-auto flex flex-col items-center md:w-fit">
