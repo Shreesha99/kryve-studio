@@ -65,7 +65,7 @@ export function About() {
     );
   }, [preloaderDone]);
 
-  /* ---------------- WORD SWAP ---------------- */
+  /* ---------------- WORD SWAP (SMOOTH) ---------------- */
 
   useEffect(() => {
     if (
@@ -76,68 +76,70 @@ export function About() {
     )
       return;
 
-    gsap.set(wwwRef.current, { y: "100%" });
-    gsap.set(underlineRef.current, { scaleX: 0 });
+    gsap.set(internetRef.current, { yPercent: 0, opacity: 1 });
+    gsap.set(wwwRef.current, { yPercent: 100, opacity: 0 });
+    gsap.set(underlineRef.current, {
+      scaleX: 0,
+      transformOrigin: "left",
+    });
 
-    const showWWW = () => {
-      gsap.to(internetRef.current, {
-        y: "-100%",
-        duration: 0.35,
-        ease: "power3.inOut",
-      });
+    const tl = gsap.timeline({
+      paused: true,
+      defaults: { ease: "power4.out" },
+    });
 
-      gsap.to(wwwRef.current, {
-        y: "0%",
-        duration: 0.4,
-        ease: "power3.out",
-      });
-
-      gsap.to(underlineRef.current, {
-        scaleX: 1,
-        transformOrigin: "left",
-        duration: 0.3,
-        ease: "power3.out",
-      });
-    };
-
-    const showInternet = () => {
-      gsap.to(internetRef.current, {
-        y: "0%",
-        duration: 0.4,
-        ease: "power3.out",
-      });
-
-      gsap.to(wwwRef.current, {
-        y: "100%",
-        duration: 0.3,
-        ease: "power3.in",
-      });
-
-      gsap.to(underlineRef.current, {
-        scaleX: 0,
-        transformOrigin: "right",
-        duration: 0.25,
-        ease: "power3.out",
-      });
-    };
+    tl.to(
+      internetRef.current,
+      {
+        yPercent: -100,
+        opacity: 0,
+        duration: 0.45,
+      },
+      0
+    )
+      .to(
+        wwwRef.current,
+        {
+          yPercent: 0,
+          opacity: 1,
+          duration: 0.45,
+        },
+        0.05
+      )
+      .to(
+        underlineRef.current,
+        {
+          scaleX: 1,
+          duration: 0.3,
+        },
+        0.2
+      );
 
     if (!isMobile) {
-      swapRef.current.addEventListener("mouseenter", showWWW);
-      swapRef.current.addEventListener("mouseleave", showInternet);
+      const onEnter = () => tl.play();
+      const onLeave = () => tl.reverse();
+
+      swapRef.current.addEventListener("mouseenter", onEnter);
+      swapRef.current.addEventListener("mouseleave", onLeave);
 
       return () => {
-        swapRef.current?.removeEventListener("mouseenter", showWWW);
-        swapRef.current?.removeEventListener("mouseleave", showInternet);
+        swapRef.current?.removeEventListener("mouseenter", onEnter);
+        swapRef.current?.removeEventListener("mouseleave", onLeave);
+        tl.kill();
       };
     }
 
-    const tl = gsap.timeline({ repeat: -1, repeatDelay: 1.2 });
-    tl.to({}, { duration: 0.8 })
-      .add(showWWW)
-      .to({}, { duration: 1.4 })
-      .add(showInternet);
+    const loop = gsap.timeline({ repeat: -1, repeatDelay: 1.4 });
 
-    return () => tl.kill();
+    loop
+      .to(tl, { progress: 1, duration: 0.6, ease: "none" })
+      .to({}, { duration: 1.4 })
+      .to(tl, { progress: 0, duration: 0.6, ease: "none" });
+
+    return () => {
+      loop.kill();
+      tl.kill();
+    };
   }, [isMobile]);
 
   return (
@@ -146,7 +148,6 @@ export function About() {
       id="about"
       className="relative min-h-screen bg-background px-6"
     >
-      {/* ✅ VERTICAL + HORIZONTAL CENTERING FIX */}
       <div className="min-h-screen flex items-center">
         <div className="mx-auto w-full max-w-[1600px] grid grid-cols-1 md:grid-cols-2 gap-24">
           {/* LEFT */}
@@ -159,7 +160,7 @@ export function About() {
             </div>
 
             <div className="overflow-hidden">
-              <span className="reveal block">We design what brands</span>
+              <span className="reveal block">We design what deserves to</span>
             </div>
 
             <div className="overflow-hidden">
@@ -167,18 +168,18 @@ export function About() {
                 live on the{" "}
                 <span
                   ref={swapRef}
-                  className="relative inline-block h-[1em] w-[7ch] overflow-hidden align-baseline "
+                  className="relative inline-block h-[1em] w-[7ch] overflow-hidden align-baseline will-change-transform"
                 >
                   <span
                     ref={internetRef}
-                    className="absolute inset-0 block cursor-pointer md:pt-2"
+                    className="absolute inset-0 block leading-none cursor-pointer md:pt-2"
                   >
                     internet
                   </span>
 
                   <span
                     ref={wwwRef}
-                    className="absolute inset-0 block text-left cursor-pointer md:pt-2"
+                    className="absolute inset-0 block leading-none cursor-pointer md:pt-2"
                   >
                     www
                   </span>
@@ -198,6 +199,7 @@ export function About() {
               <p className="reveal text-sm uppercase tracking-widest text-foreground">
                 Who we are
               </p>
+
               <p className="reveal flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
                 <span className="fi fi-in"></span>
                 Bengaluru, India

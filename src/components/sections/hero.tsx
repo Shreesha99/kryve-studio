@@ -9,6 +9,7 @@ export function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
   const brandRef = useRef<HTMLHeadingElement>(null);
   const revealRefs = useRef<HTMLDivElement[]>([]);
+  const bottomLeftRef = useRef<HTMLDivElement>(null);
   const { preloaderDone } = usePreloaderDone();
 
   const addRevealRef = (el: HTMLDivElement | null) => {
@@ -51,6 +52,22 @@ export function Hero() {
           delay: 0.4,
         }
       );
+
+      /* BOTTOM LEFT — OVERFLOW TEXT REVEAL */
+      const bottomLines =
+        bottomLeftRef.current?.querySelectorAll(".reveal-line") ?? [];
+
+      gsap.fromTo(
+        bottomLines,
+        { yPercent: 120 },
+        {
+          yPercent: 0,
+          stagger: 0.12,
+          duration: 1.2,
+          ease: "power4.out",
+          delay: 0.6,
+        }
+      );
     }, sectionRef);
 
     return () => ctx.revert();
@@ -65,14 +82,12 @@ export function Hero() {
 
     const letters = Array.from(title.querySelectorAll<HTMLElement>("span"));
 
-    // Ensure clean baseline (important for load + hover overlap)
     gsap.set(letters, { y: 0 });
 
     const onEnter = (el: HTMLElement) => {
       gsap.killTweensOf(el);
-
       gsap.to(el, {
-        y: -14, // upward only
+        y: -14,
         duration: 0.45,
         ease: "elastic.out(1, 0.4)",
       });
@@ -80,7 +95,6 @@ export function Hero() {
 
     const onLeave = (el: HTMLElement) => {
       gsap.killTweensOf(el);
-
       gsap.to(el, {
         y: 0,
         duration: 0.6,
@@ -95,7 +109,6 @@ export function Hero() {
       el.addEventListener("pointerenter", enter);
       el.addEventListener("pointerleave", leave);
 
-      // Store refs for cleanup
       (el as any)._enter = enter;
       (el as any)._leave = leave;
     });
@@ -112,7 +125,6 @@ export function Hero() {
   /* MOBILE AUTOPLAY MICRO BOUNCE */
   /* ============================= */
   useEffect(() => {
-    // Only run on touch devices
     if (!window.matchMedia("(pointer: coarse)").matches) return;
 
     const title = brandRef.current;
@@ -120,25 +132,22 @@ export function Hero() {
 
     const letters = Array.from(title.querySelectorAll<HTMLElement>("span"));
 
-    // subtle baseline
     gsap.set(letters, { y: 0 });
 
     const tl = gsap.timeline({
       repeat: -1,
       yoyo: true,
-      defaults: {
-        ease: "sine.inOut",
-      },
+      defaults: { ease: "sine.inOut" },
     });
 
     letters.forEach((el, i) => {
       tl.to(
         el,
         {
-          y: -6, // VERY subtle upward lift
+          y: -6,
           duration: 1.2,
         },
-        i * 0.15 // wave offset
+        i * 0.15
       );
     });
 
@@ -150,9 +159,12 @@ export function Hero() {
   return (
     <section
       ref={sectionRef}
-      className={cn("relative h-screen w-full bg-background text-foreground", {
-        "opacity-0": !preloaderDone,
-      })}
+      className={cn(
+        "relative min-h-[100svh] h-[100dvh] w-full bg-background text-foreground",
+        {
+          "opacity-0": !preloaderDone,
+        }
+      )}
     >
       {/* BRAND */}
       <div className="absolute left-1/2 top-1/2 w-full -translate-x-1/2 -translate-y-1/2 px-10">
@@ -182,7 +194,7 @@ export function Hero() {
 
           <span
             ref={addRevealRef}
-            className="mt-2 text-[18px] lowercase tracking-[0.3em] md:absolute md:-bottom-5 md:right-0 md:text-[30px] "
+            className="mt-2 text-[18px] lowercase tracking-[0.3em] md:absolute md:-bottom-5 md:right-0 md:text-[30px]"
           >
             Project
           </span>
@@ -191,22 +203,28 @@ export function Hero() {
 
       {/* BOTTOM LEFT */}
       <div
-        ref={addRevealRef}
+        ref={bottomLeftRef}
         className="absolute bottom-10 left-10 text-sm leading-relaxed text-muted-foreground"
       >
-        <p>
-          Designing digital
-          <br />
-          experiences
-          <br />
-          from India.
-        </p>
+        <div className="overflow-hidden">
+          <p className="reveal-line">
+            Designing digital
+            <br />
+            experiences
+            <br />
+            from India.
+          </p>
+        </div>
+
         <br />
-        <p>
-          Crafted for brands
-          <br />
-          that think globally.
-        </p>
+
+        <div className="overflow-hidden">
+          <p className="reveal-line">
+            Crafted for brands
+            <br />
+            that think globally.
+          </p>
+        </div>
       </div>
 
       {/* BOTTOM RIGHT */}
