@@ -148,7 +148,7 @@ export function About() {
       id="about"
       className="relative min-h-screen bg-background px-6"
     >
-      <div className="min-h-screen flex items-center">
+      <div className="min-h-screen flex items-center py-6 md:px-6 md:py-6">
         <div className="mx-auto w-full max-w-[1600px] grid grid-cols-1 md:grid-cols-2 gap-24">
           {/* LEFT */}
           <h2

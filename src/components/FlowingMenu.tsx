@@ -33,8 +33,58 @@ export default function FlowingMenu({
   marqueeTextColor = "#060010",
   borderColor = "#ffffff",
 }: FlowingMenuProps) {
+  const hintRef = useRef<HTMLDivElement | null>(null);
+
+  /* ---------------- MOBILE HINT ---------------- */
+
+  useEffect(() => {
+    const isTouch =
+      typeof window !== "undefined" &&
+      window.matchMedia("(pointer: coarse)").matches;
+
+    if (!isTouch || !hintRef.current) return;
+
+    gsap.fromTo(
+      hintRef.current,
+      { opacity: 0, y: 8 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.6,
+        ease: "power2.out",
+        delay: 0.6,
+      }
+    );
+
+    gsap.to(hintRef.current, {
+      opacity: 0,
+      y: -6,
+      duration: 0.6,
+      ease: "power2.in",
+      delay: 3,
+    });
+  }, []);
+
   return (
-    <div className="menu-wrap" style={{ backgroundColor: bgColor }}>
+    <div className="menu-wrap relative" style={{ backgroundColor: bgColor }}>
+      {/* MOBILE HINT */}
+      <div
+        ref={hintRef}
+        className="
+          pointer-events-none
+          absolute bottom-6 left-1/2 -translate-x-1/2
+          rounded-full
+          bg-black/60
+          px-4 py-2
+          text-xs font-medium
+          text-white/80
+          backdrop-blur-md
+          sm:hidden
+        "
+      >
+        Tap & hold on a project
+      </div>
+
       <nav className="menu">
         {items.map((item, idx) => (
           <MenuItem
@@ -152,7 +202,7 @@ function MenuItem({
     };
   }, [repetitions, speed]);
 
-  /* ---------------- DESKTOP HOVER ---------------- */
+  /* ---------------- DESKTOP + MOBILE ---------------- */
 
   const onEnter = (e: React.MouseEvent) => {
     if (!itemRef.current) return;
@@ -181,8 +231,6 @@ function MenuItem({
 
     leaveMarquee(edge);
   };
-
-  /* ---------------- MOBILE TOUCH = HOVER ---------------- */
 
   const onTouchStart = (e: React.TouchEvent) => {
     if (!itemRef.current) return;

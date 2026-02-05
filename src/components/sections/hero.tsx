@@ -5,6 +5,11 @@ import { gsap } from "gsap";
 import { cn } from "@/lib/utils";
 import { usePreloaderDone } from "@/components/common/app-providers";
 import ColorBends from "@/components/ColorBends";
+import dynamic from "next/dynamic";
+
+const Silk = dynamic(() => import("@/component/Silk"), {
+  ssr: false,
+});
 
 export function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -12,6 +17,8 @@ export function Hero() {
   const revealRefs = useRef<HTMLDivElement[]>([]);
   const bottomLeftRef = useRef<HTMLDivElement>(null);
   const { preloaderDone } = usePreloaderDone();
+  const hoverEnabled = useRef(false);
+  const silkRef = useRef<HTMLDivElement>(null);
 
   const addRevealRef = (el: HTMLDivElement | null) => {
     if (el && !revealRefs.current.includes(el)) {
@@ -24,36 +31,20 @@ export function Hero() {
   /* ============================= */
 
   useEffect(() => {
-    if (!preloaderDone) return;
-
-    const el = document.querySelector(".color-bends-container");
-    if (!el) return;
-
-    gsap.fromTo(
-      el,
-      {
-        opacity: 0,
-        scale: 1.05,
-        filter: "blur(12px)",
-      },
-      {
-        opacity: 1,
-        scale: 1,
-        filter: "blur(0px)",
-        duration: 1.4,
-        ease: "power3.out",
-        delay: 0.2,
-      }
-    );
-  }, [preloaderDone]);
-
-  useEffect(() => {
-    if (!preloaderDone) return;
+    if (!preloaderDone || !brandRef.current) return;
 
     const ctx = gsap.context(() => {
       const letters = gsap.utils.toArray<HTMLElement>(
-        brandRef.current?.querySelectorAll("span") || []
+        brandRef.current!.querySelectorAll("span")
       );
+
+      // HARD reset
+      gsap.set(letters, {
+        y: 0,
+        yPercent: 0,
+        opacity: 1,
+        clearProps: "transform",
+      });
 
       gsap.fromTo(
         letters,
@@ -63,6 +54,10 @@ export function Hero() {
           stagger: 0.08,
           duration: 1.4,
           ease: "power4.out",
+          onComplete: () => {
+            // 🔓 enable hover AFTER animation
+            hoverEnabled.current = true;
+          },
         }
       );
 
@@ -79,7 +74,6 @@ export function Hero() {
         }
       );
 
-      /* BOTTOM LEFT — OVERFLOW TEXT REVEAL */
       const bottomLines =
         bottomLeftRef.current?.querySelectorAll(".reveal-line") ?? [];
 
@@ -111,6 +105,8 @@ export function Hero() {
     gsap.set(letters, { y: 0 });
 
     const onEnter = (el: HTMLElement) => {
+      if (!hoverEnabled.current) return; // 🚫 BLOCK early hover
+
       gsap.killTweensOf(el);
       gsap.to(el, {
         y: -14,
@@ -120,6 +116,8 @@ export function Hero() {
     };
 
     const onLeave = (el: HTMLElement) => {
+      if (!hoverEnabled.current) return;
+
       gsap.killTweensOf(el);
       gsap.to(el, {
         y: 0,
@@ -146,6 +144,25 @@ export function Hero() {
       });
     };
   }, []);
+
+  useEffect(() => {
+    if (!preloaderDone || !silkRef.current) return;
+
+    gsap.set(silkRef.current, {
+      opacity: 0,
+      scale: 1.06,
+      filter: "blur(18px)",
+    });
+
+    gsap.to(silkRef.current, {
+      opacity: 1,
+      scale: 1,
+      filter: "blur(0px)",
+      duration: 1.8,
+      ease: "power3.out",
+      delay: 0.1, // starts just after preloader
+    });
+  }, [preloaderDone]);
 
   /* ============================= */
   /* MOBILE AUTOPLAY MICRO BOUNCE */
@@ -186,13 +203,19 @@ export function Hero() {
     <section
       ref={sectionRef}
       className={cn(
-        "relative min-h-[100svh] h-[100dvh] w-full bg-background text-foreground",
+        "relative overflow-hidden min-h-[100svh] h-[100dvh] w-full bg-background text-foreground",
         {
           "opacity-0": !preloaderDone,
         }
       )}
     >
-      <ColorBends
+      {preloaderDone && (
+        <div ref={silkRef} className="absolute inset-0 z-0 silk-layer">
+          <Silk speed={2} scale={3} noiseIntensity={0.6} rotation={10} />
+        </div>
+      )}
+
+      {/* <ColorBends
         colors={["#ff5c7a", "#8a5cff", "#00ffd1"]}
         rotation={50}
         speed={0.59}
@@ -206,79 +229,81 @@ export function Hero() {
         autoRotate={2}
         className={undefined}
         style={undefined}
-      />
+      /> */}
 
-      {/* BRAND */}
-      <div className="absolute left-1/2 top-1/2 w-full -translate-x-1/2 -translate-y-1/2 px-10">
-        <div className="relative mx-auto flex flex-col items-center md:w-fit">
-          <span
-            ref={addRevealRef}
-            className="mb-2 text-[18px] lowercase tracking-[0.3em] md:absolute md:-top-5 md:left-0 md:text-[30px]"
-          >
-            The
-          </span>
+      <div className="relative z-10 pointer-events-auto h-full w-full">
+        {/* BRAND */}
+        <div className="absolute left-1/2 top-1/2 w-full -translate-x-1/2 -translate-y-1/2 px-10">
+          <div className="relative mx-auto flex flex-col items-center md:w-fit">
+            <span
+              ref={addRevealRef}
+              className="mb-2 text-[18px] lowercase tracking-[0.3em] md:absolute md:-top-5 md:left-0 md:text-[30px]"
+            >
+              The
+            </span>
 
-          <h1
-            ref={brandRef}
-            className="text-center font-headline font-semibold leading-none tracking-tight text-[18vw] cursor-default"
-          >
-            <div className="overflow-hidden">
-              {["e", "l", "y", "s", "i", "u", "m"].map((c, i) => (
-                <span
-                  key={i}
-                  className="inline-block bg-elysium-gradient bg-clip-text text-transparent"
-                >
-                  {c}
-                </span>
-              ))}
-            </div>
-          </h1>
+            <h1
+              ref={brandRef}
+              className="text-center font-headline font-semibold leading-none tracking-tight text-[18vw] cursor-default"
+            >
+              <div className="overflow-hidden">
+                {["e", "l", "y", "s", "i", "u", "m"].map((c, i) => (
+                  <span
+                    key={i}
+                    className="inline-block bg-elysium-gradient bg-clip-text text-transparent"
+                  >
+                    {c}
+                  </span>
+                ))}
+              </div>
+            </h1>
 
-          <span
-            ref={addRevealRef}
-            className="mt-2 text-[18px] lowercase tracking-[0.3em] md:absolute md:-bottom-5 md:right-0 md:text-[30px]"
-          >
-            Project
-          </span>
+            <span
+              ref={addRevealRef}
+              className="mt-2 text-[18px] lowercase tracking-[0.3em] md:absolute md:-bottom-5 md:right-0 md:text-[30px]"
+            >
+              Project
+            </span>
+          </div>
         </div>
+
+        {/* BOTTOM LEFT */}
+        <div
+          ref={bottomLeftRef}
+          className="absolute bottom-10 left-10 text-sm leading-relaxed text-muted-foreground"
+        >
+          <div className="overflow-hidden">
+            <p className="reveal-line">
+              Designing digital
+              <br />
+              experiences
+              <br />
+              from India.
+            </p>
+          </div>
+
+          <br />
+
+          <div className="overflow-hidden">
+            <p className="reveal-line">
+              Crafted for brands
+              <br />
+              that think globally.
+            </p>
+          </div>
+        </div>
+
+        {/* BOTTOM RIGHT */}
+        <button
+          onClick={() =>
+            window.scrollBy({ top: window.innerHeight, behavior: "smooth" })
+          }
+          className="absolute bottom-10 right-10 text-lg text-muted-foreground hover:text-foreground transition"
+          aria-label="Scroll Down"
+        >
+          ↓
+        </button>
       </div>
-
-      {/* BOTTOM LEFT */}
-      <div
-        ref={bottomLeftRef}
-        className="absolute bottom-10 left-10 text-sm leading-relaxed text-muted-foreground"
-      >
-        <div className="overflow-hidden">
-          <p className="reveal-line">
-            Designing digital
-            <br />
-            experiences
-            <br />
-            from India.
-          </p>
-        </div>
-
-        <br />
-
-        <div className="overflow-hidden">
-          <p className="reveal-line">
-            Crafted for brands
-            <br />
-            that think globally.
-          </p>
-        </div>
-      </div>
-
-      {/* BOTTOM RIGHT */}
-      <button
-        onClick={() =>
-          window.scrollBy({ top: window.innerHeight, behavior: "smooth" })
-        }
-        className="absolute bottom-10 right-10 text-lg text-muted-foreground hover:text-foreground transition"
-        aria-label="Scroll Down"
-      >
-        ↓
-      </button>
     </section>
   );
 }

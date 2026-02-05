@@ -26,6 +26,13 @@
     --input: 240 5.9% 90%;
     --ring: 240 10% 3.9%;
     --radius: 0.5rem;
+    /* SILK BACKGROUND COLOR */
+    --silk-color: 23 23 23; /* #171717 */
+
+    /* GRADIENT TEXT */
+    --elysium-from: #ff6a00;
+    --elysium-mid: #ff3b81;
+    --elysium-to: #7b2cff;
   }
   .dark {
     --background: 240 10% 3.9%;
@@ -47,6 +54,10 @@
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 0 0% 98%;
+
+    --elysium-from: #ff8a00;
+    --elysium-mid: #ff3b3b;
+    --elysium-to: #8a2cff;
   }
 }
 
@@ -115,16 +126,19 @@ body {
 .bg-elysium-gradient {
   background-image: linear-gradient(
     180deg,
-    #ff3b3b 0%,
-    #c1121f 30%,
-    #5a189a 65%,
-    #1b0033 100%
+    var(--elysium-from) 0%,
+    var(--elysium-mid) 40%,
+    var(--elysium-to) 100%
   );
 
   background-size: 100% 300%;
   background-position: 50% var(--elysium-y, 50%);
 }
 
+h1 span {
+  opacity: 1 !important;
+  will-change: transform;
+}
 @layer utilities {
   .animated-gradient {
     --gradient-color-1: hsl(220 80% 96%);
