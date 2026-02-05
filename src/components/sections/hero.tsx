@@ -211,25 +211,24 @@ export function Hero() {
     >
       {preloaderDone && (
         <div ref={silkRef} className="absolute inset-0 z-0 silk-layer">
-          <Silk speed={2} scale={3} noiseIntensity={0.6} rotation={10} />
+          {/* <Silk speed={2} scale={3} noiseIntensity={0.6} rotation={10} /> */}
+          <ColorBends
+            colors={["#ff5c7a", "#8a5cff", "#00ffd1"]}
+            rotation={50}
+            speed={0.59}
+            scale={2}
+            frequency={1}
+            warpStrength={1}
+            mouseInfluence={2}
+            parallax={0.5}
+            noise={0}
+            transparent
+            autoRotate={2}
+            className={undefined}
+            style={undefined}
+          />
         </div>
       )}
-
-      {/* <ColorBends
-        colors={["#ff5c7a", "#8a5cff", "#00ffd1"]}
-        rotation={50}
-        speed={0.59}
-        scale={2}
-        frequency={1}
-        warpStrength={1}
-        mouseInfluence={2}
-        parallax={0.5}
-        noise={0}
-        transparent
-        autoRotate={2}
-        className={undefined}
-        style={undefined}
-      /> */}
 
       <div className="relative z-10 pointer-events-auto h-full w-full">
         {/* BRAND */}

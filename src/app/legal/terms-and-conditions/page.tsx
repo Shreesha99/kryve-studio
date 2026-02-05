@@ -1,89 +1,270 @@
-import { Metadata } from 'next';
-import { Header } from '@/components/common/header';
-import { Footer } from '@/components/common/footer';
-import { AnimateOnScroll } from '@/components/common/animate-on-scroll';
-import { ClientDate } from '@/components/common/client-date';
+"use client";
 
-export const metadata: Metadata = {
-  title: 'Terms and Conditions',
-  description: 'Read the terms and conditions for using the website and services of The Elysium Project.',
+import { Metadata } from "next";
+import { Header } from "@/components/common/header";
+import { Footer } from "@/components/common/footer";
+import { AnimateOnScroll } from "@/components/common/animate-on-scroll";
+import { ClientDate } from "@/components/common/client-date";
+
+import { useEffect, useRef } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
+import { usePreloaderDone } from "@/components/common/app-providers";
+
+gsap.registerPlugin(ScrollTrigger);
+
+const metadata: Metadata = {
+  title: "Terms and Conditions",
+  description:
+    "Terms and conditions governing the access and use of The Elysium Project website.",
   robots: {
     index: false,
     follow: true,
-  }
+  },
 };
 
 export default function TermsAndConditionsPage() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const { preloaderDone } = usePreloaderDone();
+
+  /* ---------------- SCROLL REVEAL ---------------- */
+
+  useEffect(() => {
+    if (!preloaderDone) return;
+
+    const lines = contentRef.current?.querySelectorAll(".reveal") ?? [];
+
+    gsap.fromTo(
+      lines,
+      { y: 24, opacity: 0 },
+      {
+        y: 0,
+        opacity: 1,
+        stagger: 0.08,
+        duration: 1,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top 75%",
+        },
+      }
+    );
+  }, [preloaderDone]);
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
+
       <main className="flex-1">
         <AnimateOnScroll>
-          <article className="container mx-auto max-w-4xl px-4 py-16 pt-32 md:px-6 md:py-24 md:pt-40">
-            <h1 className="font-headline text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl">
-              Terms and Conditions
-            </h1>
-            <p className="mt-4 text-muted-foreground">Last updated: <ClientDate /></p>
-            
-            <div className="prose prose-lg dark:prose-invert mx-auto mt-12 max-w-none [&_h2]:font-headline [&_h2]:text-2xl [&_h2]:font-semibold [&_p]:leading-relaxed [&_a]:text-primary hover:[&_a]:underline">
-                <p>
-                    Please read these Terms and Conditions ("Terms", "Terms and Conditions") carefully before using the https://www.the-elysium-project.in/ website (the "Service") operated by The Elysium Project ("us", "we", or "our").
-                </p>
+          <section
+            ref={sectionRef}
+            className="container mx-auto max-w-4xl px-4 py-20 pt-32 md:px-6 md:py-28 md:pt-40"
+          >
+            {/* TITLE */}
+            <div className="overflow-hidden">
+              <h1 className="reveal font-headline text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl">
+                Terms and Conditions
+              </h1>
+            </div>
 
-                <p>
-                    Your access to and use of the Service is conditioned on your acceptance of and compliance with these Terms. These Terms apply to all visitors, users, and others who access or use the Service. By accessing or using the Service, you agree to be bound by these Terms. If you disagree with any part of the terms, then you may not access the Service.
-                </p>
-                
-                <div className="mt-6 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm">
-                    <p className="font-bold text-destructive">Disclaimer: Not Legal Advice</p>
-                    <p className="text-destructive/90">
-                        The information provided in this document is for general informational purposes only and is not a substitute for legal advice from a qualified professional. We strongly recommend you consult with a legal expert to ensure your website's policies are fully compliant with all applicable laws in your jurisdiction.
-                    </p>
+            <div className="mt-6 overflow-hidden">
+              <p className="reveal text-muted-foreground">
+                Last updated: <ClientDate />
+              </p>
+            </div>
+
+            {/* CONTENT */}
+            <div
+              ref={contentRef}
+              className="mt-20 space-y-16 text-lg leading-relaxed text-foreground"
+            >
+              {/* INTRO */}
+              <div className="space-y-6">
+                <div className="overflow-hidden">
+                  <p className="reveal">
+                    These Terms and Conditions (“Terms”) govern your access to
+                    and use of the website https://www.the-elysium-project.in/
+                    (the “Website”), operated by The Elysium Project (“we”,
+                    “us”, or “our”).
+                  </p>
                 </div>
 
-                <h2>1. Intellectual Property</h2>
-                <p>
-                    The Service and its original content (excluding content provided by users), features, and functionality are and will remain the exclusive property of The Elysium Project and its licensors. The Service is protected by copyright, trademark, and other laws of both India and foreign countries. Our trademarks and trade dress may not be used in connection with any product or service without the prior written consent of The Elysium Project.
-                </p>
+                <div className="overflow-hidden">
+                  <p className="reveal">
+                    By accessing or using the Website, you acknowledge that you
+                    have read, understood, and agree to be legally bound by
+                    these Terms. If you do not agree, you must discontinue use
+                    of the Website immediately.
+                  </p>
+                </div>
+              </div>
 
-                <h2>2. Use of Website</h2>
-                <p>
-                    You are granted a non-exclusive, non-transferable, revocable license to access and use our website strictly in accordance with these terms of use. As a condition of your use of the Site, you warrant to The Elysium Project that you will not use the Site for any purpose that is unlawful or prohibited by these Terms. You may not use the Site in any manner that could damage, disable, overburden, or impair the Site or interfere with any other party's use and enjoyment of the Site.
-                </p>
-                
-                <h2>3. Links to Other Web Sites</h2>
-                <p>
-                    Our Service may contain links to third-party web sites or services that are not owned or controlled by The Elysium Project. We have no control over, and assume no responsibility for, the content, privacy policies, or practices of any third-party web sites or services. You further acknowledge and agree that The Elysium Project shall not be responsible or liable, directly or indirectly, for any damage or loss caused or alleged to be caused by or in connection with the use of or reliance on any such content, goods or services available on or through any such web sites or services.
-                </p>
+              {/* 1 */}
+              <section className="space-y-4">
+                <div className="overflow-hidden">
+                  <h2 className="reveal font-headline text-2xl font-semibold">
+                    1. Eligibility
+                  </h2>
+                </div>
 
-                <h2>4. Limitation of Liability</h2>
-                <p>
-                    In no event shall The Elysium Project, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from (i) your access to or use of or inability to access or use the Service; (ii) any conduct or content of any third party on the Service; (iii) any content obtained from the Service; and (iv) unauthorized access, use or alteration of your transmissions or content, whether based on warranty, contract, tort (including negligence) or any other legal theory, whether or not we have been informed of the possibility of such damage.
-                </p>
+                <div className="overflow-hidden">
+                  <p className="reveal">
+                    You must be at least 18 years of age and legally competent
+                    to enter into a binding contract under the Indian Contract
+                    Act, 1872. By using this Website, you represent that you
+                    meet these requirements.
+                  </p>
+                </div>
+              </section>
 
-                <h2>5. Indemnification</h2>
-                 <p>
-                    You agree to defend, indemnify and hold harmless The Elysium Project and its licensee and licensors, and their employees, contractors, agents, officers and directors, from and against any and all claims, damages, obligations, losses, liabilities, costs or debt, and expenses (including but not limited to attorney's fees), resulting from or arising out of a) your use and access of the Service, or b) a breach of these Terms.
-                </p>
+              {/* 2 */}
+              <section className="space-y-4">
+                <div className="overflow-hidden">
+                  <h2 className="reveal font-headline text-2xl font-semibold">
+                    2. Intellectual Property Rights
+                  </h2>
+                </div>
 
-                <h2>6. Governing Law</h2>
-                <p>
-                    These Terms shall be governed and construed in accordance with the laws of India, with regard to its conflict of law provisions. Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights. All disputes shall be subject to the exclusive jurisdiction of the courts in Bengaluru, Karnataka.
-                </p>
+                <div className="overflow-hidden">
+                  <p className="reveal">
+                    All content available on the Website, including text,
+                    graphics, imagery, videos, software, layouts, visual
+                    systems, and branding, is the exclusive property of The
+                    Elysium Project or its licensors.
+                  </p>
+                </div>
 
-                <h2>7. Changes</h2>
-                <p>
-                    We reserve the right, at our sole discretion, to modify or replace these Terms at any time. If a revision is material, we will try to provide at least 30 days' notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion.
-                </p>
+                <div className="overflow-hidden">
+                  <p className="reveal">
+                    Such content is protected under applicable Indian laws,
+                    including the Copyright Act, 1957, the Trade Marks Act,
+                    1999, and the Information Technology Act, 2000. Any
+                    unauthorized use is strictly prohibited.
+                  </p>
+                </div>
+              </section>
 
-                <h2>8. Contact Us</h2>
-                <p>
-                    If you have any questions about these Terms, please contact us at <a href="mailto:hello@the-elysium-project.in">hello@the-elysium-project.in</a>.
-                </p>
+              {/* 3 */}
+              <section className="space-y-4">
+                <div className="overflow-hidden">
+                  <h2 className="reveal font-headline text-2xl font-semibold">
+                    3. Permitted Use
+                  </h2>
+                </div>
+
+                <div className="overflow-hidden">
+                  <p className="reveal">
+                    You are granted a limited, non-exclusive, non-transferable,
+                    and revocable license to access and use the Website strictly
+                    for lawful purposes and in accordance with these Terms.
+                  </p>
+                </div>
+              </section>
+
+              {/* 4 */}
+              <section className="space-y-4">
+                <div className="overflow-hidden">
+                  <h2 className="reveal font-headline text-2xl font-semibold">
+                    4. Prohibited Conduct
+                  </h2>
+                </div>
+
+                {[
+                  "Use the Website for any unlawful, deceptive, or fraudulent purpose",
+                  "Attempt to gain unauthorized access to systems or networks",
+                  "Introduce malware, viruses, or harmful code",
+                  "Interfere with the security or performance of the Website",
+                  "Infringe upon the rights or intellectual property of others",
+                ].map((item, i) => (
+                  <div key={i} className="overflow-hidden">
+                    <p className="reveal">— {item}</p>
+                  </div>
+                ))}
+              </section>
+
+              {/* 5 */}
+              <section className="space-y-4">
+                <div className="overflow-hidden">
+                  <h2 className="reveal font-headline text-2xl font-semibold">
+                    5. Third-Party Links
+                  </h2>
+                </div>
+
+                <div className="overflow-hidden">
+                  <p className="reveal">
+                    The Website may contain links to third-party websites or
+                    services. We do not control or assume responsibility for
+                    their content, policies, or practices. Accessing such
+                    resources is at your own discretion and risk.
+                  </p>
+                </div>
+              </section>
+
+              {/* 6 */}
+              <section className="space-y-4">
+                <div className="overflow-hidden">
+                  <h2 className="reveal font-headline text-2xl font-semibold">
+                    6. Limitation of Liability
+                  </h2>
+                </div>
+
+                <div className="overflow-hidden">
+                  <p className="reveal">
+                    To the maximum extent permitted by Indian law, The Elysium
+                    Project shall not be liable for any indirect, incidental,
+                    consequential, or punitive damages arising from your use of
+                    or inability to use the Website.
+                  </p>
+                </div>
+              </section>
+
+              {/* 7 */}
+              <section className="space-y-4">
+                <div className="overflow-hidden">
+                  <h2 className="reveal font-headline text-2xl font-semibold">
+                    7. Governing Law and Jurisdiction
+                  </h2>
+                </div>
+
+                <div className="overflow-hidden">
+                  <p className="reveal">
+                    These Terms shall be governed by and construed in accordance
+                    with the laws of India. All disputes shall be subject to the
+                    exclusive jurisdiction of the courts of Bengaluru,
+                    Karnataka.
+                  </p>
+                </div>
+              </section>
+
+              {/* 8 */}
+              <section className="space-y-4">
+                <div className="overflow-hidden">
+                  <h2 className="reveal font-headline text-2xl font-semibold">
+                    8. Contact
+                  </h2>
+                </div>
+
+                <div className="overflow-hidden">
+                  <p className="reveal">
+                    For any questions regarding these Terms, you may contact us
+                    at{" "}
+                    <a
+                      href="mailto:hello@the-elysium-project.in"
+                      className="underline underline-offset-4"
+                    >
+                      hello@the-elysium-project.in
+                    </a>
+                    .
+                  </p>
+                </div>
+              </section>
             </div>
-          </article>
+          </section>
         </AnimateOnScroll>
       </main>
+
       <Footer />
     </div>
   );
