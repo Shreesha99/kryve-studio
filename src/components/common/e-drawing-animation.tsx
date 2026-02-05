@@ -19,15 +19,27 @@ export const EDrawingAnimation = forwardRef<
         className
       )}
     >
-      <svg viewBox={viewBox} className="h-full w-full text-foreground">
+      <svg
+        viewBox={viewBox}
+        className="h-full w-full"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="2%" stopColor="var(--logo-from)" />
+            <stop offset="44%" stopColor="var(--logo-mid)" />
+            <stop offset="79%" stopColor="var(--logo-to)" />
+          </linearGradient>
+        </defs>
+
         <path
           ref={pathRef}
           d="M25 7H7V13H20V19H7V25H25"
-          stroke="currentColor"
+          stroke="url(#logo-gradient)"
           strokeWidth="1.6"
           strokeLinecap="round"
           strokeLinejoin="round"
-          fill="none"
         />
       </svg>
     </Link>

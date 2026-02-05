@@ -33,6 +33,9 @@
     --elysium-from: #ff6a00;
     --elysium-mid: #ff3b81;
     --elysium-to: #7b2cff;
+    --logo-from: #ac58e9;
+    --logo-mid: #b68cd5;
+    --logo-to: #c0c0c0;
   }
   .dark {
     --background: 240 10% 3.9%;
