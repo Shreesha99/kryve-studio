@@ -2,6 +2,12 @@
 
 import { z } from "zod";
 import { mailer } from "@/lib/mailer";
+import { contactEmailTemplate } from "@/lib/email/templates/contact-email";
+
+export type ContactFormState = {
+  success: boolean;
+  message: string;
+};
 
 const contactSchema = z.object({
   name: z.string().min(2),
@@ -28,7 +34,11 @@ export async function sendEmail(_prev: any, formData: FormData) {
       to: process.env.SMTP_USER,
       replyTo: email,
       subject: `New Contact Form Submission`,
-      html: `<p>${message.replace(/\n/g, "<br />")}</p>`,
+      html: contactEmailTemplate({
+        name,
+        email,
+        message,
+      }),
     });
 
     return { success: true, message: "Message sent successfully." };
