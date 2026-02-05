@@ -196,27 +196,39 @@ export function About() {
           {/* RIGHT */}
           <div ref={rightContentRef} className="flex items-center">
             <div className="max-w-xl space-y-6 text-muted-foreground">
-              <p className="reveal text-sm uppercase tracking-widest text-foreground">
-                Who we are
-              </p>
+              <div className="flex justify-between items-center">
+                {" "}
+                <p className="reveal text-sm uppercase tracking-widest text-foreground">
+                  Who we are
+                </p>
+                <p className="reveal flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
+                  <span className="fi fi-in"></span>
+                  Bengaluru, India
+                </p>
+              </div>
 
-              <p className="reveal flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
-                <span className="fi fi-in"></span>
-                Bengaluru, India
+              <p className="reveal">
+                We’re a digital studio focused on building thoughtful,
+                high-quality experiences for the modern web.
               </p>
 
               <p className="reveal">
-                We’re a new web development studio building thoughtful digital
-                experiences, not disposable websites.
+                We work at the intersection of design and engineering — where
+                clarity, performance, and aesthetics are treated with equal
+                importance.
               </p>
 
               <p className="reveal">
-                Starting fresh allows us to question defaults, avoid bloat, and
-                obsess over details that most teams ignore.
+                Starting from a clean slate allows us to question defaults,
+                avoid unnecessary complexity, and focus on what truly matters.
               </p>
-
               <p className="reveal">
-                Our work is intentional, refined, and designed to age well.
+                Every detail is intentional, from typography and motion to
+                structure, speed, and long-term maintainability.
+              </p>
+              <p className="reveal">
+                We don’t believe in disposable websites. We build digital
+                products designed to last, evolve, and age gracefully.
               </p>
             </div>
           </div>
