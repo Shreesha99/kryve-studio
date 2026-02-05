@@ -20,6 +20,20 @@ export function Footer() {
       revealRefs.current.push(el);
     }
   };
+  const legalLinks = [
+    {
+      label: "Terms & Conditions",
+      slug: "terms-and-conditions",
+    },
+    {
+      label: "Privacy Policy",
+      slug: "privacy-policy",
+    },
+    {
+      label: "Disclaimer",
+      slug: "disclaimer",
+    },
+  ];
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -211,20 +225,18 @@ export function Footer() {
           </div>
 
           <div className="flex gap-6">
-            {["terms-and-conditions", "privacy-policy", "disclaimer"].map(
-              (slug) => (
-                <div key={slug} className="overflow-hidden">
-                  <Link
-                    ref={addRevealRef}
-                    href={`/legal/${slug}`}
-                    target="_blank"
-                    className="inline-block transition-colors hover:text-background/80"
-                  >
-                    {slug.replace("-", " ")}
-                  </Link>
-                </div>
-              )
-            )}
+            {legalLinks.map(({ label, slug }) => (
+              <div key={slug} className="overflow-hidden">
+                <Link
+                  ref={addRevealRef}
+                  href={`/legal/${slug}`}
+                  target="_blank"
+                  className="inline-block transition-colors hover:text-background/80"
+                >
+                  {label}
+                </Link>
+              </div>
+            ))}
           </div>
         </div>
       </div>

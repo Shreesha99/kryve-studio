@@ -1,68 +1,234 @@
-import { Metadata } from 'next';
-import { Header } from '@/components/common/header';
-import { Footer } from '@/components/common/footer';
-import { AnimateOnScroll } from '@/components/common/animate-on-scroll';
-import { ClientDate } from '@/components/common/client-date';
+"use client";
 
-export const metadata: Metadata = {
-  title: 'Disclaimer',
-  description: 'Disclaimer for the website and services of The Elysium Project.',
+import { Metadata } from "next";
+import { Header } from "@/components/common/header";
+import { Footer } from "@/components/common/footer";
+import { AnimateOnScroll } from "@/components/common/animate-on-scroll";
+import { ClientDate } from "@/components/common/client-date";
+
+import { useEffect, useRef } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
+import { usePreloaderDone } from "@/components/common/app-providers";
+
+gsap.registerPlugin(ScrollTrigger);
+
+const metadata: Metadata = {
+  title: "Disclaimer",
+  description:
+    "Legal disclaimer governing the use of The Elysium Project website.",
   robots: {
     index: false,
     follow: true,
-  }
+  },
 };
 
 export default function DisclaimerPage() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const { preloaderDone } = usePreloaderDone();
+
+  /* ---------------- SCROLL REVEAL ---------------- */
+
+  useEffect(() => {
+    if (!preloaderDone) return;
+
+    const lines = contentRef.current?.querySelectorAll(".reveal") ?? [];
+
+    gsap.fromTo(
+      lines,
+      { y: 24, opacity: 0 },
+      {
+        y: 0,
+        opacity: 1,
+        stagger: 0.08,
+        duration: 1,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top 75%",
+        },
+      }
+    );
+  }, [preloaderDone]);
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
+
       <main className="flex-1">
         <AnimateOnScroll>
-          <article className="container mx-auto max-w-4xl px-4 py-16 pt-32 md:px-6 md:py-24 md:pt-40">
-            <h1 className="font-headline text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl">
-              Disclaimer
-            </h1>
-            <p className="mt-4 text-muted-foreground">Last updated: <ClientDate /></p>
-            
-            <div className="prose prose-lg dark:prose-invert mx-auto mt-12 max-w-none [&_h2]:font-headline [&_h2]:text-2xl [&_h2]:font-semibold [&_p]:leading-relaxed [&_a]:text-primary hover:[&_a]:underline">
-                <p>
-                    The information provided by The Elysium Project ("we," "us," or "our") on https://www.the-elysium-project.in/ (the "Site") is for general informational purposes only. All information on the Site is provided in good faith, however, we make no representation or warranty of any kind, express or implied, regarding the accuracy, adequacy, validity, reliability, availability, or completeness of any information on the Site.
-                </p>
-
-                <h2>1. No Professional Advice</h2>
-                <p>
-                    The information contained on this website is not intended as, and shall not be understood or construed as, professional advice. While the employees and/or owners of the company are professionals and the information provided on this website relates to issues within the company’s area of professionalism, the information contained on this website is not a substitute for advice from a professional who is aware of the facts and circumstances of your individual situation.
-                </p>
-
-                <h2>2. External Links Disclaimer</h2>
-                <p>
-                    The Site may contain (or you may be sent through the Site) links to other websites or content belonging to or originating from third parties or links to websites and features in banners or other advertising. Such external links are not investigated, monitored, or checked for accuracy, adequacy, validity, reliability, availability, or completeness by us. WE DO NOT WARRANT, ENDORSE, GUARANTEE, OR ASSUME RESPONSIBILITY FOR THE ACCURACY OR RELIABILITY OF ANY INFORMATION OFFERED BY THIRD-PARTY WEBSITES LINKED THROUGH THE SITE.
-                </p>
-                
-                <h2>3. Limitation of Liability</h2>
-                <p>
-                    UNDER NO CIRCUMSTANCE SHALL WE HAVE ANY LIABILITY TO YOU FOR ANY LOSS OR DAMAGE OF ANY KIND INCURRED AS A RESULT OF THE USE OF THE SITE OR RELIANCE ON ANY INFORMATION PROVIDED ON THE SITE. YOUR USE OF THE SITE AND YOUR RELIANCE ON ANY INFORMATION ON THE SITE IS SOLELY AT YOUR OWN RISK.
-                </p>
-
-                <h2>4. Testimonials Disclaimer</h2>
-                <p>
-                    The Site may contain testimonials by users of our products and/or services. These testimonials reflect the real-life experiences and opinions of such users. However, the experiences are personal to those particular users, and may not necessarily be representative of all users of our products and/or services. We do not claim, and you should not assume, that all users will have the same experiences. YOUR INDIVIDUAL RESULTS MAY VARY.
-                </p>
-
-                <h2>5. Errors and Omissions Disclaimer</h2>
-                <p>
-                    While we have made every attempt to ensure that the information contained in this site has been obtained from reliable sources, The Elysium Project is not responsible for any errors or omissions or for the results obtained from the use of this information.
-                </p>
-                
-                <h2>6. Contact Us</h2>
-                <p>
-                    Should you have any feedback, comments, requests for technical support or other inquiries, please contact us by email: <a href="mailto:hello@the-elysium-project.in">hello@the-elysium-project.in</a>.
-                </p>
+          <section
+            ref={sectionRef}
+            className="container mx-auto max-w-4xl px-4 py-20 pt-32 md:px-6 md:py-28 md:pt-40"
+          >
+            {/* TITLE */}
+            <div className="overflow-hidden">
+              <h1 className="reveal font-headline text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl">
+                Disclaimer
+              </h1>
             </div>
-          </article>
+
+            <div className="mt-6 overflow-hidden">
+              <p className="reveal text-muted-foreground">
+                Last updated: <ClientDate />
+              </p>
+            </div>
+
+            {/* CONTENT */}
+            <div
+              ref={contentRef}
+              className="mt-20 space-y-16 text-lg leading-relaxed text-foreground"
+            >
+              {/* INTRO */}
+              <div className="space-y-6">
+                <div className="overflow-hidden">
+                  <p className="reveal">
+                    The information provided by The Elysium Project (“we”, “us”,
+                    or “our”) on https://www.the-elysium-project.in/ (the
+                    “Website”) is provided for general informational purposes
+                    only.
+                  </p>
+                </div>
+
+                <div className="overflow-hidden">
+                  <p className="reveal">
+                    While we strive to ensure that all information is accurate
+                    and up to date, we make no representations or warranties of
+                    any kind, express or implied, regarding the accuracy,
+                    adequacy, reliability, availability, or completeness of any
+                    content on the Website.
+                  </p>
+                </div>
+              </div>
+
+              {/* 1 */}
+              <section className="space-y-4">
+                <div className="overflow-hidden">
+                  <h2 className="reveal font-headline text-2xl font-semibold">
+                    1. No Professional Advice
+                  </h2>
+                </div>
+
+                <div className="overflow-hidden">
+                  <p className="reveal">
+                    The content on this Website does not constitute
+                    professional, legal, financial, or technical advice.
+                    Information provided here should not be relied upon as a
+                    substitute for consultation with a qualified professional
+                    who is familiar with your specific circumstances.
+                  </p>
+                </div>
+              </section>
+
+              {/* 2 */}
+              <section className="space-y-4">
+                <div className="overflow-hidden">
+                  <h2 className="reveal font-headline text-2xl font-semibold">
+                    2. External Links
+                  </h2>
+                </div>
+
+                <div className="overflow-hidden">
+                  <p className="reveal">
+                    The Website may contain links to third-party websites or
+                    services. Such links are provided solely for convenience and
+                    informational purposes.
+                  </p>
+                </div>
+
+                <div className="overflow-hidden">
+                  <p className="reveal">
+                    We do not control, endorse, or assume responsibility for the
+                    content, accuracy, or reliability of any third-party
+                    websites. Accessing external links is done entirely at your
+                    own risk.
+                  </p>
+                </div>
+              </section>
+
+              {/* 3 */}
+              <section className="space-y-4">
+                <div className="overflow-hidden">
+                  <h2 className="reveal font-headline text-2xl font-semibold">
+                    3. Limitation of Liability
+                  </h2>
+                </div>
+
+                <div className="overflow-hidden">
+                  <p className="reveal">
+                    To the maximum extent permitted under applicable law, The
+                    Elysium Project shall not be liable for any direct,
+                    indirect, incidental, consequential, or punitive damages
+                    arising out of your access to, use of, or reliance upon any
+                    information on the Website.
+                  </p>
+                </div>
+              </section>
+
+              {/* 4 */}
+              <section className="space-y-4">
+                <div className="overflow-hidden">
+                  <h2 className="reveal font-headline text-2xl font-semibold">
+                    4. Testimonials
+                  </h2>
+                </div>
+
+                <div className="overflow-hidden">
+                  <p className="reveal">
+                    Any testimonials or statements appearing on the Website
+                    reflect individual experiences and opinions. Such
+                    testimonials do not guarantee or represent that all users
+                    will achieve similar results.
+                  </p>
+                </div>
+              </section>
+
+              {/* 5 */}
+              <section className="space-y-4">
+                <div className="overflow-hidden">
+                  <h2 className="reveal font-headline text-2xl font-semibold">
+                    5. Errors and Omissions
+                  </h2>
+                </div>
+
+                <div className="overflow-hidden">
+                  <p className="reveal">
+                    While we make reasonable efforts to ensure the accuracy of
+                    the information provided, The Elysium Project assumes no
+                    responsibility for errors, omissions, or outcomes resulting
+                    from the use of such information.
+                  </p>
+                </div>
+              </section>
+
+              {/* 6 */}
+              <section className="space-y-4">
+                <div className="overflow-hidden">
+                  <h2 className="reveal font-headline text-2xl font-semibold">
+                    6. Contact
+                  </h2>
+                </div>
+
+                <div className="overflow-hidden">
+                  <p className="reveal">
+                    If you have any questions or concerns regarding this
+                    Disclaimer, you may contact us at{" "}
+                    <a
+                      href="mailto:hello@the-elysium-project.in"
+                      className="underline underline-offset-4"
+                    >
+                      hello@the-elysium-project.in
+                    </a>
+                    .
+                  </p>
+                </div>
+              </section>
+            </div>
+          </section>
         </AnimateOnScroll>
       </main>
+
       <Footer />
     </div>
   );
