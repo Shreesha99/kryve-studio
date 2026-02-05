@@ -1,6 +1,7 @@
 "use client";
 
 import FlowingMenu from "@/components/FlowingMenu";
+import { useRef } from "react";
 
 const projects = [
   {
@@ -26,6 +27,9 @@ const projects = [
 ];
 
 export function Projects() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef(0);
+
   return (
     <section id="projects" className="relative w-full bg-background py-32">
       {/* TITLE */}
@@ -35,8 +39,23 @@ export function Projects() {
         </h2>
       </div>
 
-      {/* MENU CONTAINER (controls height explicitly) */}
-      <div className="relative mx-auto h-[600px] w-full ">
+      {/* MENU CONTAINER */}
+      <div
+        ref={containerRef}
+        className="relative mx-auto h-[600px] w-full overflow-hidden"
+        onTouchStart={(e) => {
+          touchStartX.current = e.touches[0].clientX;
+        }}
+        onTouchMove={(e) => {
+          if (!containerRef.current) return;
+
+          const currentX = e.touches[0].clientX;
+          const deltaX = touchStartX.current - currentX;
+
+          containerRef.current.scrollLeft += deltaX;
+          touchStartX.current = currentX;
+        }}
+      >
         <FlowingMenu
           items={projects}
           speed={15}

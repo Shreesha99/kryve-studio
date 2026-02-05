@@ -104,20 +104,16 @@ function MenuItem({
       .to([marqueeRef.current, marqueeInnerRef.current], { y: "0%" });
   };
 
-  useEffect(() => {
-    const isTouch =
-      typeof window !== "undefined" &&
-      window.matchMedia("(pointer: coarse)").matches;
+  const leaveMarquee = (edge: "top" | "bottom") => {
+    if (!marqueeRef.current || !marqueeInnerRef.current) return;
 
-    if (!isTouch) return;
-    if (!itemRef.current) return;
-
-    // Only auto-activate FIRST item
-    if (itemRef.current.parentElement?.firstElementChild !== itemRef.current)
-      return;
-
-    triggerMarquee("bottom");
-  }, []);
+    gsap
+      .timeline({ defaults: animationDefaults })
+      .to(marqueeRef.current, { y: edge === "top" ? "-101%" : "101%" })
+      .to(marqueeInnerRef.current, {
+        y: edge === "top" ? "101%" : "-101%",
+      });
+  };
 
   /* ---------------- CALCULATE REPS ---------------- */
 
@@ -156,7 +152,7 @@ function MenuItem({
     };
   }, [repetitions, speed]);
 
-  /* ---------------- HOVER ---------------- */
+  /* ---------------- DESKTOP HOVER ---------------- */
 
   const onEnter = (e: React.MouseEvent) => {
     if (!itemRef.current) return;
@@ -173,8 +169,7 @@ function MenuItem({
   };
 
   const onLeave = (e: React.MouseEvent) => {
-    if (!itemRef.current || !marqueeRef.current || !marqueeInnerRef.current)
-      return;
+    if (!itemRef.current) return;
 
     const r = itemRef.current.getBoundingClientRect();
     const edge = closestEdge(
@@ -184,12 +179,41 @@ function MenuItem({
       r.height
     );
 
-    gsap
-      .timeline({ defaults: animationDefaults })
-      .to(marqueeRef.current, { y: edge === "top" ? "-101%" : "101%" })
-      .to(marqueeInnerRef.current, {
-        y: edge === "top" ? "101%" : "-101%",
-      });
+    leaveMarquee(edge);
+  };
+
+  /* ---------------- MOBILE TOUCH = HOVER ---------------- */
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    if (!itemRef.current) return;
+
+    const r = itemRef.current.getBoundingClientRect();
+    const touch = e.touches[0];
+
+    const edge = closestEdge(
+      touch.clientX - r.left,
+      touch.clientY - r.top,
+      r.width,
+      r.height
+    );
+
+    triggerMarquee(edge);
+  };
+
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (!itemRef.current) return;
+
+    const r = itemRef.current.getBoundingClientRect();
+    const touch = e.changedTouches[0];
+
+    const edge = closestEdge(
+      touch.clientX - r.left,
+      touch.clientY - r.top,
+      r.width,
+      r.height
+    );
+
+    leaveMarquee(edge);
   };
 
   /* ---------------- JSX ---------------- */
@@ -202,6 +226,9 @@ function MenuItem({
         style={{ color: textColor }}
         onMouseEnter={onEnter}
         onMouseLeave={onLeave}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        onTouchCancel={onTouchEnd}
       >
         {text}
       </a>

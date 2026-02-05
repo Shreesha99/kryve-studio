@@ -7,6 +7,7 @@ import { Services } from "@/components/sections/services";
 // import { Work } from "@/components/sections/work";
 import { Contact } from "@/components/sections/contact";
 import { Projects } from "@/components/sections/projects";
+import ServicesMain from "@/components/sections/services-main";
 
 // The root metadata is defined in layout.tsx
 // We can override it for specific pages like this.
@@ -56,8 +57,7 @@ export default function Home() {
       <main className="flex-1">
         <Hero />
         <About />
-        <Services />
-        {/* <ServicesSecond /> */}
+        <ServicesMain />
         {/* <Work /> */}
         <Projects />
         <Contact />
