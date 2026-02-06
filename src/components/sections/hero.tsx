@@ -7,9 +7,9 @@ import { usePreloaderDone } from "@/components/common/app-providers";
 import ColorBends from "@/components/ColorBends";
 import dynamic from "next/dynamic";
 
-const Silk = dynamic(() => import("@/component/Silk"), {
-  ssr: false,
-});
+// const Silk = dynamic(() => import("@/component/Silk"), {
+//   ssr: false,
+// });
 
 export function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -224,14 +224,14 @@ export function Hero() {
             ]}
             rotation={50}
             speed={0.59}
-            scale={2}
+            scale={0.5}
             frequency={1}
             warpStrength={1}
             mouseInfluence={2}
-            parallax={0.5}
+            parallax={1}
             noise={0}
             transparent
-            autoRotate={2}
+            autoRotate={1}
             className={undefined}
             style={undefined}
           />
