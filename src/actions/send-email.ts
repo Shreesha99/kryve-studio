@@ -6,7 +6,12 @@ import { contactEmailTemplate } from "@/lib/email/templates/contact-email";
 
 export type ContactFormState = {
   success: boolean;
-  message: string;
+  message?: string;
+  fieldErrors?: {
+    name?: string;
+    email?: string;
+    message?: string;
+  };
 };
 
 const contactSchema = z.object({
@@ -15,7 +20,10 @@ const contactSchema = z.object({
   message: z.string().min(10),
 });
 
-export async function sendEmail(_prev: any, formData: FormData) {
+export async function sendEmail(
+  _prev: ContactFormState,
+  formData: FormData
+): Promise<ContactFormState> {
   const parsed = contactSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
@@ -23,7 +31,16 @@ export async function sendEmail(_prev: any, formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { success: false, message: "Invalid form data." };
+    const errors = parsed.error.flatten().fieldErrors;
+
+    return {
+      success: false,
+      fieldErrors: {
+        name: errors.name?.[0],
+        email: errors.email?.[0],
+        message: errors.message?.[0],
+      },
+    };
   }
 
   const { name, email, message } = parsed.data;
@@ -33,7 +50,7 @@ export async function sendEmail(_prev: any, formData: FormData) {
       from: `"${name}" <${process.env.SMTP_USER}>`,
       to: process.env.SMTP_USER,
       replyTo: email,
-      subject: `New Contact Form Submission`,
+      subject: "New Contact Form Submission",
       html: contactEmailTemplate({
         name,
         email,

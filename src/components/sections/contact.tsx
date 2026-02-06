@@ -22,7 +22,7 @@ function SubmitButton({ status }: { status: "idle" | "success" | "error" }) {
   return (
     <Button
       type="submit"
-      disabled={pending || status !== "idle"}
+      disabled={pending}
       className={cn("w-full sm:w-48 transition-colors duration-300", {
         "bg-green-500 hover:bg-green-600 text-white": status === "success",
         "bg-red-500 hover:bg-red-600 text-white": status === "error",
@@ -71,11 +71,14 @@ const tags = [
 export function Contact() {
   const initialState: ContactFormState = {
     success: false,
-    message: "",
+    message: undefined,
   };
 
+  const hasError = (key: keyof NonNullable<ContactFormState["fieldErrors"]>) =>
+    Boolean(state.fieldErrors?.[key]);
+
   const [state, formAction] = useFormState(sendEmail, initialState);
-  const [submitStatus, setSubmitStatus] = useState<
+  const [buttonStatus, setButtonStatus] = useState<
     "idle" | "success" | "error"
   >("idle");
 
@@ -85,6 +88,36 @@ export function Contact() {
   const subtitleRef = useRef<HTMLParagraphElement>(null);
 
   const { resolvedTheme } = useTheme();
+
+  /* ---------------- FORM RESET ON SUCCESS ---------------- */
+
+  useEffect(() => {
+    if (state.success) {
+      formRef.current?.reset();
+    }
+  }, [state.success]);
+
+  useEffect(() => {
+    if (state.success) {
+      setButtonStatus("success");
+
+      const t = setTimeout(() => {
+        setButtonStatus("idle");
+      }, 10000);
+
+      return () => clearTimeout(t);
+    }
+
+    if (state.message) {
+      setButtonStatus("error");
+
+      const t = setTimeout(() => {
+        setButtonStatus("idle");
+      }, 10000);
+
+      return () => clearTimeout(t);
+    }
+  }, [state.success, state.message]);
 
   /* ---------------- HERO TEXT REVEAL ---------------- */
 
@@ -135,6 +168,12 @@ export function Contact() {
   /* ---------------- FLOATING TAGS ---------------- */
 
   useEffect(() => {
+    if (!state.success) return;
+    const t = setTimeout(() => {}, 2500);
+    return () => clearTimeout(t);
+  }, [state.success]);
+
+  useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
@@ -183,23 +222,9 @@ export function Contact() {
     };
   }, [resolvedTheme]);
 
-  /* ---------------- FORM STATUS ---------------- */
-
-  useEffect(() => {
-    if (!state.message) return;
-
-    if (state.success) {
-      setSubmitStatus("success");
-      formRef.current?.reset();
-    } else {
-      setSubmitStatus("error");
-    }
-
-    const timer = setTimeout(() => setSubmitStatus("idle"), 5000);
-    return () => clearTimeout(timer);
-  }, [state]);
-
   /* ---------------- JSX ---------------- */
+
+  const submitStatus = buttonStatus;
 
   return (
     <section
@@ -211,13 +236,13 @@ export function Contact() {
         <div className="mx-auto max-w-3xl text-center">
           <h2
             ref={titleRef}
-            className="font-headline text-4xl font-semibold tracking-tight sm:text-5xl"
+            className="font-headline text-5xl font-semibold tracking-tight sm:text-5xl"
           >
-            <div className="overflow-hidden">
-              <span className="inline-block">
+            <span className="block overflow-hidden">
+              <span className="block translate-y-full">
                 Let’s build something great together.
               </span>
-            </div>
+            </span>
           </h2>
 
           <p
@@ -231,28 +256,49 @@ export function Contact() {
         <div className="mx-auto mt-12 max-w-xl">
           <div className="rounded-xl border bg-card/50 p-6 shadow-2xl backdrop-blur-sm sm:p-8">
             <form ref={formRef} action={formAction} className="space-y-6">
-              {!state.success && state.message && (
-                <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-center text-sm text-destructive">
-                  {state.message}
-                </div>
-              )}
+              <div>
+                <Input
+                  name="name"
+                  placeholder="Your Name"
+                  required
+                  className={hasError("name") ? "border-red-500" : ""}
+                />
+                {state.fieldErrors?.name && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {state.fieldErrors.name}
+                  </p>
+                )}
+              </div>
 
-              <div className="grid gap-6 sm:grid-cols-2">
-                <Input name="name" placeholder="Your Name" required />
+              <div>
                 <Input
                   name="email"
                   type="email"
                   placeholder="Your Email"
                   required
+                  className={hasError("email") ? "border-red-500" : ""}
                 />
+                {state.fieldErrors?.email && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {state.fieldErrors.email}
+                  </p>
+                )}
               </div>
 
-              <Textarea
-                name="message"
-                placeholder="Your Message"
-                rows={5}
-                required
-              />
+              <div>
+                <Textarea
+                  name="message"
+                  placeholder="Your Message"
+                  rows={5}
+                  required
+                  className={hasError("message") ? "border-red-500" : ""}
+                />
+                {state.fieldErrors?.message && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {state.fieldErrors.message}
+                  </p>
+                )}
+              </div>
 
               <div className="text-center">
                 <SubmitButton status={submitStatus} />
