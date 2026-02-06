@@ -5,6 +5,7 @@ import { doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
 import { z } from "zod";
 import { mailer } from "@/lib/mailer";
 import { newsletterWelcomeEmail } from "./email/templates/newsletter-welcome";
+import { newsletterTemplate } from "./email/templates/newsletter-template";
 
 export async function addSubscriber(
   email: string
@@ -133,7 +134,10 @@ export async function sendBulkNewsletter(
       to: process.env.SMTP_USER,
       bcc: subscribers,
       subject,
-      html: content,
+      html: newsletterTemplate({
+        subject,
+        content,
+      }),
     });
 
     console.log("[Newsletter] Bulk email sent successfully", {
