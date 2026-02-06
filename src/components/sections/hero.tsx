@@ -213,7 +213,15 @@ export function Hero() {
         <div ref={silkRef} className="absolute inset-0 z-0 silk-layer">
           {/* <Silk speed={2} scale={3} noiseIntensity={0.6} rotation={10} /> */}
           <ColorBends
-            colors={["#ff5c7a", "#8a5cff", "#00ffd1"]}
+            colors={[
+              "#ff5c7a",
+              "#8a5cff",
+              "#00ffd1",
+
+              "#1b1f3b",
+              "#0f2a44",
+              "#2a2a2a",
+            ]}
             rotation={50}
             speed={0.59}
             scale={2}
@@ -230,9 +238,9 @@ export function Hero() {
         </div>
       )}
 
-      <div className="relative z-10 pointer-events-auto h-full w-full">
+      <div className="relative z-10 pointer-events-none h-full w-full">
         {/* BRAND */}
-        <div className="absolute left-1/2 top-1/2 w-full -translate-x-1/2 -translate-y-1/2 px-10">
+        <div className="absolute left-1/2 top-1/2 w-full -translate-x-1/2 -translate-y-1/2 px-10 pointer-events-auto">
           <div className="relative mx-auto flex flex-col items-center md:w-fit">
             <span
               ref={addRevealRef}
@@ -249,9 +257,15 @@ export function Hero() {
                 {["e", "l", "y", "s", "i", "u", "m"].map((c, i) => (
                   <span
                     key={i}
-                    className="inline-block bg-elysium-gradient bg-clip-text text-transparent"
+                    className="relative inline-block text-transparent bg-clip-text bg-elysium-gradient"
                   >
                     {c}
+
+                    {/* subtle logo gradient depth */}
+                    <span
+                      aria-hidden
+                      className="absolute inset-0 bg-logo-gradient-soft bg-clip-text"
+                    />
                   </span>
                 ))}
               </div>
@@ -269,7 +283,7 @@ export function Hero() {
         {/* BOTTOM LEFT */}
         <div
           ref={bottomLeftRef}
-          className="absolute bottom-10 left-10 text-sm leading-relaxed text-muted-foreground"
+          className="absolute bottom-10 left-10 text-sm leading-relaxed text-muted-foreground pointer-events-auto"
         >
           <div className="overflow-hidden">
             <p className="reveal-line">

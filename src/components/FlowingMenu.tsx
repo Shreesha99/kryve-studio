@@ -20,6 +20,7 @@ type FlowingMenuProps = {
   marqueeBgColor?: string;
   marqueeTextColor?: string;
   borderColor?: string;
+  disableRepeat?: boolean; // 👈 NEW
 };
 
 /* ---------------- ROOT ---------------- */
@@ -95,6 +96,7 @@ export default function FlowingMenu({
             marqueeBgColor={marqueeBgColor}
             marqueeTextColor={marqueeTextColor}
             borderColor={borderColor}
+            disableRepeat={items.length === 1} // 👈 auto-disable
           />
         ))}
       </nav>
@@ -110,6 +112,7 @@ type MenuItemProps = Item & {
   marqueeBgColor: string;
   marqueeTextColor: string;
   borderColor: string;
+  disableRepeat?: boolean;
 };
 
 function MenuItem({

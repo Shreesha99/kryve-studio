@@ -172,14 +172,14 @@ export function About() {
                 >
                   <span
                     ref={internetRef}
-                    className="absolute inset-0 block leading-none cursor-pointer md:pt-2"
+                    className="absolute inset-0 block leading-none cursor-pointer md:pt-2.5 about-accent"
                   >
                     internet
                   </span>
 
                   <span
                     ref={wwwRef}
-                    className="absolute inset-0 block leading-none cursor-pointer md:pt-2"
+                    className="absolute inset-0 block leading-none cursor-pointer md:pt-2.5 about-accent"
                   >
                     www
                   </span>

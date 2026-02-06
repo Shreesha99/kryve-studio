@@ -23,7 +23,7 @@ const SERVICES: Service[] = [
     description:
       "Design-led websites engineered for performance, scalability, and clarity — built to feel as good as they look.",
     svg: (
-      <g className="browser">
+      <g className="browser about-accent">
         <rect x="12" y="18" width="76" height="60" rx="6" />
         <line x1="12" y1="32" x2="88" y2="32" />
         <rect x="20" y="40" width="30" height="10" />
@@ -219,8 +219,8 @@ export default function ServicesMain() {
       <div className="mx-auto max-w-7xl px-6 grid lg:grid-cols-[420px_1fr] gap-24">
         <aside className="lg:sticky lg:top-32">
           <h2 className="text-[clamp(3.5rem,7vw,6.5rem)] font-medium">
-            <span className="mask block overflow-hidden">
-              <span className="block">What We Do</span>
+            <span className="mask block overflow-hidden ">
+              <span className="block about-accent">What We Do</span>
             </span>
           </h2>
           <span className="text-[9rem] text-muted-foreground/10 font-medium">

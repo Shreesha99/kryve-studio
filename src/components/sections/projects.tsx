@@ -5,12 +5,12 @@ import { useRef } from "react";
 
 const projects = [
   {
-    text: "Mojave",
+    text: "Suprabha Electricals",
     link: "#",
     image: "https://picsum.photos/600/400?random=1",
   },
   {
-    text: "Sonoma",
+    text: "In Progress",
     link: "#",
     image: "https://picsum.photos/600/400?random=2",
   },
@@ -60,9 +60,9 @@ export function Projects() {
           items={projects}
           speed={15}
           textColor="#ffffff"
-          bgColor="#50C878"
+          bgColor="#ac58e9"
           marqueeBgColor="#ffffff"
-          marqueeTextColor="#013220"
+          marqueeTextColor="#000"
           borderColor="#0B6E4F"
         />
       </div>
