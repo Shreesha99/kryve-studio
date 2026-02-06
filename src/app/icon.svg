@@ -1,13 +1,11 @@
-<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <style>
-    .line {
-      stroke: hsl(240 10% 3.9%);
-    }
-    @media (prefers-color-scheme: dark) {
-      .line {
-        stroke: hsl(0 0% 98%);
-      }
-    }
-  </style>
-  <path d="M25 7H7V13H20V19H7V25H25" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="line"></path>
+<svg width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="120" cy="120" r="120" fill="black"/>
+<path d="M157 74H82V104.333H136.167V134.667H82V165H157" stroke="url(#paint0_linear_13_48)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+<defs>
+<linearGradient id="paint0_linear_13_48" x1="119" y1="71" x2="147" y2="169" gradientUnits="userSpaceOnUse">
+<stop offset="0.0219525" stop-color="#AC58E9"/>
+<stop offset="0.442495" stop-color="#B68CD5"/>
+<stop offset="0.790215" stop-color="#C0C0C0"/>
+</linearGradient>
+</defs>
 </svg>

@@ -37,7 +37,7 @@ export const EDrawingAnimation = forwardRef<
           ref={pathRef}
           d="M25 7H7V13H20V19H7V25H25"
           stroke="url(#logo-gradient)"
-          strokeWidth="1.6"
+          strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
