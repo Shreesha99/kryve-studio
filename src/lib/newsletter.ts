@@ -9,12 +9,16 @@ import { newsletterWelcomeEmail } from "./email/templates/newsletter-welcome";
 export async function addSubscriber(
   email: string
 ): Promise<{ success: boolean; message: string }> {
+  console.log("[Newsletter] addSubscriber called", { email });
+
   const { firestore } = initializeFirebase();
   const subscriberDocRef = doc(firestore, "subscribers", email);
 
   try {
     const docSnap = await getDoc(subscriberDocRef);
+
     if (docSnap.exists()) {
+      console.log("[Newsletter] Subscriber already exists", { email });
       return { success: true, message: "You are already subscribed!" };
     }
 
@@ -22,8 +26,14 @@ export async function addSubscriber(
       email,
       subscribedAt: serverTimestamp(),
     });
+
+    console.log("[Newsletter] Subscriber saved to Firestore", { email });
   } catch (error) {
-    console.error("Firestore error:", error);
+    console.error("[Newsletter][Firestore Error]", {
+      email,
+      error,
+    });
+
     return { success: false, message: "Database error. Please try again." };
   }
 
@@ -36,6 +46,15 @@ export async function addSubscriber(
     email
   )}`;
 
+  console.log("[Newsletter] Preparing confirmation email", {
+    email,
+    siteUrl,
+    unsubscribeUrl,
+    smtpUser: process.env.SMTP_USER ? "SET" : "MISSING",
+    smtpHost: process.env.SMTP_HOST ? "SET" : "MISSING",
+    smtpPort: process.env.SMTP_PORT ? "SET" : "MISSING",
+  });
+
   try {
     await mailer.sendMail({
       from: `"The Elysium Project" <${process.env.SMTP_USER}>`,
@@ -43,8 +62,17 @@ export async function addSubscriber(
       subject: "Subscription Confirmed | The Elysium Project",
       html: newsletterWelcomeEmail({ unsubscribeUrl }),
     });
-  } catch (error) {
-    console.error("Email send failed:", error);
+
+    console.log("[Newsletter] Confirmation email sent", { email });
+  } catch (error: any) {
+    console.error("[Newsletter][Email Send Failed]", {
+      email,
+      errorMessage: error?.message,
+      errorCode: error?.code,
+      errorStack: error?.stack,
+      errorResponse: error?.response,
+    });
+
     return {
       success: true,
       message: "Subscribed successfully, but confirmation email failed.",
@@ -53,6 +81,8 @@ export async function addSubscriber(
 
   return { success: true, message: "Thank you for subscribing!" };
 }
+
+/* ---------------- BULK NEWSLETTER ---------------- */
 
 const bulkNewsletterSchema = z.object({
   subject: z.string().min(1),
@@ -63,16 +93,32 @@ const bulkNewsletterSchema = z.object({
 export async function sendBulkNewsletter(
   data: z.infer<typeof bulkNewsletterSchema>
 ): Promise<{ success: boolean; message: string }> {
+  console.log("[Newsletter] sendBulkNewsletter called", {
+    subject: data?.subject,
+    subscriberCount: data?.subscribers?.length,
+  });
+
   const parsed = bulkNewsletterSchema.safeParse(data);
   if (!parsed.success) {
+    console.error("[Newsletter] Invalid bulk newsletter payload", {
+      errors: parsed.error.format(),
+    });
+
     return { success: false, message: "Invalid newsletter data." };
   }
 
   const { subject, content, subscribers } = parsed.data;
 
   if (!subscribers.length) {
+    console.log("[Newsletter] No subscribers to send bulk email");
     return { success: true, message: "No subscribers to send to." };
   }
+
+  console.log("[Newsletter] Sending bulk email", {
+    subject,
+    subscriberCount: subscribers.length,
+    smtpUser: process.env.SMTP_USER ? "SET" : "MISSING",
+  });
 
   try {
     await mailer.sendMail({
@@ -83,12 +129,22 @@ export async function sendBulkNewsletter(
       html: content,
     });
 
+    console.log("[Newsletter] Bulk email sent successfully", {
+      subscriberCount: subscribers.length,
+    });
+
     return {
       success: true,
       message: `Newsletter sent to ${subscribers.length} subscribers.`,
     };
-  } catch (error) {
-    console.error("Bulk send failed:", error);
+  } catch (error: any) {
+    console.error("[Newsletter][Bulk Email Failed]", {
+      errorMessage: error?.message,
+      errorCode: error?.code,
+      errorStack: error?.stack,
+      errorResponse: error?.response,
+    });
+
     return { success: false, message: "Failed to send newsletter." };
   }
 }
