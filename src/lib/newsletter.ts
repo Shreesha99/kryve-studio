@@ -13,6 +13,13 @@ export async function addSubscriber(
 
   const { firestore } = initializeFirebase();
   const subscriberDocRef = doc(firestore, "subscribers", email);
+  mailer.verify((err) => {
+    if (err) {
+      console.error("[SMTP VERIFY FAILED]", err);
+    } else {
+      console.log("[SMTP READY - ZOHO]");
+    }
+  });
 
   try {
     const docSnap = await getDoc(subscriberDocRef);
