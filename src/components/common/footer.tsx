@@ -162,11 +162,11 @@ export function Footer() {
               {[
                 {
                   label: "Instagram",
-                  href: "https://instagram.com/the_elysium_project",
+                  href: "https://www.instagram.com/the_elysium_project/",
                 },
                 {
                   label: "LinkedIn",
-                  href: "https://linkedin.com/company/the-elysium-project",
+                  href: "https://www.linkedin.com/company/the-elysium-project-blr",
                 },
               ].map((social) => (
                 <li key={social.label}>

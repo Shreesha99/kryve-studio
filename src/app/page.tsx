@@ -41,8 +41,8 @@ const jsonLd = {
   },
   sameAs: [
     // IMPORTANT: Replace with your actual social media URLs
-    "https://instagram.com/the_elysium_project",
-    "https://linkedin.com/company/the-elysium-project",
+    "https://www.instagram.com/the_elysium_project/",
+    "https://www.linkedin.com/company/the-elysium-project-blr",
   ],
 };
 
