@@ -9,7 +9,7 @@ if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) {
 export const mailer = nodemailer.createTransport({
   host: SMTP_HOST, // smtp.zoho.in
   port: Number(SMTP_PORT), // 465
-  secure: SMTP_SECURE === "true", // true
+  secure: SMTP_SECURE === "false", // true
   auth: {
     user: SMTP_USER,
     pass: SMTP_PASS, // ZOHO APP PASSWORD
