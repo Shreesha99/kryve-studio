@@ -246,7 +246,11 @@ export default function ServicesMain() {
   }, [activeIndex]);
 
   return (
-    <section ref={sectionRef} className="bg-background py-24 sm:py-28 md:py-32">
+    <section
+      id="services"
+      ref={sectionRef}
+      className="bg-background py-24 sm:py-28 md:py-32"
+    >
       <div className="mx-auto max-w-7xl px-6">
         {/* TITLE */}
         <h2 className="mb-16 flex justify-center text-center text-[clamp(2.5rem,7vw,6rem)] font-medium sm:mb-20">

@@ -35,7 +35,7 @@ export function Projects() {
   const touchStartX = useRef(0);
 
   return (
-    <section id="projects" className="relative w-full bg-background py-32">
+    <section id="work" className="relative w-full bg-background py-32">
       {/* TITLE */}
       <div className="mb-20 text-center">
         <h2 className="font-headline text-4xl sm:text-5xl font-semibold tracking-tight">

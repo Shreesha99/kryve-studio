@@ -183,7 +183,7 @@ export function Services() {
 
   useEffect(() => {
     if (!preloaderDone) return;
-    
+
     secondaryAnimation.current?.kill();
     gsap.killTweensOf(".code-tag-text");
 
@@ -421,7 +421,6 @@ export function Services() {
 
   return (
     <section
-      id="services"
       ref={sectionRef}
       className="relative flex min-h-screen w-full items-center overflow-hidden bg-background py-24 md:py-32"
     >
