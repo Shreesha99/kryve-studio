@@ -246,18 +246,16 @@ export default function ServicesMain() {
   }, [activeIndex]);
 
   return (
-    <section ref={sectionRef} className="bg-background py-32">
+    <section ref={sectionRef} className="bg-background py-24 sm:py-28 md:py-32">
       <div className="mx-auto max-w-7xl px-6">
         {/* TITLE */}
-        <h2 className="mb-20 text-[clamp(3.5rem,7vw,6rem)] font-medium flex justify-center items-center">
-          <span className="mask block overflow-hidden ">
-            <span className="about-accent flex justify-center items-center">
-              What We Do
-            </span>
+        <h2 className="mb-16 flex justify-center text-center text-[clamp(2.5rem,7vw,6rem)] font-medium sm:mb-20">
+          <span className="mask block overflow-hidden">
+            <span className="about-accent block">What We Do</span>
           </span>
         </h2>
 
-        <div className="space-y-24">
+        <div className="space-y-12 sm:space-y-16 md:space-y-24">
           {SERVICES.map((s, i) => {
             const isActive = activeIndex === i;
 
@@ -265,21 +263,24 @@ export default function ServicesMain() {
               <div
                 key={s.index}
                 className={cn(
-                  "service-row relative rounded-2xl px-8 py-10 transition-all duration-500",
-                  isActive ? "service-glass-active" : "opacity-70"
+                  "service-row group relative rounded-3xl border border-white/5 bg-white/[0.02] px-6 py-8 transition-all duration-500",
+                  "md:px-10 md:py-10",
+                  isActive
+                    ? "service-glass-active scale-[1.01]"
+                    : "opacity-70 hover:opacity-100"
                 )}
               >
-                <span className="pointer-events-none absolute right-8 top-6 text-[5rem] font-medium text-muted-foreground/10">
+                <span className="pointer-events-none absolute right-6 top-6 text-[3.5rem] font-medium text-muted-foreground/10 md:text-[5rem]">
                   {s.index}
                 </span>
 
-                <div className="flex items-center gap-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
                   <svg
                     ref={(el) => {
                       svgRefs.current[i] = el;
                     }}
                     viewBox="-10 -10 120 120"
-                    className="h-16 w-16 fill-none"
+                    className="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 shrink-0 fill-none"
                     strokeWidth="3"
                   >
                     <defs>
@@ -299,10 +300,12 @@ export default function ServicesMain() {
                     <g stroke={`url(#service-gradient-${i})`}>{s.svg}</g>
                   </svg>
 
-                  <h3 className="text-3xl font-medium">{s.title}</h3>
+                  <h3 className="text-xl font-medium leading-tight sm:text-2xl md:text-3xl">
+                    {s.title}
+                  </h3>
                 </div>
 
-                <p className="mt-4 max-w-xl text-muted-foreground">
+                <p className="mt-3 max-w-xl text-sm text-muted-foreground sm:text-base md:mt-4">
                   {s.description}
                 </p>
               </div>

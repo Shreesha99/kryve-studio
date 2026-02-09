@@ -126,7 +126,7 @@ export function Contact() {
 
     const ctx = gsap.context(() => {
       if (titleRef.current) {
-        const lines = gsap.utils.toArray("span", titleRef.current);
+        const lines = gsap.utils.toArray(".hero-line", titleRef.current);
 
         gsap.fromTo(
           lines,
@@ -238,8 +238,8 @@ export function Contact() {
             ref={titleRef}
             className="font-headline text-5xl font-semibold tracking-tight sm:text-5xl"
           >
-            <span className="block overflow-hidden">
-              <span className="block translate-y-full">
+            <span className="block overflow-hidden pb-[0.25em]">
+              <span className="hero-line block">
                 Let’s build something great together.
               </span>
             </span>

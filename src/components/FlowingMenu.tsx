@@ -10,6 +10,7 @@ type Item = {
   link: string;
   text: string;
   image: string;
+  status?: "live" | "wip";
 };
 
 type FlowingMenuProps = {
@@ -87,16 +88,15 @@ export default function FlowingMenu({
       </div>
 
       <nav className="menu">
-        {items.map((item, idx) => (
+        {items.map((item, index) => (
           <MenuItem
-            key={idx}
+            key={index}
             {...item}
             speed={speed}
             textColor={textColor}
             marqueeBgColor={marqueeBgColor}
             marqueeTextColor={marqueeTextColor}
             borderColor={borderColor}
-            disableRepeat={items.length === 1} // 👈 auto-disable
           />
         ))}
       </nav>
@@ -119,6 +119,7 @@ function MenuItem({
   link,
   text,
   image,
+  status,
   speed,
   textColor,
   marqueeBgColor,
@@ -132,7 +133,7 @@ function MenuItem({
 
   const [repetitions, setRepetitions] = useState(4);
 
-  const animationDefaults = { duration: 0.6, ease: "expo.out" };
+  const animationDefaults = { duration: 0.5, ease: "power3.out" };
 
   /* ---------------- HELPERS ---------------- */
 
@@ -192,14 +193,17 @@ function MenuItem({
 
     animationRef.current?.kill();
 
-    animationRef.current = gsap.to(marqueeInnerRef.current, {
-      x: -part.offsetWidth,
-      duration: speed,
-      ease: "none",
-      repeat: -1,
+    const raf = requestAnimationFrame(() => {
+      animationRef.current = gsap.to(marqueeInnerRef.current!, {
+        x: -part.offsetWidth,
+        duration: speed,
+        ease: "none",
+        repeat: -1,
+      });
     });
 
     return () => {
+      cancelAnimationFrame(raf);
       animationRef.current?.kill();
       animationRef.current = null;
     };
@@ -270,18 +274,38 @@ function MenuItem({
   /* ---------------- JSX ---------------- */
 
   return (
-    <div ref={itemRef} className="menu__item" style={{ borderColor }}>
+    <div ref={itemRef} className="menu__item relative" style={{ borderColor }}>
+      {/* STATUS BADGE */}
+      {status && (
+        <div
+          className={`absolute top-4 right-4 z-10 rounded-full px-3 py-1 text-xs font-semibold ${
+            status === "live"
+              ? "bg-green-500 text-black animate-pulse"
+              : "bg-yellow-400 text-black"
+          }`}
+        >
+          {status === "live" ? "LIVE" : "IN PROGRESS"}
+        </div>
+      )}
+
       <a
-        href={link}
-        className="menu__item-link"
+        href={status === "wip" ? undefined : link}
+        target={status === "live" ? "_blank" : undefined}
+        rel={status === "live" ? "noopener noreferrer" : undefined}
+        className={`menu__item-link ${
+          status === "wip" ? "cursor-not-allowed" : ""
+        }`}
         style={{ color: textColor }}
-        onMouseEnter={onEnter}
-        onMouseLeave={onLeave}
-        onTouchStart={onTouchStart}
-        onTouchEnd={onTouchEnd}
-        onTouchCancel={onTouchEnd}
+        onMouseEnter={status === "wip" ? undefined : onEnter}
+        onMouseLeave={status === "wip" ? undefined : onLeave}
+        onTouchStart={status === "wip" ? undefined : onTouchStart}
+        onTouchEnd={status === "wip" ? undefined : onTouchEnd}
+        onTouchCancel={status === "wip" ? undefined : onTouchEnd}
       >
         {text}
+        {/* {status === "wip" && (
+          <span className="ml-2 text-xs opacity-70">(WIP)</span>
+        )} */}
       </a>
 
       <div

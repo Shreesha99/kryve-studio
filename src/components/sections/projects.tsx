@@ -6,23 +6,27 @@ import { useRef } from "react";
 const projects = [
   {
     text: "Suprabha Electricals",
-    link: "#",
-    image: "https://picsum.photos/600/400?random=1",
+    link: "https://www.suprabha-electricals.in/",
+    image: "/projects/1.jpg",
+    status: "live" as const,
   },
   {
-    text: "In Progress",
+    text: "Commerce Platform",
     link: "#",
     image: "https://picsum.photos/600/400?random=2",
+    status: "wip" as const,
   },
   {
-    text: "Monterey",
+    text: "SaaS Dashboard",
     link: "#",
     image: "https://picsum.photos/600/400?random=3",
+    status: "wip" as const,
   },
   {
-    text: "Sequoia",
+    text: "Motion Experiments",
     link: "#",
     image: "https://picsum.photos/600/400?random=4",
+    status: "wip" as const,
   },
 ];
 
