@@ -6,61 +6,83 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
+    --background: 210 25% 96%; /* soft off white */
+    --foreground: 220 25% 12%; /* deep steel text */
+
+    --card: 210 25% 98%;
+    --card-foreground: 220 25% 12%;
+
+    --popover: 210 25% 98%;
+    --popover-foreground: 220 25% 12%;
+
+    --primary: 215 35% 15%; /* steel night blue */
     --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
+
+    --secondary: 210 20% 92%;
+    --secondary-foreground: 215 35% 15%;
+
+    --muted: 210 20% 90%;
+    --muted-foreground: 215 15% 40%;
+
+    --accent: 210 20% 92%;
+    --accent-foreground: 215 35% 15%;
+
+    --destructive: 0 55% 35%; /* forged crimson */
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 10% 3.9%;
+
+    --border: 215 20% 85%;
+    --input: 215 20% 85%;
+    --ring: 215 35% 15%;
+
     --radius: 0.5rem;
-    /* SILK BACKGROUND COLOR */
-    --silk-color: 23 23 23; /* #171717 */
 
-    /* GRADIENT TEXT */
-    --elysium-from: #ff6a00;
-    --elysium-mid: #ff3b81;
-    --elysium-to: #7b2cff;
-    --logo-from: #ac58e9;
-    --logo-mid: #b68cd5;
-    --logo-to: #c0c0c0;
+    /* SILK BACKGROUND */
+    --silk-color: 10 13 16; /* #0A0D10 */
+
+    /* BRAND GRADIENTS */
+    --elysium-from: #0b1f2a;
+    --elysium-mid: #1c2e3a;
+    --elysium-to: #0a0d10;
+
+    /* LOGO ACCENTS */
+    --logo-from: #7a1e1e; /* forged crimson */
+    --logo-mid: #c6a44a; /* aged gold */
+    --logo-to: #7e6728; /* gold shadow */
   }
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 0 0% 98%;
 
-    --elysium-from: #ff8a00;
-    --elysium-mid: #ff3b3b;
-    --elysium-to: #8a2cff;
+  .dark {
+    --background: 220 35% 6%; /* kryptonian black */
+    --foreground: 210 25% 92%; /* soft steel white */
+
+    --card: 220 35% 8%;
+    --card-foreground: 210 25% 92%;
+
+    --popover: 220 35% 8%;
+    --popover-foreground: 210 25% 92%;
+
+    --primary: 210 25% 92%;
+    --primary-foreground: 215 35% 15%;
+
+    --secondary: 215 30% 12%;
+    --secondary-foreground: 210 25% 92%;
+
+    --muted: 215 30% 12%;
+    --muted-foreground: 215 15% 55%;
+
+    --accent: 215 30% 12%;
+    --accent-foreground: 210 25% 92%;
+
+    --destructive: 0 45% 30%; /* deep crimson */
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 215 25% 15%;
+    --input: 215 25% 15%;
+    --ring: 210 25% 92%;
+
+    /* BRAND GRADIENTS */
+    --elysium-from: #0b1f2a;
+    --elysium-mid: #1c2e3a;
+    --elysium-to: #0a0d10;
   }
 }
 
@@ -249,4 +271,36 @@ h1 span {
 
   box-shadow: 0 22px 50px rgba(0, 0, 0, 0.45),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+@keyframes elysium-gradient-move {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.elysium-animated-gradient {
+  background-image: linear-gradient(
+    270deg,
+    #0b1f2a,
+    #1c2e3a,
+    #7a1e1e,
+    #c6a44a,
+    #7e6728,
+    #0a0d10
+  );
+  /* text-shadow: 0 5px 10px rgba(0, 0, 0, 0.45); */
+
+  background-size: 300% 100%;
+  animation: elysium-gradient-move 14s linear infinite;
+
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }

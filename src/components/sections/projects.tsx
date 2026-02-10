@@ -63,11 +63,11 @@ export function Projects() {
         <FlowingMenu
           items={projects}
           speed={15}
-          textColor="#ffffff"
-          bgColor="#ac58e9"
-          marqueeBgColor="#ffffff"
-          marqueeTextColor="#000"
-          borderColor="#0B6E4F"
+          textColor="#c6a44a" // gold main text
+          bgColor="#0b1f2a" // elysium deep blue
+          marqueeBgColor="#7a1e1e" // 🔴 forged crimson
+          marqueeTextColor="#c6a44a" // gold on red = premium
+          borderColor="#7e6728" // gold shadow
         />
       </div>
     </section>

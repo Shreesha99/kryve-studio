@@ -40,15 +40,17 @@ export function Footer() {
       /* ---------- TEXT REVEAL (HERO / ABOUT STYLE) ---------- */
       gsap.fromTo(
         revealRefs.current,
-        { yPercent: 120 },
+        { yPercent: 120, force3D: true },
         {
           yPercent: 0,
+          force3D: true,
           stagger: 0.08,
           duration: 1.2,
           ease: "power4.out",
           scrollTrigger: {
             trigger: footerRef.current,
             start: "top 75%",
+            once: true,
           },
         }
       );
@@ -57,14 +59,16 @@ export function Footer() {
       if (bgTextRef.current) {
         gsap.fromTo(
           bgTextRef.current,
-          { opacity: 0 },
+          { opacity: 0, force3D: true },
           {
             opacity: 0.05,
+            force3D: true,
             duration: 1.4,
             ease: "power2.out",
             scrollTrigger: {
               trigger: footerRef.current,
               start: "top bottom",
+              once: true,
             },
           }
         );

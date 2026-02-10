@@ -5,11 +5,7 @@ import { gsap } from "gsap";
 import { cn } from "@/lib/utils";
 import { usePreloaderDone } from "@/components/common/app-providers";
 import ColorBends from "@/components/ColorBends";
-import dynamic from "next/dynamic";
-
-// const Silk = dynamic(() => import("@/component/Silk"), {
-//   ssr: false,
-// });
+import { GLSLHills } from "@/components/ui/glsl-hills";
 
 export function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -18,7 +14,6 @@ export function Hero() {
   const bottomLeftRef = useRef<HTMLDivElement>(null);
   const { preloaderDone } = usePreloaderDone();
   const hoverEnabled = useRef(false);
-  const silkRef = useRef<HTMLDivElement>(null);
 
   const addRevealRef = (el: HTMLDivElement | null) => {
     if (el && !revealRefs.current.includes(el)) {
@@ -29,7 +24,6 @@ export function Hero() {
   /* ============================= */
   /* INTRO ANIMATIONS */
   /* ============================= */
-
   useEffect(() => {
     if (!preloaderDone || !brandRef.current) return;
 
@@ -38,7 +32,6 @@ export function Hero() {
         brandRef.current!.querySelectorAll("span")
       );
 
-      // HARD reset
       gsap.set(letters, {
         y: 0,
         yPercent: 0,
@@ -55,7 +48,6 @@ export function Hero() {
           duration: 1.4,
           ease: "power4.out",
           onComplete: () => {
-            // 🔓 enable hover AFTER animation
             hoverEnabled.current = true;
           },
         }
@@ -94,19 +86,17 @@ export function Hero() {
   }, [preloaderDone]);
 
   /* ============================= */
-  /* PER-LETTER UPWARD HOVER BOUNCE */
+  /* PER LETTER HOVER BOUNCE */
   /* ============================= */
   useEffect(() => {
     const title = brandRef.current;
     if (!title) return;
 
     const letters = Array.from(title.querySelectorAll<HTMLElement>("span"));
-
     gsap.set(letters, { y: 0 });
 
     const onEnter = (el: HTMLElement) => {
-      if (!hoverEnabled.current) return; // 🚫 BLOCK early hover
-
+      if (!hoverEnabled.current) return;
       gsap.killTweensOf(el);
       gsap.to(el, {
         y: -14,
@@ -117,7 +107,6 @@ export function Hero() {
 
     const onLeave = (el: HTMLElement) => {
       if (!hoverEnabled.current) return;
-
       gsap.killTweensOf(el);
       gsap.to(el, {
         y: 0,
@@ -145,25 +134,6 @@ export function Hero() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!preloaderDone || !silkRef.current) return;
-
-    gsap.set(silkRef.current, {
-      opacity: 0,
-      scale: 1.06,
-      filter: "blur(18px)",
-    });
-
-    gsap.to(silkRef.current, {
-      opacity: 1,
-      scale: 1,
-      filter: "blur(0px)",
-      duration: 1.8,
-      ease: "power3.out",
-      delay: 0.1, // starts just after preloader
-    });
-  }, [preloaderDone]);
-
   /* ============================= */
   /* MOBILE AUTOPLAY MICRO BOUNCE */
   /* ============================= */
@@ -174,7 +144,6 @@ export function Hero() {
     if (!title) return;
 
     const letters = Array.from(title.querySelectorAll<HTMLElement>("span"));
-
     gsap.set(letters, { y: 0 });
 
     const tl = gsap.timeline({
@@ -203,43 +172,46 @@ export function Hero() {
     <section
       ref={sectionRef}
       className={cn(
-        "relative overflow-hidden min-h-[100svh] h-[100dvh] w-full bg-background text-foreground",
+        "relative min-h-[100svh] h-[100dvh] w-full overflow-hidden bg-background text-foreground",
         {
           "opacity-0": !preloaderDone,
         }
       )}
     >
       {preloaderDone && (
-        <div ref={silkRef} className="absolute inset-0 z-0 silk-layer">
-          {/* <Silk speed={2} scale={3} noiseIntensity={0.6} rotation={10} /> */}
-          <ColorBends
-            colors={[
-              "#ff5c7a",
-              "#8a5cff",
-              "#00ffd1",
+        <>
+          {/* Existing ColorBends background */}
+          {/*
+          <div className="absolute inset-0 z-0">
+            <ColorBends
+              colors={[
+                "#0B1F2A",
+                "#1C2E3A",
+                "#2A2F33",
+                "#0A0D10",
+                "#102533",
+                "#7A1E1E",
+              ]}
+              rotation={50}
+              speed={0.59}
+              scale={0.5}
+              frequency={1}
+              warpStrength={1}
+              mouseInfluence={2}
+              parallax={1}
+              noise={0}
+              transparent
+              autoRotate={1}
+            />
+          </div>
+          */}
 
-              "#1b1f3b",
-              "#0f2a44",
-              "#2a2a2a",
-            ]}
-            rotation={50}
-            speed={0.59}
-            scale={0.5}
-            frequency={1}
-            warpStrength={1}
-            mouseInfluence={2}
-            parallax={1}
-            noise={0}
-            transparent
-            autoRotate={1}
-            className={undefined}
-            style={undefined}
-          />
-        </div>
+          {/* GLSL Hills background */}
+          <GLSLHills speed={0.35} cameraZ={130} planeSize={1024} />
+        </>
       )}
 
       <div className="relative z-10 pointer-events-none h-full w-full">
-        {/* BRAND */}
         <div className="absolute left-1/2 top-1/2 w-full -translate-x-1/2 -translate-y-1/2 px-10 pointer-events-auto">
           <div className="relative mx-auto flex flex-col items-center md:w-fit">
             <span
@@ -257,11 +229,9 @@ export function Hero() {
                 {["e", "l", "y", "s", "i", "u", "m"].map((c, i) => (
                   <span
                     key={i}
-                    className="relative inline-block text-transparent bg-clip-text bg-elysium-gradient"
+                    className="relative inline-block text-transparent bg-clip-text elysium-animated-gradient"
                   >
                     {c}
-
-                    {/* subtle logo gradient depth */}
                     <span
                       aria-hidden
                       className="absolute inset-0 bg-logo-gradient-soft bg-clip-text"
@@ -280,7 +250,6 @@ export function Hero() {
           </div>
         </div>
 
-        {/* BOTTOM LEFT */}
         <div
           ref={bottomLeftRef}
           className="absolute bottom-10 left-10 text-sm leading-relaxed text-muted-foreground pointer-events-auto"
@@ -306,12 +275,11 @@ export function Hero() {
           </div>
         </div>
 
-        {/* BOTTOM RIGHT */}
         <button
           onClick={() =>
             window.scrollBy({ top: window.innerHeight, behavior: "smooth" })
           }
-          className="absolute bottom-10 right-10 text-lg text-muted-foreground hover:text-foreground transition"
+          className="absolute bottom-10 right-10 text-lg text-muted-foreground hover:text-foreground transition pointer-events-auto"
           aria-label="Scroll Down"
         >
           ↓
