@@ -26,10 +26,17 @@ export const EDrawingAnimation = forwardRef<
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="2%" stopColor="var(--logo-from)" />
-            <stop offset="44%" stopColor="var(--logo-mid)" />
-            <stop offset="79%" stopColor="var(--logo-to)" />
+          <linearGradient
+            id="logo-gradient"
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="100%"
+            gradientUnits="objectBoundingBox"
+          >
+            <stop offset="0%" stopColor="var(--logo-from)" />
+            <stop offset="48%" stopColor="var(--logo-mid)" />
+            <stop offset="100%" stopColor="var(--logo-to)" />
           </linearGradient>
         </defs>
 

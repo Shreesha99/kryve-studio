@@ -5,9 +5,9 @@
   fill="none"
   xmlns="http://www.w3.org/2000/svg"
   style="
-    --logo-from: #ac58e9;
-    --logo-mid: #b68cd5;
-    --logo-to: #c0c0c0;
+    --logo-from: #c6a44a;
+    --logo-mid: #c6a44a; 
+    --logo-to: #7e6728; 
   "
 >
   <defs>
