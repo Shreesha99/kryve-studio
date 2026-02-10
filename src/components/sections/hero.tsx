@@ -22,8 +22,69 @@ export function Hero() {
   };
 
   /* ============================= */
-  /* INTRO ANIMATIONS */
+  /* TRUE HORIZONTAL WATER WAVE */
   /* ============================= */
+  useEffect(() => {
+    if (!brandRef.current || !preloaderDone) return;
+
+    const letters = Array.from(
+      brandRef.current.querySelectorAll<HTMLElement>("span")
+    );
+
+    let time = 0;
+
+    const speed = 0.45; // calm, premium
+    const waveLength = 2.4; // wider wave
+    const gradientWidth = 300; // MUST match background-size X
+
+    const tick = () => {
+      time += speed * 0.016;
+
+      letters.forEach((el, i) => {
+        const phase = time - i / waveLength;
+
+        // full-width sine sweep
+        const x = ((Math.sin(phase) + 1) / 2) * gradientWidth;
+
+        el.style.backgroundPosition = `${x}% 50%`;
+      });
+    };
+
+    gsap.ticker.add(tick);
+
+    return () => {
+      gsap.ticker.remove(tick);
+    };
+  }, [preloaderDone]);
+  /* ============================= */
+  /* GRADIENT COLOR DRIFT */
+  /* ============================= */
+  /* ============================= */
+  /* SAFE COLOR TEMPERATURE DRIFT */
+  /* ============================= */
+  useEffect(() => {
+    if (!brandRef.current || !preloaderDone) return;
+
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    if (prefersReducedMotion) return;
+
+    const letters = Array.from(
+      brandRef.current.querySelectorAll<HTMLElement>("span")
+    );
+
+    gsap.to(letters, {
+      "--c3": "#3f4f58",
+      "--c4": "#5a6b73",
+      duration: 4,
+      ease: "sine.inOut",
+      repeat: -1,
+      yoyo: true,
+    });
+  }, [preloaderDone]);
+
   useEffect(() => {
     if (!preloaderDone || !brandRef.current) return;
 
