@@ -3,16 +3,29 @@
 import { forwardRef } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useLenis } from "./smooth-scroll-provider";
 
 export const EDrawingAnimation = forwardRef<
   SVGPathElement,
   { className?: string; variant?: "mobile" | "desktop" }
 >(function EDrawingAnimation({ className, variant = "desktop" }, pathRef) {
   const viewBox = variant === "desktop" ? "0 1 24 34" : "0 0 32 32";
+  const lenis = useLenis();
+  const scrollToTop = () => {
+    if (lenis) {
+      lenis.scrollTo(0);
+    } else {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }
+  };
 
   return (
     <Link
       href="/"
+      onClick={scrollToTop}
       aria-label="Go to home"
       className={cn(
         "inline-block cursor-pointer transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground",
