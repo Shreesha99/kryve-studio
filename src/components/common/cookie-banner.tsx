@@ -13,17 +13,18 @@ import { usePreloaderDone } from "./app-providers";
 export function CookieBanner() {
   const [isVisible, setIsVisible] = useState(false);
   const bannerRef = useRef<HTMLDivElement>(null);
-  const { preloaderDone } = usePreloaderDone();
 
   useEffect(() => {
-    if (!preloaderDone) return;
-
     const consent = Cookies.get("cookie_consent");
-    if (!consent) {
-      const timer = setTimeout(() => setIsVisible(true), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [preloaderDone]);
+
+    if (consent) return;
+
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const banner = bannerRef.current;
@@ -31,19 +32,21 @@ export function CookieBanner() {
 
     const card = banner.querySelector(".vibrating-card") as HTMLDivElement;
 
+    gsap.set(banner, { yPercent: 120, opacity: 0 });
+
     gsap
       .timeline()
-      .fromTo(
-        banner,
-        { yPercent: 120, opacity: 0 },
-        { yPercent: 0, opacity: 1, duration: 0.7, ease: "power3.out" }
-      )
+      .to(banner, {
+        yPercent: 0,
+        opacity: 1,
+        duration: 0.7,
+        ease: "power3.out",
+      })
       .fromTo(
         card,
         { rotation: 0 },
         {
           duration: 0.8,
-          rotation: 0,
           ease: "elastic.out(1.5, 0.2)",
           keyframes: [
             { rotation: -2 },
@@ -70,16 +73,15 @@ export function CookieBanner() {
     });
   };
 
+  if (!isVisible) return null;
+
   return (
     <div
       ref={bannerRef}
-      className={cn("fixed bottom-0 left-0 right-0 z-[100] p-4 opacity-0", {
-        "pointer-events-none": !isVisible,
-      })}
+      className="fixed bottom-0 left-0 right-0 z-[10000] p-4"
       role="dialog"
       aria-live="polite"
       aria-label="Cookie consent"
-      aria-hidden={!isVisible}
     >
       <Card className="vibrating-card container relative mx-auto max-w-4xl border-border bg-card/80 p-6 shadow-2xl backdrop-blur-lg">
         <Button
