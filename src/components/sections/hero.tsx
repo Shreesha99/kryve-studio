@@ -231,6 +231,7 @@ export function Hero() {
 
   return (
     <section
+      id="home"
       ref={sectionRef}
       className={cn(
         "relative min-h-[100svh] h-[100dvh] w-full overflow-hidden bg-background text-foreground",
